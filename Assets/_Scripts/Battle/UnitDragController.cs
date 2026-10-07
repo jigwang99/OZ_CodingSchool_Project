@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+using AutoBattler.Battle.Placement;
+using AutoBattler.Presentation.Units;
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace AutoBattler.Battle.Grid
@@ -7,12 +9,19 @@ namespace AutoBattler.Battle.Grid
     {
         [Header("참조")]
         [SerializeField] private HexGridLayout gridLayout;
+        [SerializeField] private BenchLayout benchLayout;
         [SerializeField] private Camera boardCamera;
+
+        [Header("플레이어 레벨과 전장 배치 한도")]
+        [SerializeField, Range(1, 10)] private int playerLevel = 1;
 
         [Header("드래그 가능한 아군 기물 레이어")]
         [SerializeField] private LayerMask unitLayer;
 
-        private Transform draggedUnit;
+        private readonly BoardState boardState = new BoardState();
+        private PlacementService placementService;
+        private int nextInstanceId = 1;
+        private UnitView draggedUnit;
         private Vector3 originalPosition;
         private Vector3 dragOffset;
 
@@ -20,114 +29,200 @@ namespace AutoBattler.Battle.Grid
         {
             if (boardCamera == null)
                 boardCamera = Camera.main;
+            placementService = new PlacementService(boardState, playerLevel: Mathf.Clamp(playerLevel, 1, 10));
+            if (benchLayout == null && gridLayout != null)
+            {
+                benchLayout = gridLayout.GetComponent<BenchLayout>();
+                if (benchLayout == null)
+                    benchLayout = gridLayout.gameObject.AddComponent<BenchLayout>();
+            }
+        }
+
+        private void Start()
+        {
+            if (gridLayout == null)
+                return;
+
+            // 기존 씬의 기물도 등록하여 첫 드래그 전부터 점유를 검사.
+            Collider2D[] colliders = FindObjectsByType<Collider2D>(FindObjectsSortMode.InstanceID);
+            foreach (Collider2D collider in colliders)
+            {
+                if (collider.enabled && collider.gameObject.scene == gameObject.scene
+                    && (unitLayer.value & (1 << collider.gameObject.layer)) != 0)
+                    RegisterUnit(collider);
+            }
+            Physics2D.SyncTransforms();
+        }
+
+        private UnitView RegisterUnit(Collider2D collider)
+        {
+            UnitView view = collider.GetComponentInParent<UnitView>();
+            if (view == null)
+                view = collider.gameObject.AddComponent<UnitView>();
+            if (!view.isActiveAndEnabled)
+                return null;
+            if (boardState.IsRegistered(view.State))
+                return view;
+
+            var state = new UnitState(nextInstanceId++);
+            HexCoord cell = gridLayout.WorldToCell(view.transform.position);
+            bool registered = false;
+            if (benchLayout != null && benchLayout.TryWorldToSlot(view.transform.position, out int initialSlot))
+                registered = placementService.TryRegisterUnit(state, UnitLocation.OnBench(initialSlot));
+            else if (placementService.IsInsideAllyArea(cell))
+                registered = placementService.TryRegisterUnit(state, UnitLocation.OnBoard(cell));
+
+            // 영역 밖, 중복 배치, 인원 초과 기물은 빈 대기석에 배치.
+            if (!registered)
+            {
+                int freeSlot = placementService.FindFreeBenchSlot();
+                registered = freeSlot >= 0 && benchLayout != null
+                    && placementService.TryRegisterUnit(state, UnitLocation.OnBench(freeSlot));
+            }
+            if (!registered)
+            {
+                Debug.LogWarning("대기석이 가득 차 기물을 등록할 수 없습니다.", view);
+                return null;
+            }
+            view.Bind(state, boardState);
+            view.SnapToLocation(gridLayout, benchLayout);
+            return view;
         }
 
         private void Update()
         {
-            if (Mouse.current == null
-                || boardCamera == null
-                || gridLayout == null)
+            if (Mouse.current == null || boardCamera == null || gridLayout == null)
             {
                 CancelDrag();
                 return;
             }
 
-            Vector3 mouseWorldPosition = ScreenPositionUtility.ScreenToWorld(
-                boardCamera,
-                Mouse.current.position.ReadValue(),
-                gridLayout.transform.position.z);
+            if (placementService.PlayerLevel != playerLevel)
+                placementService.SetPlayerLevel(Mathf.Clamp(playerLevel, 1, 10));
 
-            if (draggedUnit == null
-                && Mouse.current.leftButton.wasPressedThisFrame)
-            {
-                TryBeginDrag(mouseWorldPosition);
-            }
+            Vector3 mouseWorldPosition = ScreenPositionUtility.ScreenToWorld(
+                boardCamera, Mouse.current.position.ReadValue(), gridLayout.transform.position.z);
 
             if (draggedUnit == null)
+            {
+                // 드래그 대상이 파괴된 경우에도 강조를 해제.
+                ClearDrag();
+                if (Mouse.current.leftButton.wasPressedThisFrame)
+                    TryBeginDrag(mouseWorldPosition);
+            }
+            if (draggedUnit == null)
                 return;
+            if (!draggedUnit.isActiveAndEnabled || !boardState.IsRegistered(draggedUnit.State))
+            {
+                CancelDrag();
+                return;
+            }
 
             UpdateDrag(mouseWorldPosition);
-
             if (Mouse.current.leftButton.wasReleasedThisFrame)
                 EndDrag();
         }
 
         private void TryBeginDrag(Vector3 mouseWorldPosition)
         {
-            Collider2D hit = Physics2D.OverlapPoint(
-                mouseWorldPosition,
-                unitLayer);
-
-            if (hit == null)
+            Collider2D hit = Physics2D.OverlapPoint(mouseWorldPosition, unitLayer);
+            if (hit == null || hit.gameObject.scene != gameObject.scene)
                 return;
-
-            // 현재 단계에서는 Collider2D를 기물 루트에 붙입니다.
-            draggedUnit = hit.transform;
-            originalPosition = draggedUnit.position;
+            draggedUnit = RegisterUnit(hit);
+            if (draggedUnit == null)
+                return;
+            originalPosition = draggedUnit.transform.position;
             dragOffset = originalPosition - mouseWorldPosition;
         }
 
         private void UpdateDrag(Vector3 mouseWorldPosition)
         {
-            draggedUnit.position = mouseWorldPosition + dragOffset;
-
-            HexCoord candidate =
-                gridLayout.WorldToCell(draggedUnit.position);
-
-            if (IsInsideAllyArea(candidate))
-                gridLayout.SetHighlightTile(candidate);
+            // 드래그 중에는 논리 좌표와 점유를 바꾸지 않음.
+            draggedUnit.transform.position = mouseWorldPosition + dragOffset;
+            ClearHighlights();
+            if (!TryGetDestination(draggedUnit.transform.position, out UnitLocation destination)
+                || !placementService.CanMoveUnit(draggedUnit.State, destination)) return;
+            if (destination.Kind == UnitLocationKind.Board)
+                gridLayout.SetHighlightTile(destination.Cell);
             else
-                gridLayout.SetHighlightTile(null);
+                benchLayout.SetHighlightedSlot(destination.BenchSlot);
+        }
+
+        private bool TryGetDestination(Vector3 world, out UnitLocation destination)
+        {
+            if (benchLayout != null && benchLayout.TryWorldToSlot(world, out int slot))
+            {
+                destination = UnitLocation.OnBench(slot);
+                return true;
+            }
+            HexCoord cell = gridLayout.WorldToCell(world);
+            destination = UnitLocation.OnBoard(cell);
+            return placementService.IsInsideAllyArea(cell);
         }
 
         private void EndDrag()
         {
-            HexCoord candidate =
-                gridLayout.WorldToCell(draggedUnit.position);
-
-            if (IsInsideAllyArea(candidate))
+            PlacementResult result = TryGetDestination(draggedUnit.transform.position, out UnitLocation destination)
+                ? placementService.TryMoveUnit(draggedUnit.State, destination) : new PlacementResult(false);
+            if (result.Success)
             {
-                Vector3 snappedPosition =
-                    gridLayout.CellToWorld(candidate);
-
-                // 기물이 사용하던 표시 깊이를 유지합니다.
-                snappedPosition.z = originalPosition.z;
-                draggedUnit.position = snappedPosition;
-
-                // 이후 이곳에서 배치 시스템에 좌표 변경을 요청합니다.
+                draggedUnit.SnapToLocation(gridLayout, benchLayout);
+                if (result.SwappedUnit != null)
+                {
+                    UnitView targetView = FindUnitView(result.SwappedUnit);
+                    if (targetView != null) targetView.SnapToLocation(gridLayout, benchLayout);
+                }
             }
             else
-            {
-                draggedUnit.position = originalPosition;
-            }
-
+                draggedUnit.transform.position = originalPosition;
+            Physics2D.SyncTransforms();
             ClearDrag();
         }
 
-        private bool IsInsideAllyArea(HexCoord cell)
+        /// <summary>레벨 시스템에서 레벨 변경 시 호출.</summary>
+        public void SetPlayerLevel(int level)
         {
-            if (!gridLayout.IsInsideBoard(cell))
-                return false;
+            if (level < 1 || level > 10) throw new System.ArgumentOutOfRangeException(nameof(level));
+            playerLevel = level;
+            if (placementService != null) placementService.SetPlayerLevel(level);
+        }
 
-            cell.ToOffset(out int col, out _);
+        public int DeployedCount => boardState.DeployedCount;
 
-            return col < 4;
+        private UnitView FindUnitView(UnitState state)
+        {
+            // 교환이 확정된 순간에만 상대의 화면 오브젝트를 조회.
+            foreach (UnitView view in FindObjectsByType<UnitView>(FindObjectsSortMode.None))
+            {
+                if (ReferenceEquals(view.State, state))
+                    return view;
+            }
+            return null;
         }
 
         private void CancelDrag()
         {
             if (draggedUnit != null)
-                draggedUnit.position = originalPosition;
-
+                draggedUnit.transform.position = originalPosition;
             ClearDrag();
         }
 
         private void ClearDrag()
         {
             draggedUnit = null;
+            ClearHighlights();
+        }
 
-            if (gridLayout != null)
-                gridLayout.SetHighlightTile(null);
+        private void ClearHighlights()
+        {
+            if (gridLayout != null) gridLayout.SetHighlightTile(null);
+            if (benchLayout != null) benchLayout.SetHighlightedSlot(null);
+        }
+
+        private void OnApplicationFocus(bool hasFocus)
+        {
+            if (!hasFocus)
+                CancelDrag();
         }
 
         private void OnDisable()
