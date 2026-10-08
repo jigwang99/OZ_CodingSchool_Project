@@ -1,7 +1,9 @@
+using AutoBattler.Battle.Flow;
 using AutoBattler.Battle.Placement;
 using AutoBattler.Presentation.Units;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
 
 namespace AutoBattler.Battle.Grid
 {
@@ -11,6 +13,7 @@ namespace AutoBattler.Battle.Grid
         [SerializeField] private HexGridLayout gridLayout;
         [SerializeField] private BenchLayout benchLayout;
         [SerializeField] private Camera boardCamera;
+        [SerializeField] private BattleFlowController battleFlow;
 
         [Header("플레이어 레벨과 전장 배치 한도")]
         [SerializeField, Range(1, 10)] private int playerLevel = 1;
@@ -36,6 +39,20 @@ namespace AutoBattler.Battle.Grid
                 if (benchLayout == null)
                     benchLayout = gridLayout.gameObject.AddComponent<BenchLayout>();
             }
+        }
+
+        private void OnEnable()
+        {
+            if (battleFlow != null)
+                battleFlow.PhaseChanged += OnPhaseChanged;
+            else
+                Debug.LogError("UnitDragController에 BattleFlowController 연결 필요.", this);
+        }
+
+        private void OnPhaseChanged(BattlePhase phase)
+        {
+            if (phase != BattlePhase.Preparation)
+                CancelDrag();
         }
 
         private void Start()
@@ -91,7 +108,8 @@ namespace AutoBattler.Battle.Grid
 
         private void Update()
         {
-            if (Mouse.current == null || boardCamera == null || gridLayout == null)
+            if (battleFlow == null || !battleFlow.CanPlaceUnits
+                || Mouse.current == null || boardCamera == null || gridLayout == null)
             {
                 CancelDrag();
                 return;
@@ -125,6 +143,9 @@ namespace AutoBattler.Battle.Grid
 
         private void TryBeginDrag(Vector3 mouseWorldPosition)
         {
+            // UI 클릭이 보드의 기물 선택으로 이어지지 않도록 차단.
+            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+                return;
             Collider2D hit = Physics2D.OverlapPoint(mouseWorldPosition, unitLayer);
             if (hit == null || hit.gameObject.scene != gameObject.scene)
                 return;
@@ -203,7 +224,10 @@ namespace AutoBattler.Battle.Grid
         private void CancelDrag()
         {
             if (draggedUnit != null)
+            {
                 draggedUnit.transform.position = originalPosition;
+                Physics2D.SyncTransforms();
+            }
             ClearDrag();
         }
 
@@ -227,6 +251,8 @@ namespace AutoBattler.Battle.Grid
 
         private void OnDisable()
         {
+            if (battleFlow != null)
+                battleFlow.PhaseChanged -= OnPhaseChanged;
             CancelDrag();
         }
     }

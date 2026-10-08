@@ -26,13 +26,6 @@ namespace AutoBattler.Battle.Grid
 
         public void SetHighlightedSlot(int? slot) => highlightedSlot = slot;
 
-        private void OnValidate()
-        {
-            slotSpacing = Mathf.Max(0.1f, slotSpacing);
-            slotSize.x = Mathf.Clamp(slotSize.x, 0.1f, slotSpacing);
-            slotSize.y = Mathf.Max(0.1f, slotSize.y);
-        }
-
         private void OnDrawGizmos()
         {
             for (int slot = 0; slot < PlacementService.BenchCapacity; slot++)
