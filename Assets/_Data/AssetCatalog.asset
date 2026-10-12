@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 835ce0b1c3f2a484aa8e14e2b627695a, type: 3}
+  m_Name: AssetCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Assets.AssetCatalog
+  snapshotAddress: Data/GameSnapshot
+  visuals:
+  - id: 1
+    address: Units/PIXEM_Sample
+  - id: 2
+    address: Units/PIXEM_Sample
+  - id: 3
+    address: Units/PIXEM_Sample
+  - id: 4
+    address: Units/PIXEM_Sample
+  - id: 5
+    address: Units/PIXEM_Sample
+  - id: 6
+    address: Units/PIXEM_Sample
+  - id: 7
+    address: Units/PIXEM_Sample
+  - id: 8
+    address: Units/PIXEM_Sample

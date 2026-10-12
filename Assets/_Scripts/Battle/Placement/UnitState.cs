@@ -3,7 +3,7 @@ using AutoBattler.Battle.Grid;
 
 namespace AutoBattler.Battle.Placement
 {
-    /// <summary>기물의 고유 ID와 확정된 전장 또는 대기석 위치입니다.</summary>
+    /// <summary>기물의 고유 ID와 확정된 전장 또는 대기석 위치.</summary>
     public sealed class UnitState
     {
         public int InstanceId { get; }

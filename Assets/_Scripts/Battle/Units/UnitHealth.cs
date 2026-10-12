@@ -17,14 +17,18 @@ namespace AutoBattler.Battle.Units
 
         public void Initialize(int maxHp, int defense)
         {
-            if (state != null) throw new InvalidOperationException("체력 모듈 중복 초기화.");
+            if (state != null)
+            {
+                state.HealthChanged -= ForwardHealthChanged;
+                state.Died -= ForwardDied;
+            }
             state = new UnitHealthState(maxHp, defense);
             state.HealthChanged += ForwardHealthChanged;
             state.Died += ForwardDied;
             HealthChanged?.Invoke(CurrentHp, MaxHp);
         }
 
-        public int TakeDamage(int attackDamage) => state != null ? state.TakeDamage(attackDamage) : 0;
+        public int TakeDamage(int attackDamage, float multiplier = 1f) => state != null ? state.TakeDamage(attackDamage, multiplier) : 0;
         public void RestoreFullHealth() => state?.RestoreFullHealth();
         private void ForwardHealthChanged(int hp, int maxHp) => HealthChanged?.Invoke(hp, maxHp);
         private void ForwardDied() => Died?.Invoke();

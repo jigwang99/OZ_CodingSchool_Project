@@ -21,7 +21,7 @@ namespace AutoBattler.Battle.Grid
         [Header("드래그 가능한 아군 기물 레이어")]
         [SerializeField] private LayerMask unitLayer;
 
-        private readonly BoardState boardState = new BoardState();
+        private BoardState boardState = new BoardState();
         private PlacementService placementService;
         private int nextInstanceId = 1;
         private UnitView draggedUnit;
@@ -55,9 +55,21 @@ namespace AutoBattler.Battle.Grid
                 CancelDrag();
         }
 
+        public UnitView SelectedUnit { get; private set; }
+        public event System.Action PlacementChanged;
+        public void ClearSelection() { CancelDrag(); SelectedUnit = null; }
+        public void BindBoard(BoardState board, PlacementService service)
+        {
+            CancelDrag(); boardState = board; placementService = service;
+            playerLevel = service.PlayerLevel;
+        }
+        public void BindView(UnitView view, UnitState state)
+        {
+            view.Bind(state, boardState); view.SnapToLocation(gridLayout, benchLayout);
+        }
         private void Start()
         {
-            if (gridLayout == null)
+            if (gridLayout == null || GetComponent<AutoBattler.Run.RunController>() != null)
                 return;
 
             // 기존 씬의 기물도 등록하여 첫 드래그 전부터 점유를 검사.
@@ -152,6 +164,7 @@ namespace AutoBattler.Battle.Grid
             draggedUnit = RegisterUnit(hit);
             if (draggedUnit == null)
                 return;
+            SelectedUnit = draggedUnit;
             originalPosition = draggedUnit.transform.position;
             dragOffset = originalPosition - mouseWorldPosition;
         }
@@ -198,6 +211,7 @@ namespace AutoBattler.Battle.Grid
                 draggedUnit.transform.position = originalPosition;
             Physics2D.SyncTransforms();
             ClearDrag();
+            PlacementChanged?.Invoke();
         }
 
         /// <summary>레벨 시스템에서 레벨 변경 시 호출.</summary>
@@ -221,7 +235,7 @@ namespace AutoBattler.Battle.Grid
             return null;
         }
 
-        private void CancelDrag()
+        public void CancelDrag()
         {
             if (draggedUnit != null)
             {

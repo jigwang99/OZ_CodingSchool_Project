@@ -109,3 +109,12 @@ InitTestScene*.unity*
 # PIXEM 원본 에셋과 폴더 메타 파일 제외
 /Assets/Pixem/
 /Assets/Pixem.meta
+
+# 시트 생성 작업 파일과 미리보기 제외
+/outputs/
+
+# 검증 결과와 스크린샷 제외
+/Diagnostics/
+
+# 스냅샷 가져오기 중 임시 파일 제외
+/Assets/_Data/Snapshots/*.pending*

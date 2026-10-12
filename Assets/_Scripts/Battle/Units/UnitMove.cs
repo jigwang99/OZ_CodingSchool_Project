@@ -29,15 +29,13 @@ namespace AutoBattler.Battle.Units
         private void OnEnable()
         {
             if (health != null) health.Died += Stop;
-            if (unit != null && unit.BattleFlow != null)
-                unit.BattleFlow.PhaseChanged += OnPhaseChanged;
+
         }
 
         private void OnDisable()
         {
             if (health != null) health.Died -= Stop;
-            if (unit != null && unit.BattleFlow != null)
-                unit.BattleFlow.PhaseChanged -= OnPhaseChanged;
+
             Stop();
         }
 
@@ -64,12 +62,14 @@ namespace AutoBattler.Battle.Units
             {
                 Vector3 target = unit.GridLayout.CellToWorld(destination);
                 target.z = transform.position.z;
-                while ((transform.position - target).sqrMagnitude > 0.000001f)
+                Vector3 start = transform.position;
+                float elapsed = 0f;
+                while (elapsed < unit.MoveSeconds)
                 {
                     operation.Token.ThrowIfCancellationRequested();
                     if (!CanMove) return false;
-                    transform.position = Vector3.MoveTowards(
-                        transform.position, target, unit.Stats.MoveSpeed * Time.deltaTime);
+                    elapsed += Time.deltaTime;
+                    transform.position = Vector3.Lerp(start, target, Mathf.Clamp01(elapsed / unit.MoveSeconds));
                     await UniTask.Yield(PlayerLoopTiming.Update, operation.Token);
                 }
                 operation.Token.ThrowIfCancellationRequested();

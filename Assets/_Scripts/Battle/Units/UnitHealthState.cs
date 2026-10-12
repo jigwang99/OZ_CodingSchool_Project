@@ -23,11 +23,11 @@ namespace AutoBattler.Battle.Units
         }
 
         /// <summary>방어력을 적용한 실제 체력 감소량 반환. 양수 공격은 최소 1 피해.</summary>
-        public int TakeDamage(int attackDamage)
+        public int TakeDamage(int attackDamage, float multiplier = 1f)
         {
             if (attackDamage < 0) throw new ArgumentOutOfRangeException(nameof(attackDamage));
             if (!IsAlive || attackDamage == 0 || isUpdatingHealth) return 0;
-            int damage = Math.Max(1, attackDamage - Defense);
+            int damage = Math.Max(1, (int)Math.Floor(attackDamage * multiplier * 100.0 / (100.0 + Math.Max(0, Defense))));
             int lostHp = Math.Min(CurrentHp, damage);
             isUpdatingHealth = true;
             try

@@ -4,9 +4,9 @@ namespace AutoBattler.Battle.Grid
 {
     public class HexGridLayout : MonoBehaviour
     {
-        private const int Columns = 8;
-        private const int Rows = 7;
-        private const int AllyColumns = 4;
+        public const int Columns = 8;
+        public const int Rows = 7;
+        public const int AllyColumns = 4;
 
         [Header("육각 타일 크기")]
         [Tooltip("타일 중심에서 꼭짓점까지의 거리")]
@@ -18,6 +18,8 @@ namespace AutoBattler.Battle.Grid
         [SerializeField] private Color enemyColor = Color.red;
 
         private HexCoord? highlightTile;
+        public HexCoord? HighlightTile => highlightTile;
+        public float CellSize => cellSize;
 
         /// <summary>
         /// Axial 좌표를 월드 위치로 변환.

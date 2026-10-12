@@ -26,7 +26,11 @@ namespace AutoBattler.Presentation.Units
             if (health == null) return;
             health.Died += HideOnDeath;
             health.HealthChanged += OnHealthChanged;
-            if (health.IsInitialized && !health.IsAlive) HideOnDeath();
+            if (health.IsInitialized)
+            {
+                if (!health.IsAlive) HideOnDeath();
+                else OnHealthChanged(health.CurrentHp, health.MaxHp);
+            }
         }
 
         private void HideOnDeath()
@@ -64,7 +68,7 @@ namespace AutoBattler.Presentation.Units
             transform.position = position;
         }
 
-        // 기존 전장 전용 호출도 계속 사용할 수 있습니다.
+        // 기존 전장 전용 호출도 유지.
         public void SnapToCell(HexGridLayout layout) => SnapToLocation(layout, null);
 
         private void OnDisable()

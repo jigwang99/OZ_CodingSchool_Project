@@ -2,90 +2,75 @@ using AutoBattler.Battle.Flow;
 using AutoBattler.Battle.Grid;
 using AutoBattler.Battle.Placement;
 using AutoBattler.Data.Units;
+using AutoBattler.Data.Snapshot;
 using AutoBattler.Presentation.Units;
 using UnityEngine;
 
 namespace AutoBattler.Battle.Units
 {
-    /// <summary>기물의 공통 데이터 초기화와 전투 단계 연결.</summary>
+    public enum UnitTeam { Ally, Enemy }
+    /// <summary>공통 데이터와 전투 문맥. 수치는 JSON 정의에서 주입.</summary>
     [DefaultExecutionOrder(-100)]
-    [DisallowMultipleComponent, RequireComponent(typeof(UnitView), typeof(UnitHealth))]
+    [DisallowMultipleComponent, RequireComponent(typeof(UnitView),typeof(UnitHealth))]
     public sealed class Unit : MonoBehaviour
     {
-        [Header("기물 데이터")]
+        // 이전 프리팹의 테스트용 연결만 유지. 도전에서는 Configure로 덮어씀.
         [SerializeField] private UnitData unitData;
         [SerializeField] private UnitType unitType;
-        [Header("씬 참조")]
         [SerializeField] private BattleFlowController battleFlow;
         [SerializeField] private HexGridLayout gridLayout;
         [SerializeField] private BenchLayout benchLayout;
-
         public UnitStat Stats { get; private set; }
+        public UnitDefinition Definition { get; private set; }
+        public UnitTeam Team { get; private set; }
+        public int InstanceId { get; private set; }
+        public int Star { get; private set; }
+        public float MoveSeconds { get; private set; }=.3f;
+        public float WindupSeconds { get; private set; }=.2f;
+        public float ProjectileSpeed { get; private set; }=8f;
         public UnitView View { get; private set; }
         public UnitHealth Health { get; private set; }
         public UnitMove Move { get; private set; }
-        public HexGridLayout GridLayout => gridLayout;
-        public BattleFlowController BattleFlow => battleFlow;
-        public bool IsOnBoard => View != null && View.State != null
-            && View.State.Location.Kind == UnitLocationKind.Board;
-        public bool IsInCombat => isActiveAndEnabled && Stats != null && IsOnBoard
-            && battleFlow != null && battleFlow.isActiveAndEnabled
-            && battleFlow.CurrentPhase == BattlePhase.Combat;
-
-        // 준비 배치와 전투 중 이동 좌표를 분리.
-        private HexCoord? combatCell;
-        public HexCoord? CurrentCell => combatCell ?? (View != null ? View.State?.Cell : null);
-
+        public UnitCombat Combat { get; private set; }
+        public HexGridLayout GridLayout=>gridLayout;
+        public BattleFlowController BattleFlow=>battleFlow;
+        public bool IsOnBoard=>Team==UnitTeam.Enemy || (View!=null && View.State!=null && View.State.Location.Kind==UnitLocationKind.Board);
+        public bool IsInCombat=>isActiveAndEnabled && Stats!=null && IsOnBoard && battleFlow!=null
+            && battleFlow.isActiveAndEnabled && battleFlow.CurrentPhase==BattlePhase.Combat;
+        private HexCoord? combatCell, enemyCell;
+        public HexCoord? CurrentCell=>combatCell ?? enemyCell ?? View?.State?.Cell;
         private void Awake()
         {
-            View = GetComponent<UnitView>();
-            Health = GetComponent<UnitHealth>();
-            Move = GetComponent<UnitMove>();
-            if (unitData == null || !unitData.TryGetStat(unitType, out UnitStat stats))
-            {
-                Debug.LogError($"기물 스탯 연결 필요: {unitType}", this);
-                return;
-            }
-            try
-            {
-                Stats = stats.Clone();
-                Health.Initialize(Stats.MaxHp, Stats.Defense);
-            }
-            catch (System.ArgumentException exception)
-            {
-                Debug.LogError($"기물 스탯 오류: {unitType}, {exception.ParamName}", this);
-            }
+            View=GetComponent<UnitView>(); Health=GetComponent<UnitHealth>();
+            Move=GetComponent<UnitMove>(); Combat=GetComponent<UnitCombat>();
+            if(unitData!=null && unitData.TryGetStat(unitType,out UnitStat stats))
+            { Stats=stats.Clone(); Health.Initialize(Stats.MaxHp,Stats.Defense); }
         }
-
-        private void OnEnable()
+        public void Configure(UnitDefinition definition,int star,int instanceId,UnitTeam team,
+            DataRepository data,BattleFlowController flow,HexGridLayout grid,BenchLayout bench,HexCoord? enemyPosition=null,int bossProfile=0)
         {
-            if (battleFlow != null) battleFlow.PhaseChanged += OnPhaseChanged;
-            else Debug.LogError("Unit에 BattleFlowController 연결 필요.", this);
+            Definition=definition; Star=star; InstanceId=instanceId; Team=team;
+            battleFlow=flow; gridLayout=grid; benchLayout=bench; enemyCell=enemyPosition; combatCell=null;
+            MoveSeconds=data.Rule(EconomyRule.MoveSeconds); WindupSeconds=data.Rule(EconomyRule.WindupSeconds);
+            ProjectileSpeed=data.Rule(EconomyRule.ProjectileSpeed);
+            float multiplier=star==2?data.Rule(EconomyRule.StarMultiplier):1f;
+            float bossHp=bossProfile==3?2.5f:bossProfile>0?2f:1f;
+            Stats=new UnitStat(UnitType.Character2,Mathf.FloorToInt(definition.Hp*multiplier*bossHp),
+                Mathf.FloorToInt(definition.Attack*multiplier*(bossProfile>0?1.2f:1f)),definition.Armor,
+                1f,definition.Range,definition.Interval);
+            Health.Initialize(Stats.MaxHp,Stats.Defense);
+            Combat.ResetForRound();
+            int layer=team==UnitTeam.Ally?LayerMask.NameToLayer("AllyUnit"):0;
+            gameObject.layer=layer<0?0:layer;
+            gameObject.name=$"{team}_{definition.Name}_{star}Star_{instanceId}";
         }
-
-        private void OnDisable()
+        public void BeginBattle() { Move.Stop(); combatCell=enemyCell ?? View?.State?.Cell; Health.RestoreFullHealth(); Combat.ResetForRound(); }
+        public void RestorePreparation()
         {
-            if (battleFlow != null) battleFlow.PhaseChanged -= OnPhaseChanged;
-            if (Move != null) Move.Stop();
+            Move.Stop(); combatCell=null; Health.RestoreFullHealth(); Combat.ResetForRound();
+            if(Team==UnitTeam.Ally && View!=null) View.SnapToLocation(gridLayout,benchLayout);
         }
-
-        private void OnPhaseChanged(BattlePhase phase)
-        {
-            if (Move != null) Move.Stop();
-            if (phase == BattlePhase.Combat)
-            {
-                combatCell = View != null ? View.State?.Cell : null;
-                Health.RestoreFullHealth();
-            }
-            else if (phase == BattlePhase.Preparation)
-            {
-                combatCell = null;
-                Health.RestoreFullHealth();
-                if (View != null && gridLayout != null)
-                    View.SnapToLocation(gridLayout, benchLayout);
-            }
-        }
-
-        internal void SetCombatCell(HexCoord cell) => combatCell = cell;
+        internal void SetCombatCell(HexCoord cell)=>combatCell=cell;
+        private void OnDisable() { if(Move!=null) Move.Stop(); }
     }
 }

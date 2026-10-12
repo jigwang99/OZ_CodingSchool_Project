@@ -10,6 +10,7 @@ namespace AutoBattler.Battle.Grid
         [SerializeField, Min(0.1f)] private float slotSpacing = 1.5f;
         [SerializeField] private Vector2 slotSize = new Vector2(1.2f, 1.2f);
         private int? highlightedSlot;
+        public int? HighlightedSlot => highlightedSlot;
 
         public Vector3 SlotToWorld(int slot) => transform.position
             + new Vector3(originOffset.x + slot * slotSpacing, originOffset.y, 0f);
