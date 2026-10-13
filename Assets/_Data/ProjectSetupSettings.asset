@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bb89bc51868a1d74898364a6796badc9, type: 3}
+  m_Name: ProjectSetupSettings
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::AutoBattler.EditorTools.ProjectSetupSettings
+  catalog: {fileID: 11400000, guid: b97c5fc1f1e22944d91361f6888439f2, type: 2}
+  snapshot: {fileID: 4900000, guid: ac6202fb8e4ec1c49b788d9a47226591, type: 3}
+  battleScene: {fileID: 102900000, guid: b60de5195cf03044781824f20feae9eb, type: 3}
+  battleHUD: {fileID: 875217052286444846, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+  shopItem: {fileID: 1520015594984119603, guid: f458dc4825d56644ea17d3f7e156fbab, type: 3}
+  resultPanel: {fileID: 7638330283626845108, guid: 85f4a31895a3a754595b74ae8f60fa64, type: 3}
+  healthBar: {fileID: 7604747378388361148, guid: b999a7218cc3c0748b54488abeaa4ef7, type: 3}
+  uiPrefabFolder: {fileID: 102900000, guid: 5002d7e6e0174e14ab5b4c4fe9ee7123, type: 3}
+  unitPrefabFolder: {fileID: 102900000, guid: 472f16cc66f6472a915e962ebaee35f0, type: 3}
+  dataGroup: {fileID: 11400000, guid: adb32141412a8e047af026dc0e1ab53e, type: 2}
+  unitGroup: {fileID: 11400000, guid: b0f6c448b30fade4ebccd2710b3b437d, type: 2}
+  units:
+  - visualId: 1
+    sourcePrefab: {fileID: 8089855158176510808, guid: eebb1eb1861ac6c418abe0b5cc575cff, type: 3}
+    unitPrefab: {fileID: 8734687176695647241, guid: 0d284b187b0649fe85cf1122b1265be8, type: 3}
+  - visualId: 2
+    sourcePrefab: {fileID: 3396221945315803242, guid: 9d7f5798e5069254397bd79d8e72af1a, type: 3}
+    unitPrefab: {fileID: 3173410117955448388, guid: 2257c3a94f3894e409f3e4a5964d35d4, type: 3}
+  - visualId: 3
+    sourcePrefab: {fileID: 4322857307218768071, guid: 113a3b2096bfe5749b65d09e2f42f15b, type: 3}
+    unitPrefab: {fileID: 8422921971788220625, guid: 222a56cfaa3bc664f9a9b044948c1756, type: 3}
+  - visualId: 4
+    sourcePrefab: {fileID: 6410191166959079819, guid: ef52cb88f2d64a849a6f05f9b37137a6, type: 3}
+    unitPrefab: {fileID: 4106234679695870312, guid: cd581fb5918cff6408977e308552aaa1, type: 3}
+  - visualId: 5
+    sourcePrefab: {fileID: 4236701463539263412, guid: 361bdf4ba0e4da54f9f51e1a0d28f3ff, type: 3}
+    unitPrefab: {fileID: 2314303284007667203, guid: a44073807669e2b4289edeb6f08ccf40, type: 3}
+  - visualId: 6
+    sourcePrefab: {fileID: 3854208947414393203, guid: 4a3cc64828d351e4683bc837b2497b6f, type: 3}
+    unitPrefab: {fileID: 9003902277452209757, guid: 836c766561f67f14d95368073c4fda23, type: 3}
+  - visualId: 7
+    sourcePrefab: {fileID: 4076358750142668261, guid: 3153f2f86d945fd42a2bcb8e8558f1a9, type: 3}
+    unitPrefab: {fileID: 8268097396008084708, guid: 7633ebcea3b9ddb43ac357d549f3e530, type: 3}
+  - visualId: 8
+    sourcePrefab: {fileID: 6668148790688865655, guid: 3794911705c6f7943b6bf62dcd116146, type: 3}
+    unitPrefab: {fileID: 5242355543544568808, guid: 45f1b072a5127b5469473c05d3e35d5a, type: 3}

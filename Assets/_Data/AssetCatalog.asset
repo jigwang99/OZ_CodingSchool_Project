@@ -12,21 +12,83 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 835ce0b1c3f2a484aa8e14e2b627695a, type: 3}
   m_Name: AssetCatalog
   m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Assets.AssetCatalog
-  snapshotAddress: Data/GameSnapshot
+  snapshot:
+    m_AssetGUID: ac6202fb8e4ec1c49b788d9a47226591
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
   visuals:
   - id: 1
-    address: Units/PIXEM_Sample
+    prefab:
+      m_AssetGUID: 0d284b187b0649fe85cf1122b1265be8
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
   - id: 2
-    address: Units/PIXEM_Sample
+    prefab:
+      m_AssetGUID: 2257c3a94f3894e409f3e4a5964d35d4
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
   - id: 3
-    address: Units/PIXEM_Sample
+    prefab:
+      m_AssetGUID: 222a56cfaa3bc664f9a9b044948c1756
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
   - id: 4
-    address: Units/PIXEM_Sample
+    prefab:
+      m_AssetGUID: cd581fb5918cff6408977e308552aaa1
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
   - id: 5
-    address: Units/PIXEM_Sample
+    prefab:
+      m_AssetGUID: a44073807669e2b4289edeb6f08ccf40
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
   - id: 6
-    address: Units/PIXEM_Sample
+    prefab:
+      m_AssetGUID: 836c766561f67f14d95368073c4fda23
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
   - id: 7
-    address: Units/PIXEM_Sample
+    prefab:
+      m_AssetGUID: 7633ebcea3b9ddb43ac357d549f3e530
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
   - id: 8
-    address: Units/PIXEM_Sample
+    prefab:
+      m_AssetGUID: 45f1b072a5127b5469473c05d3e35d5a
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  icons:
+  - id: 1
+    sprite: {fileID: 0}
+  - id: 2
+    sprite: {fileID: 0}
+  - id: 3
+    sprite: {fileID: 0}
+  - id: 4
+    sprite: {fileID: 0}
+  - id: 5
+    sprite: {fileID: 0}
+  - id: 6
+    sprite: {fileID: 0}
+  - id: 7
+    sprite: {fileID: 0}
+  - id: 8
+    sprite: {fileID: 0}

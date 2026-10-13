@@ -29,8 +29,12 @@ namespace AutoBattler.Run
         public RunState State { get; private set; }
         public BattleFlowController Flow=>flow;
         public UnitDragController Drag=>drag;
+        public AssetCatalog Catalog=>catalog;
+        public HexGridLayout Grid=>grid;
+        public BenchLayout Bench=>bench;
         public bool IsReady { get; private set; }
         public bool IsLoading { get; private set; }
+        public Sprite UnitIcon(int iconId) => catalog.Icon(iconId);
         public string Message { get; private set; }="Loading data...";
         public float RemainingSeconds=>Mathf.Max(0f,combatDeadline-Time.time);
         public event Action DisplayChanged;
@@ -61,9 +65,9 @@ namespace AutoBattler.Run
             IsLoading=true; Message="Loading data and unit assets..."; DisplayChanged?.Invoke();
             try
             {
-                if(dataLease==null) dataLease=await assets.AcquireAsync<TextAsset>(catalog.snapshotAddress,lifetime.Token);
+                if(dataLease==null) dataLease=await assets.AcquireAsync<TextAsset>(catalog.Snapshot,lifetime.Token);
                 var repository=new DataRepository(JsonUtility.FromJson<GameSnapshot>(dataLease.Asset.text));
-                foreach(var address in repository.Units.Values.Select(x=>catalog.VisualAddress(x.VisualId)).Distinct())
+                foreach(var address in repository.Units.Values.Select(x=>catalog.VisualPrefab(x.VisualId)).GroupBy(x=>x.RuntimeKey).Select(x=>x.First()))
                     await pool.PreloadAsync(address,lifetime.Token);
                 lifetime.Token.ThrowIfCancellationRequested();
                 State=new RunState(repository,seed); drag.BindBoard(State.Board,State.Placement);
@@ -92,7 +96,7 @@ namespace AutoBattler.Run
                 int id=owned.Placement.InstanceId;
                 if(!allies.TryGetValue(id,out Unit unit))
                 {
-                    unit=pool.Rent(catalog.VisualAddress(State.Data.Units[owned.DefinitionId].VisualId));
+                    unit=pool.Rent(catalog.VisualPrefab(State.Data.Units[owned.DefinitionId].VisualId));
                     ConfigureUnit(unit,owned.DefinitionId,owned.Star,id,UnitTeam.Ally);
                     drag.BindView(unit.View,owned.Placement);
                     unit.gameObject.SetActive(true); allies.Add(id,unit);
@@ -116,7 +120,7 @@ namespace AutoBattler.Run
             foreach(var definition in State.Data.Rounds[State.Round].Enemies)
             {
                 HexCoord cell=HexCoord.FromOffset(definition.Col,definition.Row);
-                Unit unit=pool.Rent(catalog.VisualAddress(State.Data.Units[definition.UnitId].VisualId));
+                Unit unit=pool.Rent(catalog.VisualPrefab(State.Data.Units[definition.UnitId].VisualId));
                 ConfigureUnit(unit,definition.UnitId,definition.Star,id++,UnitTeam.Enemy,cell,definition.BossProfileId);
                 var displayState=new UnitState(unit.InstanceId) { Location=UnitLocation.OnBoard(cell) };
                 unit.View.Bind(displayState,null);

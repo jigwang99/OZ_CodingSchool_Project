@@ -119,6 +119,107 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1001 &372050775
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 875217052286444846, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: run
+      value: 
+      objectReference: {fileID: 1801000003}
+    - target: {fileID: 7106810589765283209, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_Name
+      value: BattleHUD
+      objectReference: {fileID: 0}
+    - target: {fileID: 7428785105244147136, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_Pivot.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7428785105244147136, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_Pivot.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7428785105244147136, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7428785105244147136, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7428785105244147136, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7428785105244147136, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7428785105244147136, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7428785105244147136, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7428785105244147136, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7428785105244147136, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7428785105244147136, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7428785105244147136, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7428785105244147136, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7428785105244147136, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7428785105244147136, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7428785105244147136, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7428785105244147136, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7428785105244147136, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7428785105244147136, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7428785105244147136, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
 --- !u!1 &744301151
 GameObject:
   m_ObjectHideFlags: 0
@@ -131,7 +232,6 @@ GameObject:
   - component: {fileID: 744301152}
   - component: {fileID: 1801000001}
   - component: {fileID: 1801000003}
-  - component: {fileID: 1801000002}
   m_Layer: 0
   m_Name: PlacementController
   m_TagString: Untagged
@@ -149,7 +249,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0157158af0832054e868d66cd74702e3, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Battle.Grid.UnitDragController
   gridLayout: {fileID: 1970585794}
   benchLayout: {fileID: 890770001}
@@ -184,8 +284,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: eacdb25ea0bd497d817db4c526835ceb, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   originOffset: {x: 0, y: -2}
   slotSpacing: 1.5
   slotSize: {x: 1.2, y: 1.2}
@@ -231,21 +331,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6921eab44dfb4c8881c911d4ae63acac, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
---- !u!114 &1801000002
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 744301151}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c12a9f4169fb1d24eb3483b055bf9f26, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Presentation.Battle.RunHUD
-  run: {fileID: 1801000003}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &1801000003
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -256,7 +343,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8ea9f7691ac0fcd4795436956ccdd0ac, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Run.RunController
   catalog: {fileID: 11400000, guid: b97c5fc1f1e22944d91361f6888439f2, type: 2}
   flow: {fileID: 1801000001}
@@ -307,8 +394,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 76c392e42b5098c458856cdf6ecaaaa1, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_FirstSelected: {fileID: 0}
   m_sendNavigationEvents: 1
   m_DragThreshold: 10
@@ -322,8 +409,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 01614664b831546d2ae94a42149d80ac, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_SendPointerHoverToParent: 1
   m_MoveRepeatDelay: 0.5
   m_MoveRepeatRate: 0.1
@@ -446,7 +533,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a79441f348de89743a2939f4d699eac1, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalCameraData
   m_RenderShadows: 1
   m_RequiresDepthTextureOption: 2
@@ -524,7 +611,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 905da7a0561da4b4c92b35a0b5142485, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Battle.Grid.HexGridLayout
   cellSize: 1
   allyColor: {r: 0, g: 1, b: 1, a: 1}
@@ -539,7 +626,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a7b4160e53f6b1345b23fd39fc2bb601, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Presentation.Battle.BoardOutlineView
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
@@ -549,3 +636,4 @@ SceneRoots:
   - {fileID: 1970585793}
   - {fileID: 744301153}
   - {fileID: 1801000601}
+  - {fileID: 372050775}

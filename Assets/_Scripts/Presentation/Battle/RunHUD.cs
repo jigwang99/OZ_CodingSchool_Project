@@ -1,115 +1,251 @@
-using System;
-using AutoBattler.Run;
 using AutoBattler.Battle.Flow;
+using AutoBattler.Battle.Units;
+using AutoBattler.Data.Snapshot;
+using AutoBattler.Run;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
 namespace AutoBattler.Presentation.Battle
 {
-    /// <summary>현재 구현 범위의 상점, 경제, 전투와 결과 조작 UI.</summary>
+    /// <summary>BattleHUD 프리팹의 표시 갱신과 플레이 명령 연결.</summary>
+    [DisallowMultipleComponent]
     public sealed class RunHUD : MonoBehaviour
     {
+        [Header("진행 제어")]
         [SerializeField] private RunController run;
-        private TextMeshProUGUI status,message,selection;
-        private Button start,refresh,xp,sell,next,retry;
-        private readonly Button[] shop=new Button[5];
-        private readonly TextMeshProUGUI[] shopLabels=new TextMeshProUGUI[5];
-        private CanvasGroup panelGroup;
+
+        [Header("상단 정보")]
+        [SerializeField] private TextMeshProUGUI roundText;
+        [SerializeField] private TextMeshProUGUI goldText;
+        [SerializeField] private TextMeshProUGUI livesText;
+        [SerializeField] private TextMeshProUGUI levelText;
+        [SerializeField] private TextMeshProUGUI experienceText;
+        [SerializeField] private TextMeshProUGUI deploymentText;
+        [SerializeField] private TextMeshProUGUI messageText;
+
+        [Header("준비 화면")]
+        [SerializeField] private CanvasGroup preparationPanel;
+        [SerializeField] private RectTransform shopContainer;
+        [SerializeField] private ShopItem[] shopItems = new ShopItem[5];
+        [SerializeField] private Button refreshButton;
+        [SerializeField] private TextMeshProUGUI refreshLabel;
+        [SerializeField] private Button buyExperienceButton;
+        [SerializeField] private TextMeshProUGUI buyExperienceLabel;
+        [SerializeField] private Button sellButton;
+        [SerializeField] private TextMeshProUGUI selectedUnitText;
+
+        [Header("전투와 결과")]
+        [SerializeField] private Button startBattleButton;
+        [SerializeField] private ResultPanel resultPanel;
+        [SerializeField] private Button retryLoadButton;
+        [SerializeField, Min(0f)] private float fadeDuration = 0.2f;
+
+        private bool isBound;
+        private bool hasDisplayedPhase;
         private BattlePhase displayedPhase;
-        public void ConfigureScene(RunController controller)=>run=controller;
-        private void Start()
+
+        public RunController Controller => run;
+        public TextMeshProUGUI RoundText => roundText;
+        public TextMeshProUGUI GoldText => goldText;
+        public TextMeshProUGUI LivesText => livesText;
+        public TextMeshProUGUI LevelText => levelText;
+        public TextMeshProUGUI ExperienceText => experienceText;
+        public TextMeshProUGUI DeploymentText => deploymentText;
+        public TextMeshProUGUI MessageText => messageText;
+        public CanvasGroup PreparationPanel => preparationPanel;
+        public RectTransform ShopContainer => shopContainer;
+        public IReadOnlyList<ShopItem> ShopItems => System.Array.AsReadOnly(shopItems);
+        public Button RefreshButton => refreshButton;
+        public Button BuyExperienceButton => buyExperienceButton;
+        public Button SellButton => sellButton;
+        public TextMeshProUGUI SelectedUnitText => selectedUnitText;
+        public Button StartBattleButton => startBattleButton;
+        public Button RetryLoadButton => retryLoadButton;
+        public ResultPanel ResultPanel => resultPanel;
+
+#if UNITY_EDITOR
+        // 셋업 도구는 필드 이름 조회 대신 명시적인 참조 주입 사용.
+        public void ConfigureHeader(TextMeshProUGUI round, TextMeshProUGUI gold, TextMeshProUGUI lives,
+            TextMeshProUGUI level, TextMeshProUGUI experience, TextMeshProUGUI deployment, TextMeshProUGUI message)
         {
-            Build(); run.DisplayChanged+=Refresh; Refresh();
+            roundText=round; goldText=gold; livesText=lives; levelText=level;
+            experienceText=experience; deploymentText=deployment; messageText=message;
         }
-        private void Build()
+        public void ConfigurePreparation(CanvasGroup panel, RectTransform container, ShopItem[] items,
+            Button refresh, TextMeshProUGUI refreshText, Button buyExperience, TextMeshProUGUI xpText,
+            Button sell, TextMeshProUGUI selected)
         {
-            var canvasObj=new GameObject("RunCanvas",typeof(RectTransform),typeof(Canvas),typeof(CanvasScaler),typeof(GraphicRaycaster));
-            canvasObj.transform.SetParent(transform,false);
-            canvasObj.GetComponent<Canvas>().renderMode=RenderMode.ScreenSpaceOverlay;
-            var scaler=canvasObj.GetComponent<CanvasScaler>(); scaler.uiScaleMode=CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution=new Vector2(1920,1080); scaler.matchWidthOrHeight=.5f;
-            RectTransform root=canvasObj.GetComponent<RectTransform>();
-            RectTransform top=Panel(root,"Header",new Vector2(.5f,1f),new Vector2(0,-53),new Vector2(1920,106));
-            status=Label(top,"Status",new Vector2(-440,23),new Vector2(970,42),28);
-            message=Label(top,"Message",new Vector2(-440,-24),new Vector2(970,38),21);
-            start=Button(top,"Start battle",new Vector2(365,0),new Vector2(180,55),()=>run.StartBattle());
-            next=Button(top,"Next round",new Vector2(565,0),new Vector2(180,55),()=>run.Continue());
-            retry=Button(top,"Retry load",new Vector2(765,0),new Vector2(180,55),()=>run.RetryLoad());
-            RectTransform bottom=Panel(root,"Preparation",new Vector2(.5f,0),new Vector2(0,75),new Vector2(1920,150));
-            panelGroup=bottom.gameObject.AddComponent<CanvasGroup>();
-            for(int i=0;i<5;i++)
+            preparationPanel=panel; shopContainer=container; shopItems=items;
+            refreshButton=refresh; refreshLabel=refreshText; buyExperienceButton=buyExperience;
+            buyExperienceLabel=xpText; sellButton=sell; selectedUnitText=selected;
+        }
+        public void ConfigureActions(Button start, Button retry, ResultPanel result)
+        { startBattleButton=start; retryLoadButton=retry; resultPanel=result; }
+        public void ConfigureShopContainer(RectTransform container) => shopContainer=container;
+        public void ConfigureShopItems(ShopItem[] items) => shopItems=items;
+        public void ConfigureResultPanel(ResultPanel panel) => resultPanel=panel;
+#endif
+
+        public void ConfigureScene(RunController controller)
+        {
+            Unbind();
+            run = controller;
+            if (Application.isPlaying && isActiveAndEnabled)
+                Bind();
+        }
+
+        private void OnEnable()
+        {
+            if (Application.isPlaying)
+                Bind();
+        }
+
+        private void Bind()
+        {
+            if (isBound || run == null)
+                return;
+
+            for (int i = 0; i < shopItems.Length; i++)
             {
-                int slot=i;
-                shop[i]=Button(bottom,"Shop",new Vector2(-625+i*244,0),new Vector2(230,112),()=>run.Buy(slot));
-                shopLabels[i]=shop[i].GetComponentInChildren<TextMeshProUGUI>(); shopLabels[i].fontSize=21;
+                shopItems[i].BindSlot(i);
+                shopItems[i].PurchaseRequested += BuyShopItem;
             }
-            refresh=Button(bottom,"Refresh (2G)",new Vector2(665,36),new Vector2(180,52),()=>run.RefreshShop());
-            xp=Button(bottom,"XP (4G)",new Vector2(855,36),new Vector2(170,52),()=>run.BuyXp());
-            sell=Button(bottom,"Sell selected",new Vector2(665,-28),new Vector2(180,52),()=>run.SellSelected());
-            selection=Label(bottom,"Selection",new Vector2(855,-28),new Vector2(170,62),18);
+            startBattleButton.onClick.AddListener(StartBattle);
+            refreshButton.onClick.AddListener(RefreshShop);
+            buyExperienceButton.onClick.AddListener(BuyExperience);
+            sellButton.onClick.AddListener(SellSelected);
+            resultPanel.ContinueRequested += NextRound;
+            retryLoadButton.onClick.AddListener(RetryLoad);
+            run.DisplayChanged += Refresh;
+            isBound = true;
+            hasDisplayedPhase = false;
+            Refresh();
         }
-        private static RectTransform Panel(RectTransform parent,string name,Vector2 anchor,Vector2 position,Vector2 size)
-        {
-            var obj=new GameObject(name,typeof(RectTransform),typeof(Image)); obj.transform.SetParent(parent,false);
-            var rect=obj.GetComponent<RectTransform>(); rect.anchorMin=rect.anchorMax=anchor; rect.anchoredPosition=position; rect.sizeDelta=size;
-            obj.GetComponent<Image>().color=new Color(.075f,.11f,.17f,.95f); return rect;
-        }
-        private static TextMeshProUGUI Label(RectTransform parent,string name,Vector2 position,Vector2 size,int fontSize)
-        {
-            var obj=new GameObject(name,typeof(RectTransform),typeof(TextMeshProUGUI)); obj.transform.SetParent(parent,false);
-            var label=obj.GetComponent<TextMeshProUGUI>(); label.fontSize=fontSize; label.alignment=TextAlignmentOptions.Center;
-            label.color=Color.white; label.raycastTarget=false; label.rectTransform.anchoredPosition=position; label.rectTransform.sizeDelta=size;
-            return label;
-        }
-        private static Button Button(RectTransform parent,string text,Vector2 position,Vector2 size,Action action)
-        {
-            RectTransform rect=Panel(parent,text,new Vector2(.5f,.5f),position,size);
-            rect.GetComponent<Image>().color=new Color(.17f,.28f,.4f);
-            var button=rect.gameObject.AddComponent<Button>(); button.targetGraphic=rect.GetComponent<Image>();
-            button.onClick.AddListener(()=>action());
-            var label=Label(rect,"Label",Vector2.zero,size-new Vector2(12,6),23); label.text=text;
-            return button;
-        }
+
+        private void StartBattle() => run.StartBattle();
+        private void BuyShopItem(int slotIndex) => run.Buy(slotIndex);
+        private void RefreshShop() => run.RefreshShop();
+        private void BuyExperience() => run.BuyXp();
+        private void SellSelected() => run.SellSelected();
+        private void NextRound() => run.Continue();
+        private void RetryLoad() => run.RetryLoad();
+
+        private bool CanPrepare() => run.IsReady && run.State.CanPrepare
+            && !run.State.IsOver && run.Flow.CurrentPhase == BattlePhase.Preparation;
+
         private void Update()
         {
-            if(status==null) return;
-            if(run.IsReady && run.Flow.CurrentPhase==BattlePhase.Combat)
-                message.text=$"Automatic battle   {Mathf.CeilToInt(run.RemainingSeconds)}s remaining";
-            var selected=run.Drag.SelectedUnit;
-            selection.text=selected!=null && selected.State!=null?selected.GetComponent<AutoBattler.Battle.Units.Unit>()?.Definition?.Name:"Select a unit";
-            sell.interactable=CanPrepare() && selected!=null && selected.State!=null;
+            if (!isBound)
+                return;
+            if (run.IsReady && run.Flow.CurrentPhase == BattlePhase.Combat)
+                messageText.text = $"Automatic battle   {Mathf.CeilToInt(run.RemainingSeconds)}s remaining";
+            RefreshSelection();
         }
-        private bool CanPrepare()=>run.IsReady && run.State.CanPrepare && !run.State.IsOver && run.Flow.CurrentPhase==BattlePhase.Preparation;
+
+        private void RefreshSelection()
+        {
+            var selected = run.Drag.SelectedUnit;
+            var unit = selected != null && selected.State != null
+                ? selected.GetComponent<Unit>() : null;
+            selectedUnitText.text = unit != null && unit.Definition != null
+                ? unit.Definition.Name : "Select a unit";
+            sellButton.interactable = CanPrepare() && unit != null;
+        }
+
         private void Refresh()
         {
-            if(status==null) return;
-            message.text=run.Message;
-            status.text=run.IsReady ? $"Round {(run.State.Round-1)/4+1}-{(run.State.Round-1)%4+1}   Lives {run.State.Lives}   Gold {run.State.Gold}   Level {run.State.Level}   XP {run.State.Xp}/{(run.State.Level==10?0:run.State.Data.RequiredXp(run.State.Level))}   Deployed {run.State.Board.DeployedCount}/{run.State.Level}" : "PixelTactics   Loading";
-            bool prepare=CanPrepare();
-            for(int i=0;i<5;i++)
+            if (!isBound)
+                return;
+            bool ready = run.IsReady;
+            bool prepare = CanPrepare();
+            messageText.text = run.Message;
+            roundText.text = ready ? $"Round {(run.State.Round - 1) / 4 + 1}-{(run.State.Round - 1) % 4 + 1}" : "Round --";
+            goldText.text = ready ? $"Gold {run.State.Gold}" : "Gold --";
+            livesText.text = ready ? $"Lives {run.State.Lives}" : "Lives --";
+            levelText.text = ready ? $"Level {run.State.Level}" : "Level --";
+            experienceText.text = ready
+                ? run.State.Level == 10 ? "XP MAX" : $"XP {run.State.Xp}/{run.State.Data.RequiredXp(run.State.Level)}"
+                : "XP --";
+            deploymentText.text = ready ? $"Deployed {run.State.Board.DeployedCount}/{run.State.Level}" : "Deployed --";
+
+            for (int i = 0; i < shopItems.Length; i++)
             {
-                int id=run.IsReady?run.State.Shop[i]:0;
-                shopLabels[i].text=id==0?"Empty":$"{run.State.Data.Units[id].Name}\n{run.State.Data.Units[id].Cost} gold\nPool {run.State.Stock(id)}";
-                shop[i].interactable=prepare && id!=0;
+                int id = ready ? run.State.Shop[i] : 0;
+                var unit = id == 0 ? null : run.State.Data.Units[id];
+                var icon = unit == null ? null : run.UnitIcon(unit.IconId);
+                shopItems[i].Show(unit, icon, id == 0 ? 0 : run.State.Stock(id), ready ? run.State.Gold : 0, prepare);
             }
-            start.interactable=prepare && run.State.Board.DeployedCount>0;
-            refresh.interactable=prepare; xp.interactable=prepare && run.State.Level<10;
-            next.interactable=run.IsReady && run.Flow.CurrentPhase==BattlePhase.Result && !run.State.IsOver;
-            retry.gameObject.SetActive(!run.IsReady && !run.IsLoading);
-            panelGroup.interactable=prepare;
-            if(run.IsReady && run.State.IsOver) message.text=run.State.WonRun?"Challenge complete!":"Challenge ended. Restart Play to try again.";
-            if(displayedPhase!=run.Flow.CurrentPhase)
+
+            // 비용 표시도 시트의 경제 규칙을 사용.
+            refreshLabel.text = ready ? $"Refresh ({run.State.Data.IntRule(EconomyRule.RefreshCost)}G)" : "Refresh";
+            buyExperienceLabel.text = ready ? $"XP ({run.State.Data.IntRule(EconomyRule.XpCost)}G)" : "Buy XP";
+            refreshButton.interactable = prepare;
+            buyExperienceButton.interactable = prepare && run.State.Level < 10;
+            startBattleButton.interactable = prepare && run.State.Board.DeployedCount > 0;
+            startBattleButton.gameObject.SetActive(ready);
+            retryLoadButton.gameObject.SetActive(!ready && !run.IsLoading);
+            preparationPanel.interactable = prepare;
+            RefreshSelection();
+
+            if (ready && run.State.IsOver)
+                messageText.text = run.State.WonRun ? "Challenge complete!" : "Challenge ended. Restart Play to try again.";
+
+            bool showResult = ready && run.Flow.CurrentPhase == BattlePhase.Result;
+            bool phaseChanged = !hasDisplayedPhase || displayedPhase != run.Flow.CurrentPhase;
+            bool animate = hasDisplayedPhase && phaseChanged;
+            if (showResult)
             {
-                displayedPhase=run.Flow.CurrentPhase; panelGroup.DOKill();
-                panelGroup.DOFade(prepare?1f:.45f,.2f).SetUpdate(true);
+                string title = run.State.IsOver
+                    ? run.State.WonRun ? "Challenge complete!" : "Challenge ended"
+                    : "Battle result";
+                resultPanel.Show(title, run.State.LastResult, !run.State.IsOver, hasDisplayedPhase);
+            }
+            else
+                resultPanel.Hide();
+            if (phaseChanged)
+            {
+                preparationPanel.DOKill();
+                if (animate)
+                {
+                    preparationPanel.DOFade(prepare ? 1f : 0.45f, fadeDuration).SetUpdate(true);
+                }
+                else
+                {
+                    preparationPanel.alpha = prepare ? 1f : 0.45f;
+                }
+                displayedPhase = run.Flow.CurrentPhase;
+                hasDisplayedPhase = true;
+            }
+            else if (!showResult)
+            {
+                // 초기 로드 완료도 단계 전환 없이 준비 화면 갱신.
+                preparationPanel.DOKill();
+                preparationPanel.alpha = prepare ? 1f : 0.45f;
             }
         }
-        private void OnDestroy()
+
+        private void Unbind()
         {
-            if(run!=null) run.DisplayChanged-=Refresh;
-            if(panelGroup!=null) panelGroup.DOKill();
+            if (!isBound)
+                return;
+            if (run != null)
+                run.DisplayChanged -= Refresh;
+            for (int i = 0; i < shopItems.Length; i++)
+                shopItems[i].PurchaseRequested -= BuyShopItem;
+            startBattleButton.onClick.RemoveListener(StartBattle);
+            refreshButton.onClick.RemoveListener(RefreshShop);
+            buyExperienceButton.onClick.RemoveListener(BuyExperience);
+            sellButton.onClick.RemoveListener(SellSelected);
+            resultPanel.ContinueRequested -= NextRound;
+            retryLoadButton.onClick.RemoveListener(RetryLoad);
+            preparationPanel.DOKill();
+            resultPanel.StopAnimation();
+            isBound = false;
         }
+
+        private void OnDisable() => Unbind();
     }
 }

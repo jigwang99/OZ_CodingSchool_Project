@@ -13,7 +13,7 @@ namespace AutoBattler.Assets
     {
         internal sealed class Entry
         {
-            public string Key; public Type Type; public AsyncOperationHandle Handle; public int Users; public bool Released;
+            public object Key; public Type Type; public AsyncOperationHandle Handle; public int Users; public bool Released;
         }
         public sealed class Lease<T> : IDisposable where T:UnityEngine.Object
         {
@@ -22,13 +22,16 @@ namespace AutoBattler.Assets
             internal Lease(AssetService owner,Entry entry,T asset) { this.owner=owner; this.entry=entry; Asset=asset; }
             public void Dispose() { if(owner==null) return; owner.Return(entry); owner=null; }
         }
-        private readonly Dictionary<string,Entry> entries=new Dictionary<string,Entry>();
+        private readonly Dictionary<object,Entry> entries=new Dictionary<object,Entry>();
         private bool disposed;
         public int ActiveHandleCount=>entries.Count;
-        public async UniTask<Lease<T>> AcquireAsync<T>(string key,CancellationToken token) where T:UnityEngine.Object
+        public async UniTask<Lease<T>> AcquireAsync<T>(AssetReference reference,CancellationToken token) where T:UnityEngine.Object
         {
             token.ThrowIfCancellationRequested();
             if(disposed) throw new ObjectDisposedException(nameof(AssetService));
+            if(reference==null || !reference.RuntimeKeyIsValid()) throw new ArgumentException("에셋 참조 연결 필요.",nameof(reference));
+            // 같은 GUID를 가진 별도 AssetReference도 핸들 공유.
+            object key=reference.RuntimeKey;
             if(!entries.TryGetValue(key,out Entry entry))
             {
                 entry=new Entry { Key=key, Type=typeof(T), Handle=Addressables.LoadAssetAsync<T>(key) };

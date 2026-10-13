@@ -16,7 +16,42 @@ MonoBehaviour:
   m_GUID: 10a859a78ed92fc4a9bf3878ea077181
   m_SerializeEntries:
   - m_GUID: 0d284b187b0649fe85cf1122b1265be8
-    m_Address: Units/PIXEM_Sample
+    m_Address: Units/Character_2
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 222a56cfaa3bc664f9a9b044948c1756
+    m_Address: Units/Character_4
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2257c3a94f3894e409f3e4a5964d35d4
+    m_Address: Units/Character_3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 45f1b072a5127b5469473c05d3e35d5a
+    m_Address: Units/Character_9
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7633ebcea3b9ddb43ac357d549f3e530
+    m_Address: Units/Character_8
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 836c766561f67f14d95368073c4fda23
+    m_Address: Units/Character_7
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a44073807669e2b4289edeb6f08ccf40
+    m_Address: Units/Character_6
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cd581fb5918cff6408977e308552aaa1
+    m_Address: Units/Character_5
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

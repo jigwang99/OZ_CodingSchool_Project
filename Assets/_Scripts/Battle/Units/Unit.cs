@@ -72,5 +72,8 @@ namespace AutoBattler.Battle.Units
         }
         internal void SetCombatCell(HexCoord cell)=>combatCell=cell;
         private void OnDisable() { if(Move!=null) Move.Stop(); }
+#if UNITY_EDITOR
+        public void ConfigureEditorDefaults() => unitData=null;
+#endif
     }
 }

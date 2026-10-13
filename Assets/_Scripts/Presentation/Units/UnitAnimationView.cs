@@ -14,20 +14,20 @@ namespace AutoBattler.Presentation.Units
         private void OnEnable()
         {
             unit.Combat.AttackStarted+=OnAttack; wasMoving=false; wasAttacking=false;
-            if(animator!=null) animator.SetTrigger("Idle");
+            if(animator!=null) animator.SetTrigger(UnitAnimatorParameters.Idle);
         }
         private void Update()
         {
             if(animator==null || !unit.Health.IsAlive) return;
             bool moving=unit.Move.IsMoving,attacking=unit.Combat.IsAttacking;
-            if(moving && !wasMoving) animator.SetTrigger("Run");
-            else if(!moving && !attacking && (wasMoving || wasAttacking)) animator.SetTrigger("Idle");
+            if(moving && !wasMoving) animator.SetTrigger(UnitAnimatorParameters.Run);
+            else if(!moving && !attacking && (wasMoving || wasAttacking)) animator.SetTrigger(UnitAnimatorParameters.Idle);
             wasMoving=moving; wasAttacking=attacking;
         }
         private void OnAttack(UnitCombat target)
         {
             if(animator==null) return;
-            animator.SetTrigger(unit.Definition.IsRanged ? (unit.Definition.ClassId==2?"AttackMagic":"AttackShoot") : "AttackSlash");
+            animator.SetTrigger(unit.Definition.IsRanged ? (unit.Definition.ClassId==2?UnitAnimatorParameters.AttackMagic:UnitAnimatorParameters.AttackShoot) : UnitAnimatorParameters.AttackSlash);
         }
         private void OnDisable() { if(unit!=null && unit.Combat!=null) unit.Combat.AttackStarted-=OnAttack; }
     }
