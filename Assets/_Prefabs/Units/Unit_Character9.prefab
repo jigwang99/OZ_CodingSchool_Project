@@ -81,10 +81,24 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6668148790688865655, guid: 3794911705c6f7943b6bf62dcd116146, type: 3}
       insertIndex: -1
       addedObject: {fileID: 973773259010380780}
+    - targetCorrespondingSourceObject: {fileID: 6668148790688865655, guid: 3794911705c6f7943b6bf62dcd116146, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3208466614980817599}
+    - targetCorrespondingSourceObject: {fileID: 6668148790688865655, guid: 3794911705c6f7943b6bf62dcd116146, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5423828459619230901}
+    - targetCorrespondingSourceObject: {fileID: 6668148790688865655, guid: 3794911705c6f7943b6bf62dcd116146, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2645513573724349917}
   m_SourcePrefab: {fileID: 100100000, guid: 3794911705c6f7943b6bf62dcd116146, type: 3}
 --- !u!4 &999835500362991006 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1849486853468963585, guid: 3794911705c6f7943b6bf62dcd116146, type: 3}
+  m_PrefabInstance: {fileID: 1462143110853412511}
+  m_PrefabAsset: {fileID: 0}
+--- !u!212 &3923328385638306135 stripped
+SpriteRenderer:
+  m_CorrespondingSourceObject: {fileID: 2465972622100158408, guid: 3794911705c6f7943b6bf62dcd116146, type: 3}
   m_PrefabInstance: {fileID: 1462143110853412511}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &5242355543544568808 stripped
@@ -203,6 +217,45 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
+--- !u!114 &3208466614980817599
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5242355543544568808}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 482e92b338420ae4585a3a08382b00e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Presentation.Units.UnitFacingView
+  spriteRenderers:
+  - {fileID: 3923328385638306135}
+  defaultFacesRight: 0
+--- !u!114 &5423828459619230901
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5242355543544568808}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3015e3cc82cbef04cb93d8b595d7479e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Battle.Units.UnitStats
+--- !u!114 &2645513573724349917
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5242355543544568808}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68cac7db5e2f2414d94c62f4927e84ed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Battle.Units.UnitEffects
 --- !u!1001 &1763052348457580798
 PrefabInstance:
   m_ObjectHideFlags: 0

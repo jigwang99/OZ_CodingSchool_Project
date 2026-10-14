@@ -25,12 +25,12 @@ namespace AutoBattler.EditorTools
         public static void RunAll()
         {
             checks=0; ImportChecks(); PathChecks(); EconomyChecks();
-            var health=new UnitHealthState(100,100);
-            Expect(health.TakeDamage(20)==10,"방어 피해 공식");
-            Expect(health.TakeDamage(1)==1,"최소 피해"); health.TakeDamage(10000);
+            var health=new UnitHealthState(100);
+            Expect(health.TakeDamage(DamageResolver.Calculate(20,100))==10,"방어 피해 공식");
+            Expect(health.TakeDamage(DamageResolver.Calculate(1,100))==1,"최소 피해"); health.TakeDamage(10000);
             Expect(!health.IsAlive && health.TakeDamage(20)==0,"사망 후 피해 중복"); health.RestoreFullHealth();
             Expect(health.CurrentHp==100,"체력 복원");
-            Expect(new UnitHealthState(100,15).TakeDamage(23,1.5f)==30,"치명타 후 방어 적용 및 최종 피해 절삭");
+            Expect(DamageResolver.Calculate(23,15,1.5f)==30,"치명타 후 방어 적용 및 최종 피해 절삭");
             Debug.Log("DOMAIN_CHECKS_PASS "+checks);
         }
         private static Dictionary<string,CsvTable> Tables()

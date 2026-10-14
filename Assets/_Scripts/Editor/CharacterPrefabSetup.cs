@@ -53,10 +53,16 @@ namespace AutoBattler.EditorTools
                 // 사용자가 편집한 이름, 외형과 레이아웃은 기존 Variant에서 유지.
                 if(!isVariant) root.name="Unit_"+entry.SourcePrefab.name;
                 AddIfMissing<UnitHealth>(root);
+                AddIfMissing<UnitStats>(root);
+                AddIfMissing<UnitEffects>(root);
                 AddIfMissing<UnitView>(root);
                 AddIfMissing<Unit>(root);
                 AddIfMissing<UnitMove>(root);
                 AddIfMissing<UnitCombat>(root);
+                AddIfMissing<UnitFacingView>(root);
+                var facing=root.GetComponent<UnitFacingView>();
+                if(facing.SpriteRenderers.Count==0)
+                    facing.ConfigureRenderers(root.GetComponentsInChildren<SpriteRenderer>(true));
                 if(root.GetComponent<Collider2D>()==null) root.AddComponent<BoxCollider2D>();
                 root.layer=LayerMask.NameToLayer("AllyUnit");
                 root.GetComponent<Unit>().ConfigureEditorDefaults();
@@ -89,8 +95,11 @@ namespace AutoBattler.EditorTools
                 if(PrefabUtility.GetCorrespondingObjectFromSource(prefab)!=entry.SourcePrefab)
                     throw new InvalidOperationException($"원본 상속 확인 실패: {entry.VisualId}");
                 if(prefab.GetComponent<Unit>()==null || prefab.GetComponent<UnitHealth>()==null
+                    || prefab.GetComponent<UnitStats>()==null || prefab.GetComponent<UnitEffects>()==null
                     || prefab.GetComponent<UnitCombat>()==null || prefab.GetComponent<UnitMove>()==null
                     || prefab.GetComponent<UnitView>()==null || prefab.GetComponent<Collider2D>()==null
+                    || prefab.GetComponent<UnitFacingView>()==null
+                    || prefab.GetComponent<UnitFacingView>().SpriteRenderers.Count==0
                     || prefab.GetComponentsInChildren<UnitHealthBar>(true).Length!=1)
                     throw new InvalidOperationException($"모듈 연결 확인 실패: {entry.VisualId}");
                 RuntimeAnimatorController controller=prefab.GetComponent<Animator>().runtimeAnimatorController;

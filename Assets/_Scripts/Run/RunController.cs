@@ -26,6 +26,7 @@ namespace AutoBattler.Run
         [SerializeField] private HexGridLayout grid;
         [SerializeField] private BenchLayout bench;
         [SerializeField] private int seed=20261012;
+        [SerializeField,Min(0)] private int unitPoolSize=1;
         public RunState State { get; private set; }
         public BattleFlowController Flow=>flow;
         public UnitDragController Drag=>drag;
@@ -51,7 +52,7 @@ namespace AutoBattler.Run
             lifetime=CancellationTokenSource.CreateLinkedTokenSource(this.GetCancellationTokenOnDestroy());
             assets=new AssetService();
             var poolRoot=new GameObject("UnitPool").transform; poolRoot.SetParent(transform,false);
-            pool=new UnitPrefabPool(assets,poolRoot);
+            pool=new UnitPrefabPool(assets,poolRoot,unitPoolSize);
             drag.enabled=false;
             drag.PlacementChanged+=OnPlacementChanged;
         }

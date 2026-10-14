@@ -127,10 +127,62 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 578053376777017848, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
     - target: {fileID: 875217052286444846, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
       propertyPath: run
       value: 
       objectReference: {fileID: 1801000003}
+    - target: {fileID: 1441374947140058501, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 1455457784086172540, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 1506880278210775162, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 1777233182909359829, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 3024939686813952260, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 4024060739989247529, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 4098363209991735148, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 4523222545568105806, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 4865268920334366093, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 4884088141402342180, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 6727518923692413667, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 6941180469624997445, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
     - target: {fileID: 7106810589765283209, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
       propertyPath: m_Name
       value: BattleHUD
@@ -214,6 +266,30 @@ PrefabInstance:
     - target: {fileID: 7428785105244147136, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7754119845341950635, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 8151313849999820468, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 8249411294899815069, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 8993804393864791342, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 9141078692571127721, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 9169228115801527279, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}
+      propertyPath: m_AdditionalShaderChannelsFlag
+      value: 25
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -351,6 +427,7 @@ MonoBehaviour:
   grid: {fileID: 1970585794}
   bench: {fileID: 890770001}
   seed: 20261012
+  unitPoolSize: 5
 --- !u!1 &1801000600
 GameObject:
   m_ObjectHideFlags: 0

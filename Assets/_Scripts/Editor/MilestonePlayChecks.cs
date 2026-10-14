@@ -62,6 +62,10 @@ namespace AutoBattler.EditorTools
             try
             {
                 Time.timeScale=10f;
+                await ObjectPoolChecks.RunPlay(run);
+                await BehaviourTreeChecks.RunPlay(run);
+                await UnitEffectsChecks.RunPlay(run);
+                await UnitFacingPlayChecks.Run(run);
                 await CheckCharacterPrefabs(run);
                 Expect(run.State.Gold==4 && run.State.Level==1 && run.State.Units.Count==1,"초기 도전");
                 var huds=UnityEngine.Object.FindObjectsByType<RunHUD>(FindObjectsSortMode.None);
