@@ -19,7 +19,7 @@ namespace AutoBattler.Presentation.Units
         private void Update()
         {
             if(animator==null || !unit.Health.IsAlive) return;
-            bool moving=unit.Move.IsMoving,attacking=unit.Combat.IsAttacking;
+            bool moving=unit.Move.IsMoving,attacking=unit.Combat.IsAttacking || unit.Skill.IsCasting;
             if(moving && !wasMoving) animator.SetTrigger(UnitAnimatorParameters.Run);
             else if(!moving && !attacking && (wasMoving || wasAttacking)) animator.SetTrigger(UnitAnimatorParameters.Idle);
             wasMoving=moving; wasAttacking=attacking;

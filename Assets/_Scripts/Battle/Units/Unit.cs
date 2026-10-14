@@ -13,6 +13,7 @@ namespace AutoBattler.Battle.Units
     [DefaultExecutionOrder(-100)]
     [DisallowMultipleComponent, RequireComponent(typeof(UnitView),typeof(UnitHealth))]
     [RequireComponent(typeof(UnitStats),typeof(UnitEffects))]
+    [RequireComponent(typeof(UnitMana),typeof(UnitSkill))]
     public sealed class Unit : MonoBehaviour
     {
         // 이전 프리팹의 테스트용 연결만 유지. 도전에서는 Configure로 덮어씀.
@@ -24,6 +25,9 @@ namespace AutoBattler.Battle.Units
         public UnitStat Stats=>StatModifiers?.Current;
         public UnitStats StatModifiers { get; private set; }
         public UnitEffects Effects { get; private set; }
+        public UnitMana Mana { get; private set; }
+        public UnitSkill Skill { get; private set; }
+        public int SpawnVersion { get; private set; }
         public UnitDefinition Definition { get; private set; }
         public UnitTeam Team { get; private set; }
         public int InstanceId { get; private set; }
@@ -47,12 +51,15 @@ namespace AutoBattler.Battle.Units
             View=GetComponent<UnitView>(); Health=GetComponent<UnitHealth>();
             Move=GetComponent<UnitMove>(); Combat=GetComponent<UnitCombat>();
             StatModifiers=GetComponent<UnitStats>(); Effects=GetComponent<UnitEffects>();
+            Mana=GetComponent<UnitMana>(); Skill=GetComponent<UnitSkill>();
+            Skill.BindUnit(this);
             if(unitData!=null && unitData.TryGetStat(unitType,out UnitStat stats))
             { StatModifiers.Initialize(stats); Health.Initialize(Stats.MaxHp,Stats.Defense); }
         }
         public void Configure(UnitDefinition definition,int star,int instanceId,UnitTeam team,
             DataRepository data,BattleFlowController flow,HexGridLayout grid,BenchLayout bench,HexCoord? enemyPosition=null,int bossProfile=0)
         {
+            Skill.ResetForRound(); SpawnVersion++;
             Effects.Clear();
             Definition=definition; Star=star; InstanceId=instanceId; Team=team;
             battleFlow=flow; gridLayout=grid; benchLayout=bench; enemyCell=enemyPosition; combatCell=null;
@@ -66,20 +73,25 @@ namespace AutoBattler.Battle.Units
             StatModifiers.Initialize(baseStats,definition.CritChance,definition.CritMultiplier);
             Effects.BindBattleFlow(flow);
             Health.Initialize(Stats.MaxHp,Stats.Defense);
+            Mana.Initialize(100,bossProfile>0?100:0);
+            Skill.Initialize(data,definition.SkillId);
             Combat.ResetForRound();
             int layer=team==UnitTeam.Ally?LayerMask.NameToLayer("AllyUnit"):0;
             gameObject.layer=layer<0?0:layer;
             gameObject.name=$"{team}_{definition.Name}_{star}Star_{instanceId}";
         }
-        public void BeginBattle() { Move.Stop(); Effects.Clear(); combatCell=enemyCell ?? View?.State?.Cell; Health.RestoreFullHealth(); Combat.ResetForRound(); }
+        public void BeginBattle() { Skill.ResetForRound(); Move.Stop(); Effects.Clear(); combatCell=enemyCell ?? View?.State?.Cell; Health.RestoreFullHealth(); Mana.ResetForRound(); Combat.ResetForRound(); }
         public void RestorePreparation()
         {
-            Move.Stop(); Effects.Clear(); combatCell=null; Health.RestoreFullHealth(); Combat.ResetForRound();
+            Skill.ResetForRound(); Move.Stop(); Effects.Clear(); combatCell=null; Health.RestoreFullHealth(); Mana.ResetForRound(); Combat.ResetForRound();
             if(Team==UnitTeam.Ally && View!=null) View.SnapToLocation(gridLayout,benchLayout);
         }
         internal void SetCombatCell(HexCoord cell)=>combatCell=cell;
         private void OnDisable()
         {
+            SpawnVersion++;
+            if(Skill!=null) Skill.ResetForRound();
+            if(Mana!=null) Mana.Clear();
             if(Move!=null) Move.Stop();
             if(Effects!=null) Effects.Clear();
             if(StatModifiers!=null) StatModifiers.ClearModifiers();

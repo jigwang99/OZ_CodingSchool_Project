@@ -24,6 +24,12 @@ namespace AutoBattler.Battle.AI
                     new ConditionNode(IsWaiting),
                     new ActionNode(WaitForCurrentAction)),
                 new SequenceNode(
+                    new ConditionNode(()=>Blackboard.Unit.Skill.TryPrepare(Blackboard.Participants,Blackboard.Target,out Blackboard.PreparedSkill)),
+                    new ActionNode(CastSkill)),
+                new SequenceNode(
+                    new ConditionNode(()=>Time.time<Blackboard.RetryTime),
+                    new ActionNode(WaitForCurrentAction)),
+                new SequenceNode(
                     new ActionNode(EnsureTarget),
                     new SelectorNode(
                         new SequenceNode(
@@ -47,13 +53,20 @@ namespace AutoBattler.Battle.AI
             return BehaviourStatus.Success;
         }
         private bool IsWaiting()=>Blackboard.Unit.Effects.IsStunned || Blackboard.Unit.Move.IsMoving
-            || Blackboard.Unit.Combat.IsAttacking || Time.time<Blackboard.RetryTime;
+            || Blackboard.Unit.Combat.IsAttacking || Blackboard.Unit.Skill.IsCasting;
         private BehaviourStatus WaitForCurrentAction()
         {
             var unit=Blackboard.Unit;
             Blackboard.Action=unit.Effects.IsStunned?UnitBehaviourAction.Stunned
                 :unit.Move.IsMoving?UnitBehaviourAction.Moving
+                :unit.Skill.IsCasting?UnitBehaviourAction.Casting
                 :unit.Combat.IsAttacking?UnitBehaviourAction.Attacking:UnitBehaviourAction.WaitingToRetry;
+            return BehaviourStatus.Running;
+        }
+        private BehaviourStatus CastSkill()
+        {
+            Blackboard.Unit.Skill.CastAsync(Blackboard.PreparedSkill,Blackboard.Token).Forget();
+            Blackboard.Action=UnitBehaviourAction.Casting;
             return BehaviourStatus.Running;
         }
         private BehaviourStatus EnsureTarget()

@@ -9,21 +9,36 @@ namespace AutoBattler.Battle.Units
     [DisallowMultipleComponent, RequireComponent(typeof(Unit),typeof(UnitHealth))]
     public sealed class UnitCombat : MonoBehaviour
     {
+        [SerializeField,Min(0)] private int manaOnDamage=10;
         private Unit unit;
         private UnitHealth health;
         private float nextAttackTime;
         private int roundGeneration;
         private CancellationTokenSource windupCancellation;
         public bool IsAttacking { get; private set; }
-        public int Mana { get; private set; }
+        public int Mana=>unit.Mana.Current;
         public bool CanFight=>isActiveAndEnabled && unit!=null && unit.IsInCombat && health!=null && health.IsAlive;
-        public bool CanAttack=>CanFight && !unit.Effects.IsStunned && !IsAttacking && Time.time>=nextAttackTime && !unit.Move.IsMoving;
+        public bool CanAttack=>CanFight && !unit.Effects.IsStunned && !IsAttacking && !unit.Skill.IsCasting && Time.time>=nextAttackTime && !unit.Move.IsMoving;
         public event Action<UnitCombat> AttackStarted;
         private void Awake() { unit=GetComponent<Unit>(); health=GetComponent<UnitHealth>(); }
-        private void OnEnable()=>unit.Effects.Changed+=OnEffectsChanged;
+        private void OnEnable()
+        {
+            unit.Effects.Changed+=OnEffectsChanged;
+            health.DamageTaken+=OnDamageTaken;
+        }
+        private void OnDamageTaken(int lostHp)
+        {
+            // 전투 중 생존한 유닛에 피격 1회당 마나 지급.
+            if(lostHp>0 && CanFight) unit.Mana.Add(manaOnDamage);
+        }
         private void OnEffectsChanged() { if(unit.Effects.IsStunned) windupCancellation?.Cancel(); }
-        private void OnDisable() { unit.Effects.Changed-=OnEffectsChanged; ResetForRound(); }
-        public void ResetForRound() { roundGeneration++; windupCancellation?.Cancel(); nextAttackTime=0f; Mana=0; IsAttacking=false; }
+        private void OnDisable()
+        {
+            unit.Effects.Changed-=OnEffectsChanged;
+            health.DamageTaken-=OnDamageTaken;
+            ResetForRound();
+        }
+        public void ResetForRound() { roundGeneration++; windupCancellation?.Cancel(); nextAttackTime=0f; IsAttacking=false; }
         public bool IsInAttackRange(UnitCombat target)=>target!=null && target!=this && target.unit.Team!=unit.Team
             && unit.CurrentCell.HasValue && target.unit.CurrentCell.HasValue
             && unit.CurrentCell.Value.DistanceTo(target.unit.CurrentCell.Value)<=unit.Stats.AttackRange;
@@ -36,7 +51,7 @@ namespace AutoBattler.Battle.Units
         {
             if(!CanAttack || target==null || !target.CanFight || !IsInAttackRange(target)) return;
             int generation=roundGeneration;
-            IsAttacking=true; nextAttackTime=Time.time+unit.Stats.AttackCooldown; Mana=Math.Min(100,Mana+10);
+            IsAttacking=true; nextAttackTime=Time.time+unit.Stats.AttackCooldown; unit.Mana.Add(10);
             using var windup=CancellationTokenSource.CreateLinkedTokenSource(token,this.GetCancellationTokenOnDestroy());
             windupCancellation=windup;
             try

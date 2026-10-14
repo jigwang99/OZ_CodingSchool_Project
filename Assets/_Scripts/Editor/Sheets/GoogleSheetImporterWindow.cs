@@ -47,7 +47,7 @@ namespace AutoBattler.EditorTools.Sheets
                 if(GUILayout.Button("Google Sheets에서 가져오기")) ImportAsync().Forget();
                 if(GUILayout.Button("CSV 폴더에서 가져오기"))
                 {
-                    string folder=EditorUtility.OpenFolderPanel("8개 CSV가 있는 폴더",Path.GetFullPath("Docs/Sheets"),"");
+                    string folder=EditorUtility.OpenFolderPanel("Manifest와 데이터 CSV가 있는 폴더",Path.GetFullPath("Docs/Sheets"),"");
                     if(!string.IsNullOrEmpty(folder)) ImportLocal(folder);
                 }
             }
@@ -67,19 +67,30 @@ namespace AutoBattler.EditorTools.Sheets
             {
                 var tables=new Dictionary<string,CsvTable>(); string id=ExtractId(spreadsheet);
                 if(string.IsNullOrWhiteSpace(id)) throw new FormatException("스프레드시트 ID 필요.");
+                await LoadTables(id,SnapshotImporter.BaseTabs,tables);
+                int schema=tables["Manifest"].Int(1,"schema_version");
+                if(schema==2) await LoadTables(id,new[]{"Skills","Effects"},tables);
+                operation.Token.ThrowIfCancellationRequested(); Apply(tables);
+            }
+            catch(OperationCanceledException) { report="가져오기 취소. 기존 스냅샷 유지."; }
+            catch(Exception exception) { report="적용 안 됨. 기존 스냅샷 유지.\n"+exception.Message; }
+            finally { busy=false; operation.Dispose(); operation=null; Repaint(); }
+        }
+        private async UniTask LoadTables(string id,string[] tabs,Dictionary<string,CsvTable> tables)
+        {
                 if(!string.IsNullOrWhiteSpace(apiKey) || !string.IsNullOrWhiteSpace(bearerToken))
                 {
                     string url="https://sheets.googleapis.com/v4/spreadsheets/"+Uri.EscapeDataString(id)+"/values:batchGet?valueRenderOption=UNFORMATTED_VALUE&majorDimension=ROWS";
-                    foreach(string tab in SnapshotImporter.Tabs) url+="&ranges="+Uri.EscapeDataString(tab+"!A:Z");
+                    foreach(string tab in tabs) url+="&ranges="+Uri.EscapeDataString(tab+"!A:Z");
                     if(!string.IsNullOrWhiteSpace(apiKey)) url+="&key="+Uri.EscapeDataString(apiKey);
                     string json=await Download(url,operation.Token);
                     var responseTables=ParseApiRows(json);
-                    if(responseTables.Count!=SnapshotImporter.Tabs.Length) throw new FormatException("Sheets API 응답의 표 수 오류.");
+                    if(responseTables.Count!=tabs.Length) throw new FormatException("Sheets API 응답의 표 수 오류.");
                     foreach(var table in responseTables) tables.Add(table.Name,table);
                 }
                 else
                 {
-                    foreach(string tab in SnapshotImporter.Tabs)
+                    foreach(string tab in tabs)
                     {
                         report="가져오는 중: "+tab; Repaint();
                         string url="https://docs.google.com/spreadsheets/d/"+Uri.EscapeDataString(id)+"/gviz/tq?tqx=out:csv&sheet="+Uri.EscapeDataString(tab);
@@ -88,11 +99,6 @@ namespace AutoBattler.EditorTools.Sheets
                         tables.Add(tab,new CsvTable(tab,csv));
                     }
                 }
-                operation.Token.ThrowIfCancellationRequested(); Apply(tables);
-            }
-            catch(OperationCanceledException) { report="가져오기 취소. 기존 스냅샷 유지."; }
-            catch(Exception exception) { report="적용 안 됨. 기존 스냅샷 유지.\n"+exception.Message; }
-            finally { busy=false; operation.Dispose(); operation=null; Repaint(); }
         }
         private async UniTask<string> Download(string url,CancellationToken token)
         {
@@ -110,7 +116,8 @@ namespace AutoBattler.EditorTools.Sheets
             try
             {
                 var tables=new Dictionary<string,CsvTable>();
-                foreach(string tab in SnapshotImporter.Tabs) tables.Add(tab,new CsvTable(tab,File.ReadAllText(Path.Combine(folder,tab+".csv"))));
+                var manifest=new CsvTable("Manifest",File.ReadAllText(Path.Combine(folder,"Manifest.csv")));
+                foreach(string tab in SnapshotImporter.TabsForSchema(manifest.Int(1,"schema_version"))) tables.Add(tab,new CsvTable(tab,File.ReadAllText(Path.Combine(folder,tab+".csv"))));
                 Apply(tables);
             }
             catch(Exception exception) { report="적용 안 됨. 기존 스냅샷 유지.\n"+exception.Message; }
@@ -118,7 +125,7 @@ namespace AutoBattler.EditorTools.Sheets
         private void Apply(Dictionary<string,CsvTable> tables)
         {
             var snapshot=SnapshotImporter.Build(tables); SnapshotImporter.Apply(snapshot);
-            report=$"적용 완료: {snapshot.dataVersion}\n유닛 {snapshot.units.Length}종 / 라운드 {snapshot.rounds.Length}개\n{SnapshotImporter.OutputPath}\n로컬 Addressables 번들을 다시 빌드한 뒤 배포.";
+            report=$"적용 완료: {snapshot.dataVersion}\n유닛 {snapshot.units.Length}종 / 스킬 {snapshot.skills.Length}종 / 라운드 {snapshot.rounds.Length}개\n{SnapshotImporter.OutputPath}\n로컬 Addressables 번들을 다시 빌드한 뒤 배포.";
         }
         private void OnDisable() { operation?.Cancel(); apiKey=""; bearerToken=""; }
     }

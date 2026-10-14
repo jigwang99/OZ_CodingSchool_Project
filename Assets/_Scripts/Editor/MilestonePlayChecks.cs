@@ -62,6 +62,7 @@ namespace AutoBattler.EditorTools
             try
             {
                 Time.timeScale=10f;
+                await SkillChecks.RunPlay(run);
                 await ObjectPoolChecks.RunPlay(run);
                 await BehaviourTreeChecks.RunPlay(run);
                 await UnitEffectsChecks.RunPlay(run);

@@ -192,6 +192,15 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6410191166959079819, guid: ef52cb88f2d64a849a6f05f9b37137a6, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7772068891887848733}
+    - targetCorrespondingSourceObject: {fileID: 6410191166959079819, guid: ef52cb88f2d64a849a6f05f9b37137a6, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2494549471202631416}
+    - targetCorrespondingSourceObject: {fileID: 6410191166959079819, guid: ef52cb88f2d64a849a6f05f9b37137a6, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7227389757365650689}
+    - targetCorrespondingSourceObject: {fileID: 6410191166959079819, guid: ef52cb88f2d64a849a6f05f9b37137a6, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6456235356533948502}
   m_SourcePrefab: {fileID: 100100000, guid: ef52cb88f2d64a849a6f05f9b37137a6, type: 3}
 --- !u!4 &1000001819731483172 stripped
 Transform:
@@ -353,6 +362,42 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68cac7db5e2f2414d94c62f4927e84ed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Battle.Units.UnitEffects
+--- !u!114 &2494549471202631416
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4106234679695870312}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd2925d6f8e8443499893f84176618ad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Battle.Units.UnitMana
+--- !u!114 &7227389757365650689
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4106234679695870312}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e44c763a6f7ea5940a217933ebc7e9dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Battle.Units.UnitSkill
+--- !u!114 &6456235356533948502
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4106234679695870312}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3a3700b51bfc45409b5760825196a82, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Presentation.Units.UnitSkillView
 --- !u!212 &8500422322513546329 stripped
 SpriteRenderer:
   m_CorrespondingSourceObject: {fileID: 1584780365311005882, guid: ef52cb88f2d64a849a6f05f9b37137a6, type: 3}

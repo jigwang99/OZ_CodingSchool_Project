@@ -1,0 +1,4 @@
+effect_id,kind,value,duration,stacking,stat,operation
+3001,Shield,80,5,Refresh,AttackDamage,Flat
+3002,Heal,90,0,Refresh,AttackDamage,Flat
+3003,Stun,1,1.5,Refresh,AttackDamage,Flat

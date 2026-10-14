@@ -55,11 +55,14 @@ namespace AutoBattler.EditorTools
                 AddIfMissing<UnitHealth>(root);
                 AddIfMissing<UnitStats>(root);
                 AddIfMissing<UnitEffects>(root);
+                AddIfMissing<UnitMana>(root);
+                AddIfMissing<UnitSkill>(root);
                 AddIfMissing<UnitView>(root);
                 AddIfMissing<Unit>(root);
                 AddIfMissing<UnitMove>(root);
                 AddIfMissing<UnitCombat>(root);
                 AddIfMissing<UnitFacingView>(root);
+                AddIfMissing<UnitSkillView>(root);
                 var facing=root.GetComponent<UnitFacingView>();
                 if(facing.SpriteRenderers.Count==0)
                     facing.ConfigureRenderers(root.GetComponentsInChildren<SpriteRenderer>(true));
@@ -96,6 +99,7 @@ namespace AutoBattler.EditorTools
                     throw new InvalidOperationException($"원본 상속 확인 실패: {entry.VisualId}");
                 if(prefab.GetComponent<Unit>()==null || prefab.GetComponent<UnitHealth>()==null
                     || prefab.GetComponent<UnitStats>()==null || prefab.GetComponent<UnitEffects>()==null
+                    || prefab.GetComponent<UnitMana>()==null || prefab.GetComponent<UnitSkill>()==null || prefab.GetComponent<UnitSkillView>()==null
                     || prefab.GetComponent<UnitCombat>()==null || prefab.GetComponent<UnitMove>()==null
                     || prefab.GetComponent<UnitView>()==null || prefab.GetComponent<Collider2D>()==null
                     || prefab.GetComponent<UnitFacingView>()==null

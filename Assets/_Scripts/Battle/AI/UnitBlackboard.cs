@@ -3,10 +3,11 @@ using System.Threading;
 using AutoBattler.Battle.Combat;
 using AutoBattler.Battle.Grid;
 using AutoBattler.Battle.Units;
+using AutoBattler.Battle.Skills;
 
 namespace AutoBattler.Battle.AI
 {
-    public enum UnitBehaviourAction { None, Dead, Stunned, Moving, Attacking, WaitingToRetry, WaitingForTarget, WaitingForAttack, WaitingForPath }
+    public enum UnitBehaviourAction { None, Dead, Stunned, Moving, Attacking, Casting, WaitingToRetry, WaitingForTarget, WaitingForAttack, WaitingForPath }
 
     /// <summary>유닛 한 기의 판단 상태. 문자열 키 없이 대상·경로·재시도 시간을 보관.</summary>
     public sealed class UnitBlackboard
@@ -23,6 +24,7 @@ namespace AutoBattler.Battle.AI
         internal int Revision=-1;
         internal HexCoord TargetCell;
         internal CancellationToken Token;
+        internal SkillCastContext PreparedSkill;
         public UnitBlackboard(Unit unit,CombatBoard board,IReadOnlyList<Unit> participants)
         { Unit=unit; Board=board; Participants=participants; }
     }

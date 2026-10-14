@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using AutoBattler.Data.Snapshot;
+using AutoBattler.Data.Skills;
+using AutoBattler.Data.Units;
+using AutoBattler.Battle.Units;
 using UnityEditor;
 using UnityEngine;
 
@@ -13,13 +16,18 @@ namespace AutoBattler.EditorTools.Sheets
     public static class SnapshotImporter
     {
         public const string OutputPath="Assets/_Data/Snapshots/GameSnapshot.json";
-        public static readonly string[] Tabs={"Manifest","Units","Rounds","RoundUnits","Levels","ShopRates","PoolCounts","Economy"};
+        public static readonly string[] BaseTabs={"Manifest","Units","Rounds","RoundUnits","Levels","ShopRates","PoolCounts","Economy"};
+        public static readonly string[] Tabs=BaseTabs.Concat(new[]{"Skills","Effects"}).ToArray();
+        public static string[] TabsForSchema(int schema)=>schema==1?BaseTabs:Tabs;
         public static GameSnapshot Build(Dictionary<string,CsvTable> tables)
         {
-            foreach(string tab in Tabs) if(!tables.ContainsKey(tab)) throw new FormatException(tab+": 표 없음.");
+            foreach(string tab in BaseTabs) if(!tables.ContainsKey(tab)) throw new FormatException(tab+": 표 없음.");
             var manifest=tables["Manifest"];
-            if(manifest.Rows.Count!=2 || manifest.Int(1,"schema_version")!=1) throw manifest.Error(1,"schema_version","스키마 1의 단일 Manifest 행 필요.");
-            var data=new GameSnapshot {schemaVersion=1,dataVersion=manifest.Get(1,"data_version")};
+            if(manifest.Rows.Count!=2) throw manifest.Error(1,"schema_version","단일 Manifest 행 필요.");
+            int schema=manifest.Int(1,"schema_version");
+            if(manifest.Rows.Count!=2 || (schema!=1 && schema!=2)) throw manifest.Error(1,"schema_version","스키마 1 또는 2의 단일 Manifest 행 필요.");
+            foreach(string tab in TabsForSchema(schema)) if(!tables.ContainsKey(tab)) throw new FormatException(tab+": 표 없음.");
+            var data=new GameSnapshot {schemaVersion=schema,dataVersion=manifest.Get(1,"data_version")};
             if(string.IsNullOrWhiteSpace(data.dataVersion)) throw manifest.Error(1,"data_version","버전 필요.");
             data.units=Read(tables["Units"],(t,r)=>new UnitRow {
                 unitId=t.Int(r,"unit_id"),name=t.Get(r,"name"),cost=t.Int(r,"cost"),originId=t.Int(r,"origin_id"),classId=t.Int(r,"class_id"),
@@ -32,6 +40,33 @@ namespace AutoBattler.EditorTools.Sheets
             data.shopRates=Read(tables["ShopRates"],(t,r)=>new ShopRateRow {level=t.Int(r,"level"),weights=Enumerable.Range(1,5).Select(c=>t.Int(r,"cost_"+c)).ToArray()});
             data.poolCounts=Read(tables["PoolCounts"],(t,r)=>new PoolRow {cost=t.Int(r,"cost"),copiesPerUnit=t.Int(r,"copies_per_unit")});
             data.economy=Read(tables["Economy"],(t,r)=>new EconomyRow {ruleId=t.Int(r,"rule_id"),value=t.Float(r,"value")});
+            data.skills=schema==1?Array.Empty<SkillRow>():Read(tables["Skills"],(t,r)=>new SkillRow {
+                skillId=t.Int(r,"skill_id"),name=t.Get(r,"name"),targetRule=ReadEnum<SkillTargetRule>(t,r,"target_rule"),
+                delivery=ReadEnum<SkillDelivery>(t,r,"delivery"),animation=ReadEnum<SkillAnimation>(t,r,"animation"),
+                manaCost=t.Int(r,"mana_cost"),castRange=t.Int(r,"cast_range"),windup=t.Float(r,"windup"),cooldown=t.Float(r,"cooldown"),
+                radius=t.Int(r,"radius"),centerOnCaster=t.Bool(r,"center_on_caster"),baseDamage=t.Float(r,"base_damage"),
+                attackRatio=t.Float(r,"attack_ratio"),armorIgnore=t.Float(r,"armor_ignore"),effectId=t.Int(r,"effect_id",true),projectileSpeed=t.Float(r,"projectile_speed") });
+            data.effects=schema==1?Array.Empty<EffectRow>():Read(tables["Effects"],(t,r)=>new EffectRow {
+                effectId=t.Int(r,"effect_id"),kind=ReadEnum<EffectKind>(t,r,"kind"),value=t.Float(r,"value"),duration=t.Float(r,"duration"),
+                stacking=ReadEnum<EffectStacking>(t,r,"stacking"),stat=ReadEnum<StatType>(t,r,"stat"),operation=ReadEnum<ModifierOperation>(t,r,"operation") });
+            if(schema==2)
+            {
+                CheckIds(data.skills,x=>x.skillId,tables["Skills"]); CheckIds(data.effects,x=>x.effectId,tables["Effects"]);
+                foreach(var skill in data.skills)
+                {
+                    var t=tables["Skills"]; int r=FindRow(t,"skill_id",skill.skillId);
+                    if(skill.manaCost<1 || skill.manaCost>100 || skill.castRange<0 || skill.castRange>14 || skill.windup<0 || skill.cooldown<0
+                        || skill.radius<0 || skill.radius>14 || skill.baseDamage<0 || skill.attackRatio<0 || skill.armorIgnore<0 || skill.armorIgnore>1
+                        || (skill.delivery==SkillDelivery.Projectile && skill.projectileSpeed<=0)) throw t.Error(r,"skill_id","시전 수치 범위 오류.");
+                    if(skill.effectId!=0 && !data.effects.Any(x=>x.effectId==skill.effectId)) throw t.Error(r,"effect_id","없는 효과 참조.");
+                }
+                foreach(var effect in data.effects)
+                {
+                    var t=tables["Effects"]; int r=FindRow(t,"effect_id",effect.effectId);
+                    if(effect.value<0 || (effect.kind==EffectKind.Slow && effect.value>1)
+                        || (effect.kind!=EffectKind.Heal && effect.duration==0)) throw t.Error(r,"value/duration","효과 수치 범위 오류.");
+                }
+            }
             CheckIds(data.units,x=>x.unitId,tables["Units"]); CheckIds(data.rounds,x=>x.roundId,tables["Rounds"]);
             CheckIds(data.roundUnits,x=>x.entryId,tables["RoundUnits"]); CheckIds(data.levels,x=>x.level,tables["Levels"]);
             CheckIds(data.shopRates,x=>x.level,tables["ShopRates"]); CheckIds(data.poolCounts,x=>x.cost,tables["PoolCounts"]);
@@ -44,7 +79,7 @@ namespace AutoBattler.EditorTools.Sheets
                 if(unit.combatRole<0 || unit.combatRole>3 || unit.originId<1 || unit.originId>4 || unit.classId<1 || unit.classId>4) throw t.Error(r,"combat_role/origin_id/class_id","정의 범위 오류.");
                 if(unit.attackType!="Melee" && unit.attackType!="Ranged") throw t.Error(r,"attack_type","Melee 또는 Ranged.");
                 if(unit.critChance<0 || unit.critChance>1 || unit.critMultiplier<1) throw t.Error(r,"crit_chance/crit_multiplier","확률 0~1, 배율 1 이상.");
-                if(unit.skillId!=0) throw t.Error(r,"skill_id","현재 스냅샷 스키마의 고유 스킬 미지원. 빈 값 또는 0.");
+                if(unit.skillId!=0 && !data.skills.Any(x=>x.skillId==unit.skillId)) throw t.Error(r,"skill_id","없는 스킬 참조.");
                 if(unit.visualId<1 || unit.visualId>8 || unit.iconId<1 || unit.iconId>8) throw t.Error(r,"visual_id/icon_id","현재 AssetCatalog ID 1~8 필요.");
             }
             if(!data.units.Any(x=>x.cost==1)) throw new FormatException("Units: 시작용 1코스트 필요.");
@@ -75,6 +110,12 @@ namespace AutoBattler.EditorTools.Sheets
         private static T[] Read<T>(CsvTable table,Func<CsvTable,int,T> reader)
         {
             var result=new List<T>(); for(int r=1;r<table.Rows.Count;r++) if(!table.IsEmpty(r)) result.Add(reader(table,r)); return result.ToArray();
+        }
+        private static T ReadEnum<T>(CsvTable table,int row,string column) where T:struct,Enum
+        {
+            if(!Enum.TryParse<T>(table.Get(row,column),true,out var result) || !Enum.IsDefined(typeof(T),result))
+                throw table.Error(row,column,"등록된 Enum 이름 필요.");
+            return result;
         }
         private static int FindRow(CsvTable table,string column,int id)
         {

@@ -16,6 +16,7 @@ namespace AutoBattler.Battle.Units
         public bool CanMove => isActiveAndEnabled && unit != null && unit.IsInCombat
             && health != null && health.isActiveAndEnabled && health.IsAlive
             && !unit.Effects.IsStunned && unit.Effects.SlowRate<1f
+            && !unit.Skill.IsCasting
             && unit.Stats.MoveSpeed > 0f && unit.GridLayout != null && unit.CurrentCell.HasValue;
 
         private Unit unit;

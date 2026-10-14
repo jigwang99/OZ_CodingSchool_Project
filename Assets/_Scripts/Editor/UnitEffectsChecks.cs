@@ -158,11 +158,12 @@ namespace AutoBattler.EditorTools
                 enemy.Configure(definition,1,enemy.InstanceId,UnitTeam.Enemy,run.State.Data,flow,run.Grid,run.Bench,start);
                 enemy.transform.position=run.Grid.CellToWorld(start);
                 ally.Combat.ResetForRound(); hp=enemy.Health.CurrentHp;
+                int manaBeforeAttack=ally.Mana.Current;
                 var attack=ally.Combat.AttackAsync(enemy.Combat,CancellationToken.None);
                 Expect(ally.Combat.IsAttacking,"공격 선딜 시작");
                 ally.Effects.Apply(new EffectDefinition(3014,EffectKind.Stun,1f,10f),skill);
                 await attack;
-                Expect(enemy.Health.CurrentHp==hp && ally.Combat.Mana==10,"기절로 선딜 취소하고 지급 마나 유지");
+                Expect(enemy.Health.CurrentHp==hp && ally.Combat.Mana==Math.Min(ally.Mana.Maximum,manaBeforeAttack+10),"기절로 선딜 취소하고 피격·공격 마나 유지");
                 ally.Effects.Clear();
                 int baseAttack=ally.Stats.AttackDamage;
                 ally.Effects.Apply(new EffectDefinition(3015,EffectKind.StatModifier,25f,.2f,stat:StatType.AttackDamage),skill);

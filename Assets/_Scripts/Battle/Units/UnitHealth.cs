@@ -18,6 +18,8 @@ namespace AutoBattler.Battle.Units
         public int MaxHp=>state?.MaxHp ?? 0;
         public bool IsAlive=>state!=null && state.IsAlive;
         public event Action<int,int> HealthChanged;
+        /// <summary>방어·보호막 처리 후 실제 체력 피해 발생.</summary>
+        public event Action<int> DamageTaken;
         public event Action Died;
         private void Awake() { stats=GetComponent<UnitStats>(); effects=GetComponent<UnitEffects>(); }
         private void OnEnable() { if(stats!=null) stats.Changed+=OnStatsChanged; }
@@ -30,16 +32,21 @@ namespace AutoBattler.Battle.Units
             state.HealthChanged+=ForwardHealthChanged; state.Died+=ForwardDied;
             HealthChanged?.Invoke(CurrentHp,MaxHp);
         }
+        private int Defense=>stats!=null && stats.IsInitialized?stats.Current.Defense:fallbackDefense;
         public int TakeDamage(int attackDamage,float multiplier=1f,float armorIgnoreRatio=0f)
+            =>ApplyDamage(DamageResolver.Calculate(attackDamage,Defense,multiplier,armorIgnoreRatio));
+        public int TakeDamage(float attackDamage,float multiplier=1f,float armorIgnoreRatio=0f)
+            =>ApplyDamage(DamageResolver.Calculate(attackDamage,Defense,multiplier,armorIgnoreRatio));
+        private int ApplyDamage(int damage)
         {
             if(!IsAlive || isApplyingDamage) return 0;
             isApplyingDamage=true;
             try
             {
-                int defense=stats!=null && stats.IsInitialized?stats.Current.Defense:fallbackDefense;
-                int damage=DamageResolver.Calculate(attackDamage,defense,multiplier,armorIgnoreRatio);
                 if(effects!=null) damage=effects.AbsorbDamage(damage);
-                return state.TakeDamage(damage);
+                int lostHp=state.TakeDamage(damage);
+                if(lostHp>0) DamageTaken?.Invoke(lostHp);
+                return lostHp;
             }
             finally { isApplyingDamage=false; }
         }

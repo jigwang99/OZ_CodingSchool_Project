@@ -93,7 +93,18 @@ namespace AutoBattler.EditorTools
         public static GameObject EnsureHealthBarPrefab()
         {
             var setup=ProjectSetupSettings.Current;
-            if(setup.HealthBar!=null) return setup.HealthBar.gameObject;
+            if(setup.HealthBar!=null)
+            {
+                if(setup.HealthBar.GetComponentInChildren<UnitManaBar>(true)!=null)
+                    return setup.HealthBar.gameObject;
+                var contents=PrefabUtility.LoadPrefabContents(setup.HealthBarPath);
+                try
+                {
+                    CreateManaBar(contents.GetComponent<RectTransform>());
+                    return PrefabUtility.SaveAsPrefabAsset(contents,setup.HealthBarPath);
+                }
+                finally { PrefabUtility.UnloadPrefabContents(contents); }
+            }
             string path=setup.HealthBarPath;
             var prototype=new GameObject("UnitHealthBar",typeof(RectTransform),typeof(Canvas));
             try
@@ -109,12 +120,25 @@ namespace AutoBattler.EditorTools
                 fill.rectTransform.pivot=new Vector2(0f,.5f);
                 var label=Label(rect,"HealthText",new Vector2(0f,18f),new Vector2(140f,20f),18f,"--");
                 prototype.AddComponent<UnitHealthBar>().ConfigureReferences(canvas,fill,label);
+                CreateManaBar(rect);
                 foreach(var graphic in prototype.GetComponentsInChildren<Graphic>(true)) graphic.raycastTarget=false;
                 var prefab=PrefabUtility.SaveAsPrefabAsset(prototype,path);
                 setup.SetHealthBar(prefab.GetComponent<UnitHealthBar>()); EditorUtility.SetDirty(setup);
                 return prefab;
             }
             finally { UnityEngine.Object.DestroyImmediate(prototype); }
+        }
+
+        private static void CreateManaBar(RectTransform parent)
+        {
+            var background=Rect(parent,"ManaBar",new Vector2(0f,-12f),new Vector2(104f,8f));
+            var image=background.gameObject.AddComponent<Image>();
+            image.color=new Color(.05f,.08f,.14f,.95f); image.raycastTarget=false;
+            var fill=Rect(background,"Fill",new Vector2(-50f,0f),new Vector2(100f,4f)).gameObject.AddComponent<Image>();
+            fill.color=new Color(.15f,.55f,1f,1f); fill.raycastTarget=false;
+            fill.rectTransform.pivot=new Vector2(0f,.5f);
+            fill.rectTransform.localScale=new Vector3(0f,1f,1f);
+            background.gameObject.AddComponent<UnitManaBar>().ConfigureReferences(fill);
         }
 
         private static GameObject Replace(Transform parent, RectTransform old, GameObject prefab, string name)
