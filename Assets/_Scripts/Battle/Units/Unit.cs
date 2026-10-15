@@ -52,6 +52,7 @@ namespace AutoBattler.Battle.Units
             Move=GetComponent<UnitMove>(); Combat=GetComponent<UnitCombat>();
             StatModifiers=GetComponent<UnitStats>(); Effects=GetComponent<UnitEffects>();
             Mana=GetComponent<UnitMana>(); Skill=GetComponent<UnitSkill>();
+            Health.BindUnit(this);
             Skill.BindUnit(this);
             if(unitData!=null && unitData.TryGetStat(unitType,out UnitStat stats))
             { StatModifiers.Initialize(stats); Health.Initialize(Stats.MaxHp,Stats.Defense); }

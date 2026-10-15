@@ -62,6 +62,9 @@ namespace AutoBattler.EditorTools
             try
             {
                 Time.timeScale=10f;
+                await SynergyUIChecks.RunPlay(run,UnityEngine.Object.FindFirstObjectByType<RunHUD>());
+                await TraitChecks.RunPlay(run);
+                await DamageEventChecks.RunPlay(run);
                 await SkillChecks.RunPlay(run);
                 await ObjectPoolChecks.RunPlay(run);
                 await BehaviourTreeChecks.RunPlay(run);
@@ -115,6 +118,12 @@ namespace AutoBattler.EditorTools
                 InputSystem.QueueStateEvent(mouse,new MouseState {position=screen});
                 await UniTask.DelayFrame(2);
                 Expect(owned.Placement.Cell==prepared,"실제 마우스 드래그 배치");
+                Expect(run.AllySynergies.Statuses.Count==8
+                    && run.AllySynergies.Count(AutoBattler.Data.Traits.TraitCategory.Origin,dragged.Definition.OriginId)==1,
+                    "실제 배치 후 시너지 집계 자동 갱신과 대기석 제외");
+                Expect(ReferenceEquals(hud.SynergyPanel.DisplayedSnapshot,run.AllySynergies)
+                    && hud.SynergyPanel.Rows.Single(row=>row.Category==AutoBattler.Data.Traits.TraitCategory.Origin
+                        && row.GroupId==dragged.Definition.OriginId).Count==1,"실제 드래그 배치 후 시너지 UI 자동 갱신");
                 await UniTask.DelayFrame(1);
                 var healthBar=dragged.GetComponentInChildren<UnitHealthBar>();
                 Expect(healthBar.GetComponent<Canvas>().enabled,"전장 배치 후 체력바 표시");

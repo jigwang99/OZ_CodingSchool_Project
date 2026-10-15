@@ -9,6 +9,7 @@ using AutoBattler.Battle.Grid;
 using AutoBattler.Battle.Placement;
 using AutoBattler.Battle.Units;
 using AutoBattler.Battle.Combat;
+using AutoBattler.Battle.Traits;
 using AutoBattler.Presentation.Battle;
 using AutoBattler.Presentation.Units;
 using Cysharp.Threading.Tasks;
@@ -33,6 +34,8 @@ namespace AutoBattler.Run
         public AssetCatalog Catalog=>catalog;
         public HexGridLayout Grid=>grid;
         public BenchLayout Bench=>bench;
+        public TraitSnapshot AllySynergies { get; private set; }=TraitSnapshot.Empty;
+        public TraitSnapshot EnemySynergies { get; private set; }=TraitSnapshot.Empty;
         public bool IsReady { get; private set; }
         public bool IsLoading { get; private set; }
         public Sprite UnitIcon(int iconId) => catalog.Icon(iconId);
@@ -47,6 +50,7 @@ namespace AutoBattler.Run
         private CancellationTokenSource combatCancellation;
         private CancellationTokenSource lifetime;
         private float combatDeadline;
+        private TraitBattleSession battleSynergies;
         private void Awake()
         {
             lifetime=CancellationTokenSource.CreateLinkedTokenSource(this.GetCancellationTokenOnDestroy());
@@ -73,18 +77,25 @@ namespace AutoBattler.Run
                 lifetime.Token.ThrowIfCancellationRequested();
                 State=new RunState(repository,seed); drag.BindBoard(State.Board,State.Placement);
                 State.Changed+=OnStateChanged; IsReady=true;
-                SyncAllies(); CreateEnemies(); drag.enabled=true;
+                SyncAllies(); CreateEnemies(); RefreshSynergies(); drag.enabled=true;
                 Message="Drag a bench unit onto the blue board, then start battle.";
             }
             catch(OperationCanceledException) { }
             catch(Exception exception) { Message="Load failed. Check Console and retry."; Debug.LogException(exception,this); }
             finally { IsLoading=false; DisplayChanged?.Invoke(); }
         }
-        private void OnPlacementChanged()=>DisplayChanged?.Invoke();
+        private void OnPlacementChanged() { RefreshSynergies(); DisplayChanged?.Invoke(); }
+        private void RefreshSynergies()
+        {
+            if(!IsReady || flow.CurrentPhase==BattlePhase.Combat) return;
+            var roster=allies.Values.Concat(enemies);
+            AllySynergies=TraitCounter.CountTeam(roster,UnitTeam.Ally,State.Data.Traits);
+            EnemySynergies=TraitCounter.CountTeam(roster,UnitTeam.Enemy,State.Data.Traits);
+        }
         private void OnStateChanged()
         {
             drag.SetPlayerLevel(State.Level);
-            if(State.CanPrepare) SyncAllies();
+            if(State.CanPrepare) { SyncAllies(); RefreshSynergies(); }
             DisplayChanged?.Invoke();
         }
         private void SyncAllies()
@@ -149,23 +160,27 @@ namespace AutoBattler.Run
             if(!IsReady || flow.CurrentPhase!=BattlePhase.Preparation || State.IsOver) return false;
             drag.CancelDrag();
             if(State.Board.DeployedCount==0) { Message="Deploy at least one unit."; DisplayChanged?.Invoke(); return false; }
+            RefreshSynergies();
             var combatUnits=allies.Values.Where(x=>x.IsOnBoard).Concat(enemies).OrderBy(x=>x.InstanceId).ToArray();
             foreach(var unit in combatUnits) unit.BeginBattle();
             var battle=new AutoBattleController(combatUnits);
             if(!flow.TryStartCombat()) return false;
             State.CanPrepare=false; drag.enabled=false;
+            battleSynergies=new TraitBattleSession(combatUnits,AllySynergies,EnemySynergies);
+            battleSynergies.Start();
             combatCancellation=CancellationTokenSource.CreateLinkedTokenSource(lifetime.Token);
             combatDeadline=Time.time+State.Data.Rule(EconomyRule.CombatSeconds);
             Message="Automatic battle"; DisplayChanged?.Invoke();
-            BattleAsync(battle,combatCancellation).Forget(); return true;
+            BattleAsync(battle,combatCancellation,battleSynergies).Forget(); return true;
         }
-        private async UniTask BattleAsync(AutoBattleController battle,CancellationTokenSource operation)
+        private async UniTask BattleAsync(AutoBattleController battle,CancellationTokenSource operation,TraitBattleSession synergies)
         {
             try
             {
                 bool won=await battle.RunAsync(State.Data.Rule(EconomyRule.CombatSeconds),operation.Token);
                 if(!flow.TryFinishCombat()) return;
                 operation.Cancel();
+                EndSynergies(synergies);
                 foreach(var unit in allies.Values.Concat(enemies)) { unit.Move.Stop(); unit.Combat.ResetForRound(); }
                 if(State.TrySettle(won)) Message=State.LastResult;
                 DisplayChanged?.Invoke();
@@ -173,24 +188,30 @@ namespace AutoBattler.Run
             catch(OperationCanceledException) { }
             catch(Exception exception)
             {
-                operation.Cancel(); Debug.LogException(exception,this);
+                operation.Cancel(); EndSynergies(synergies); Debug.LogException(exception,this);
                 if(flow.TryFinishCombat()) State.TrySettle(false);
                 Message="Battle error. Check Console."; DisplayChanged?.Invoke();
             }
-            finally { if(ReferenceEquals(combatCancellation,operation)) combatCancellation=null; operation.Dispose(); }
+            finally { EndSynergies(synergies); if(ReferenceEquals(combatCancellation,operation)) combatCancellation=null; operation.Dispose(); }
+        }
+        private void EndSynergies(TraitBattleSession session)
+        {
+            session?.Dispose();
+            if(ReferenceEquals(battleSynergies,session)) battleSynergies=null;
         }
         public bool Continue()
         {
             if(!IsReady || flow.CurrentPhase!=BattlePhase.Result || State.IsOver) return false;
             if(!State.TryNextRound()) return false;
             foreach(var unit in allies.Values) unit.RestorePreparation();
-            CreateEnemies(); flow.TryBeginPreparation(); drag.enabled=true;
+            CreateEnemies(); flow.TryBeginPreparation(); RefreshSynergies(); drag.enabled=true;
             Message="Army restored. Prepare the next round.";
             DisplayChanged?.Invoke(); return true;
         }
         private void OnDestroy()
         {
             lifetime?.Cancel(); combatCancellation?.Cancel();
+            EndSynergies(battleSynergies);
             if(State!=null) State.Changed-=OnStateChanged;
             if(drag!=null) drag.PlacementChanged-=OnPlacementChanged;
             ReleaseAsync().Forget();

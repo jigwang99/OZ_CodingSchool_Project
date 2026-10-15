@@ -36,6 +36,7 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private TextMeshProUGUI buyExperienceLabel;
         [SerializeField] private Button sellButton;
         [SerializeField] private TextMeshProUGUI selectedUnitText;
+        [SerializeField] private SynergyPanel synergyPanel;
 
         [Header("전투와 결과")]
         [SerializeField] private Button startBattleButton;
@@ -65,6 +66,7 @@ namespace AutoBattler.Presentation.Battle
         public Button StartBattleButton => startBattleButton;
         public Button RetryLoadButton => retryLoadButton;
         public ResultPanel ResultPanel => resultPanel;
+        public SynergyPanel SynergyPanel => synergyPanel;
 
 #if UNITY_EDITOR
         // 셋업 도구는 필드 이름 조회 대신 명시적인 참조 주입 사용.
@@ -87,6 +89,7 @@ namespace AutoBattler.Presentation.Battle
         public void ConfigureShopContainer(RectTransform container) => shopContainer=container;
         public void ConfigureShopItems(ShopItem[] items) => shopItems=items;
         public void ConfigureResultPanel(ResultPanel panel) => resultPanel=panel;
+        public void ConfigureSynergies(SynergyPanel panel) => synergyPanel=panel;
 #endif
 
         public void ConfigureScene(RunController controller)
@@ -161,6 +164,7 @@ namespace AutoBattler.Presentation.Battle
                 return;
             bool ready = run.IsReady;
             bool prepare = CanPrepare();
+            if(synergyPanel!=null) synergyPanel.Show(ready?run.AllySynergies:null,ready,run.Flow.CurrentPhase);
             messageText.text = run.Message;
             roundText.text = ready ? $"Round {(run.State.Round - 1) / 4 + 1}-{(run.State.Round - 1) % 4 + 1}" : "Round --";
             goldText.text = ready ? $"Gold {run.State.Gold}" : "Gold --";

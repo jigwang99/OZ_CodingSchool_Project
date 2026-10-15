@@ -69,7 +69,8 @@ namespace AutoBattler.EditorTools.Sheets
                 if(string.IsNullOrWhiteSpace(id)) throw new FormatException("스프레드시트 ID 필요.");
                 await LoadTables(id,SnapshotImporter.BaseTabs,tables);
                 int schema=tables["Manifest"].Int(1,"schema_version");
-                if(schema==2) await LoadTables(id,new[]{"Skills","Effects"},tables);
+                var extraTabs=SnapshotImporter.TabsForSchema(schema).Except(SnapshotImporter.BaseTabs).ToArray();
+                if(extraTabs.Length>0) await LoadTables(id,extraTabs,tables);
                 operation.Token.ThrowIfCancellationRequested(); Apply(tables);
             }
             catch(OperationCanceledException) { report="가져오기 취소. 기존 스냅샷 유지."; }
@@ -125,7 +126,7 @@ namespace AutoBattler.EditorTools.Sheets
         private void Apply(Dictionary<string,CsvTable> tables)
         {
             var snapshot=SnapshotImporter.Build(tables); SnapshotImporter.Apply(snapshot);
-            report=$"적용 완료: {snapshot.dataVersion}\n유닛 {snapshot.units.Length}종 / 스킬 {snapshot.skills.Length}종 / 라운드 {snapshot.rounds.Length}개\n{SnapshotImporter.OutputPath}\n로컬 Addressables 번들을 다시 빌드한 뒤 배포.";
+            report=$"적용 완료: {snapshot.dataVersion}\n유닛 {snapshot.units.Length}종 / 스킬 {snapshot.skills.Length}종 / 시너지 {snapshot.traits.Length}단계 / 라운드 {snapshot.rounds.Length}개\n{SnapshotImporter.OutputPath}\n로컬 Addressables 번들을 다시 빌드한 뒤 배포.";
         }
         private void OnDisable() { operation?.Cancel(); apiKey=""; bearerToken=""; }
     }

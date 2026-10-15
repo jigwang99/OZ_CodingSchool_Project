@@ -1,0 +1,100 @@
+using System.Globalization;
+using AutoBattler.Battle.Traits;
+using AutoBattler.Data.Traits;
+using DG.Tweening;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace AutoBattler.Presentation.Battle
+{
+    /// <summary>시너지 한 그룹의 종류 수·최고 단계·효과 표시.</summary>
+    [DisallowMultipleComponent]
+    public sealed class TraitRowView : MonoBehaviour
+    {
+        [SerializeField] private TraitCategory category;
+        [SerializeField] private int groupId;
+        [SerializeField] private Image background;
+        [SerializeField] private Image indicator;
+        [SerializeField] private TextMeshProUGUI nameText;
+        [SerializeField] private TextMeshProUGUI countText;
+        [SerializeField] private TextMeshProUGUI effectText;
+        [SerializeField] private Color inactiveColor=new Color(.12f,.12f,.12f,1f);
+        [SerializeField] private Color activeColor=new Color(.08f,.23f,.19f,1f);
+        [SerializeField] private Color inactiveAccent=new Color(.6f,.6f,.6f,1f);
+        [SerializeField] private Color activeAccent=new Color(.45f,.94f,.72f,1f);
+        [SerializeField,Min(0f)] private float tweenDuration=.15f;
+        private bool hasShown;
+        public TraitCategory Category=>category;
+        public int GroupId=>groupId;
+        public int Count { get; private set; }
+        public int RequiredCount { get; private set; }
+        public int DefinitionId { get; private set; }
+        public bool IsActive { get; private set; }
+        public TextMeshProUGUI NameText=>nameText;
+        public TextMeshProUGUI CountText=>countText;
+        public TextMeshProUGUI EffectText=>effectText;
+        public Image Background=>background;
+#if UNITY_EDITOR
+        public void ConfigureReferences(TraitCategory kind,int group,Image panel,Image stripe,
+            TextMeshProUGUI nameLabel,TextMeshProUGUI countLabel,TextMeshProUGUI effectLabel)
+        { category=kind; groupId=group; background=panel; indicator=stripe; nameText=nameLabel; countText=countLabel; effectText=effectLabel; }
+#endif
+        public void Show(TraitSnapshot snapshot)
+        {
+            TraitStatus? unlocked=null,locked=null;
+            foreach(var status in snapshot.Statuses)
+            {
+                var definition=status.Definition;
+                if(definition.Category!=category || definition.GroupId!=groupId) continue;
+                if(status.IsActive && (!unlocked.HasValue || definition.RequiredCount>unlocked.Value.Definition.RequiredCount)) unlocked=status;
+                if(!locked.HasValue || definition.RequiredCount<locked.Value.Definition.RequiredCount) locked=status;
+            }
+            var selected=unlocked ?? locked;
+            if(!selected.HasValue)
+            {
+                Count=RequiredCount=DefinitionId=0; IsActive=false;
+                gameObject.SetActive(false); return;
+            }
+            var value=selected.Value; bool animate=hasShown && IsActive!=value.IsActive;
+            Count=value.Count; RequiredCount=value.Definition.RequiredCount; DefinitionId=value.Definition.Id; IsActive=value.IsActive;
+            // 배치 종류가 없는 그룹은 숨김. 재배치 시 현재 수치로 복원.
+            if(Count==0) { gameObject.SetActive(false); return; }
+            gameObject.SetActive(true);
+            nameText.text=value.Definition.Name;
+            countText.text=$"{Count}/{RequiredCount}"+(IsActive?" ACTIVE":"");
+            effectText.text=$"{value.Definition.Name} units: {Describe(value.Definition)}";
+            StopAnimation();
+            var panelColor=IsActive?activeColor:inactiveColor; var accent=IsActive?activeAccent:inactiveAccent;
+            if(animate)
+            {
+                background.DOColor(panelColor,tweenDuration).SetUpdate(true);
+                indicator.DOColor(accent,tweenDuration).SetUpdate(true);
+                countText.DOColor(accent,tweenDuration).SetUpdate(true);
+            }
+            else { background.color=panelColor; indicator.color=accent; countText.color=accent; }
+            nameText.color=IsActive?activeAccent:new Color(.75f,.75f,.75f,1f);
+            effectText.color=IsActive?new Color(.71f,.85f,.77f,1f):inactiveAccent;
+            hasShown=true;
+        }
+        private static string Number(float value)=>value.ToString("0.#",CultureInfo.InvariantCulture);
+        private static string Percent(float value)=>Number(value*100f)+"%";
+        private static string Describe(TraitDefinition trait)
+        {
+            switch(trait.Effect)
+            {
+                case TraitEffect.ShieldAtStart: return $"{Percent(trait.Value)} max HP shield ({Number(trait.Duration)}s)";
+                case TraitEffect.StartingMana: return $"+{Number(trait.Value)} starting MP";
+                case TraitEffect.HealOnKill: return $"heal {Percent(trait.Value)} max HP on kill";
+                case TraitEffect.LowHealthAttack: return $"ATK +{Percent(trait.Value)} at {Percent(trait.Threshold)} HP or less";
+                case TraitEffect.BasicAttackPower: return $"basic attack damage +{Percent(trait.Value)}";
+                case TraitEffect.SkillPower: return $"skill damage / healing / shields +{Percent(trait.Value)}";
+                case TraitEffect.AttackSpeed: return $"attack speed +{Percent(trait.Value)}";
+                case TraitEffect.Critical: return $"crit chance +{Number(trait.Value*100f)}%p, multiplier +{Number(trait.SecondaryValue)}";
+                default: return "";
+            }
+        }
+        private void StopAnimation() { background.DOKill(); indicator.DOKill(); countText.DOKill(); }
+        private void OnDisable() { if(background!=null) StopAnimation(); hasShown=false; }
+    }
+}

@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading;
+using AutoBattler.Battle.Combat;
 using AutoBattler.Battle.Units;
 using AutoBattler.Data.Skills;
 using AutoBattler.Data.Snapshot;
@@ -26,6 +27,7 @@ namespace AutoBattler.Battle.Skills
             data.Effects.TryGetValue(skill.EffectId,out var effect);
             if(effect!=null && (effect.Kind==EffectKind.Heal || effect.Kind==EffectKind.Shield)) potency=power*(float)fixedScale;
             var source=new ModifierSource(ModifierSourceKind.Skill,skill.Id,caster.InstanceId);
+            var damageContext=DamageContext.Skill(caster,skill.Id);
             var team=caster.Team;
             if(skill.Delivery==SkillDelivery.Projectile)
             {
@@ -50,7 +52,7 @@ namespace AutoBattler.Battle.Skills
             foreach(var target in targets)
             {
                 if(!target.IsValid) continue;
-                if(damage>0) target.Unit.Health.TakeDamage(damage,power,skill.ArmorIgnore);
+                if(damage>0) target.Unit.Health.TakeDamage(damageContext,damage,power,skill.ArmorIgnore);
                 if(effect!=null && target.IsValid) target.Unit.Effects.Apply(effect,source,potency);
             }
         }

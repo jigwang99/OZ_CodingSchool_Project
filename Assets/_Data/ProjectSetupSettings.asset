@@ -19,6 +19,7 @@ MonoBehaviour:
   shopItem: {fileID: 1520015594984119603, guid: f458dc4825d56644ea17d3f7e156fbab, type: 3}
   resultPanel: {fileID: 7638330283626845108, guid: 85f4a31895a3a754595b74ae8f60fa64, type: 3}
   healthBar: {fileID: 7604747378388361148, guid: b999a7218cc3c0748b54488abeaa4ef7, type: 3}
+  synergyPanel: {fileID: 1170850315550061556, guid: 4c468fb7691357b41b1a112fcd355cd8, type: 3}
   uiPrefabFolder: {fileID: 102900000, guid: 5002d7e6e0174e14ab5b4c4fe9ee7123, type: 3}
   unitPrefabFolder: {fileID: 102900000, guid: 472f16cc66f6472a915e962ebaee35f0, type: 3}
   dataGroup: {fileID: 11400000, guid: adb32141412a8e047af026dc0e1ab53e, type: 2}

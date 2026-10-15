@@ -36,6 +36,7 @@ namespace AutoBattler.EditorTools
         [SerializeField] private ShopItem shopItem;
         [SerializeField] private ResultPanel resultPanel;
         [SerializeField] private UnitHealthBar healthBar;
+        [SerializeField] private SynergyPanel synergyPanel;
         [SerializeField] private DefaultAsset uiPrefabFolder;
         [SerializeField] private DefaultAsset unitPrefabFolder;
         [SerializeField] private AddressableAssetGroup dataGroup;
@@ -49,6 +50,7 @@ namespace AutoBattler.EditorTools
         public ShopItem ShopItem => shopItem;
         public ResultPanel ResultPanel => resultPanel;
         public UnitHealthBar HealthBar => healthBar;
+        public SynergyPanel SynergyPanel => synergyPanel;
         public AddressableAssetGroup DataGroup => dataGroup;
         public AddressableAssetGroup UnitGroup => unitGroup;
         public IReadOnlyList<UnitPrefabSetupEntry> Units => Array.AsReadOnly(units);
@@ -57,6 +59,7 @@ namespace AutoBattler.EditorTools
         public string ShopItemPath => ExistingOrNew(shopItem, uiPrefabFolder, "ShopItem.prefab");
         public string ResultPath => ExistingOrNew(resultPanel, uiPrefabFolder, "ResultPanel.prefab");
         public string HealthBarPath => ExistingOrNew(healthBar, uiPrefabFolder, "UnitHealthBar.prefab");
+        public string SynergyPanelPath => ExistingOrNew(synergyPanel, uiPrefabFolder, "SynergyPanel.prefab");
         public string UnitPath(UnitPrefabSetupEntry entry) => ExistingOrNew(entry.UnitPrefab, unitPrefabFolder, $"Unit_{entry.SourcePrefab.name}.prefab");
 
         private static ProjectSetupSettings current;
@@ -85,6 +88,7 @@ namespace AutoBattler.EditorTools
         public void SetShopItem(ShopItem prefab) => shopItem=prefab;
         public void SetResultPanel(ResultPanel prefab) => resultPanel=prefab;
         public void SetHealthBar(UnitHealthBar prefab) => healthBar=prefab;
+        public void SetSynergyPanel(SynergyPanel prefab) => synergyPanel=prefab;
         public void Configure(AssetCatalog assets, TextAsset data, SceneAsset scene, RunHUD hud, ShopItem shop,
             ResultPanel result, UnitHealthBar health, DefaultAsset uiFolder, DefaultAsset unitFolder,
             AddressableAssetGroup dataAssets, AddressableAssetGroup unitAssets, UnitPrefabSetupEntry[] entries)

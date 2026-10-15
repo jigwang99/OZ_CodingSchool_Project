@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using AutoBattler.Data.Skills;
 using AutoBattler.Data.Units;
+using AutoBattler.Data.Traits;
 
 namespace AutoBattler.Data.Snapshot
 {
@@ -20,6 +21,7 @@ namespace AutoBattler.Data.Snapshot
         public EconomyRow[] economy;
         public SkillRow[] skills;
         public EffectRow[] effects;
+        public TraitRow[] traits;
     }
     [Serializable] public sealed class UnitRow
     {
@@ -74,17 +76,21 @@ namespace AutoBattler.Data.Snapshot
         public IReadOnlyDictionary<int, RoundDefinition> Rounds { get; }
         public IReadOnlyDictionary<int,SkillDefinition> Skills { get; }
         public IReadOnlyDictionary<int,EffectDefinition> Effects { get; }
+        public IReadOnlyList<TraitDefinition> Traits { get; }
         private readonly Dictionary<int,int> levelXp, pool;
         private readonly Dictionary<int,int[]> rates;
         private readonly Dictionary<int,float> rules;
         public DataRepository(GameSnapshot data)
         {
-            if(data==null || (data.schemaVersion!=1 && data.schemaVersion!=2)) throw new ArgumentException("지원하지 않는 데이터 스키마.");
+            if(data==null || data.schemaVersion<1 || data.schemaVersion>3) throw new ArgumentException("지원하지 않는 데이터 스키마.");
             Version=data.dataVersion;
             Units=new ReadOnlyDictionary<int,UnitDefinition>(data.units.ToDictionary(x=>x.unitId,x=>new UnitDefinition(x)));
             Rounds=new ReadOnlyDictionary<int,RoundDefinition>(data.rounds.ToDictionary(x=>x.roundId,x=>new RoundDefinition(x,data.roundUnits.Where(e=>e.roundId==x.roundId))));
             Skills=new ReadOnlyDictionary<int,SkillDefinition>((data.skills ?? Array.Empty<SkillRow>()).ToDictionary(x=>x.skillId,x=>new SkillDefinition(x)));
             Effects=new ReadOnlyDictionary<int,EffectDefinition>((data.effects ?? Array.Empty<EffectRow>()).ToDictionary(x=>x.effectId,x=>x.Create()));
+            Traits=Array.AsReadOnly(data.schemaVersion>=3
+                ? (data.traits ?? throw new ArgumentException("시너지 정의 없음.")).OrderBy(row=>row.traitId).Select(row=>new TraitDefinition(row)).ToArray()
+                : Array.Empty<TraitDefinition>());
             if(data.units.Any(unit=>unit.skillId!=0 && !Skills.ContainsKey(unit.skillId))
                 || Skills.Values.Any(skill=>skill.EffectId!=0 && !Effects.ContainsKey(skill.EffectId)))
                 throw new ArgumentException("존재하지 않는 스킬·효과 ID 참조.");

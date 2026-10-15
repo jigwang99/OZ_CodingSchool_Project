@@ -1,6 +1,6 @@
 {
-    "schemaVersion": 2,
-    "dataVersion": "2026-10-14-skills-initial",
+    "schemaVersion": 3,
+    "dataVersion": "2026-10-15-traits-initial",
     "units": [
         {
             "unitId": 1001,
@@ -17,7 +17,7 @@
             "iconId": 1,
             "name": "Shield",
             "attackType": "Melee",
-            "attackInterval": 1.2000000476837159,
+            "attackInterval": 1.2000000476837158,
             "critChance": 0.10000000149011612,
             "critMultiplier": 1.5
         },
@@ -36,7 +36,7 @@
             "iconId": 2,
             "name": "Scout",
             "attackType": "Ranged",
-            "attackInterval": 1.0,
+            "attackInterval": 1,
             "critChance": 0.10000000149011612,
             "critMultiplier": 1.5
         },
@@ -150,7 +150,7 @@
             "iconId": 8,
             "name": "Tracker",
             "attackType": "Melee",
-            "attackInterval": 1.0,
+            "attackInterval": 1,
             "critChance": 0.10000000149011612,
             "critMultiplier": 1.5
         }
@@ -725,51 +725,51 @@
     "economy": [
         {
             "ruleId": 1,
-            "value": 4.0
+            "value": 4
         },
         {
             "ruleId": 2,
-            "value": 3.0
+            "value": 3
         },
         {
             "ruleId": 3,
-            "value": 2.0
+            "value": 2
         },
         {
             "ruleId": 4,
-            "value": 4.0
+            "value": 4
         },
         {
             "ruleId": 5,
-            "value": 4.0
+            "value": 4
         },
         {
             "ruleId": 6,
-            "value": 2.0
+            "value": 2
         },
         {
             "ruleId": 7,
-            "value": 10.0
+            "value": 10
         },
         {
             "ruleId": 8,
-            "value": 5.0
+            "value": 5
         },
         {
             "ruleId": 9,
-            "value": 60.0
+            "value": 60
         },
         {
             "ruleId": 10,
-            "value": 0.30000001192092898
+            "value": 0.30000001192092896
         },
         {
             "ruleId": 11,
-            "value": 0.20000000298023225
+            "value": 0.20000000298023224
         },
         {
             "ruleId": 12,
-            "value": 8.0
+            "value": 8
         },
         {
             "ruleId": 13,
@@ -789,11 +789,11 @@
             "animation": 0,
             "centerOnCaster": false,
             "windup": 0.3499999940395355,
-            "cooldown": 0.0,
-            "baseDamage": 0.0,
-            "attackRatio": 0.0,
-            "armorIgnore": 0.0,
-            "projectileSpeed": 8.0
+            "cooldown": 0,
+            "baseDamage": 0,
+            "attackRatio": 0,
+            "armorIgnore": 0,
+            "projectileSpeed": 8
         },
         {
             "skillId": 2002,
@@ -807,11 +807,11 @@
             "animation": 1,
             "centerOnCaster": false,
             "windup": 0.3499999940395355,
-            "cooldown": 0.0,
-            "baseDamage": 0.0,
-            "attackRatio": 2.0,
-            "armorIgnore": 0.0,
-            "projectileSpeed": 8.0
+            "cooldown": 0,
+            "baseDamage": 0,
+            "attackRatio": 2,
+            "armorIgnore": 0,
+            "projectileSpeed": 8
         },
         {
             "skillId": 2003,
@@ -825,11 +825,11 @@
             "animation": 2,
             "centerOnCaster": false,
             "windup": 0.4000000059604645,
-            "cooldown": 0.0,
-            "baseDamage": 0.0,
-            "attackRatio": 0.0,
-            "armorIgnore": 0.0,
-            "projectileSpeed": 8.0
+            "cooldown": 0,
+            "baseDamage": 0,
+            "attackRatio": 0,
+            "armorIgnore": 0,
+            "projectileSpeed": 8
         },
         {
             "skillId": 2004,
@@ -843,11 +843,11 @@
             "animation": 1,
             "centerOnCaster": false,
             "windup": 0.4000000059604645,
-            "cooldown": 0.0,
-            "baseDamage": 0.0,
+            "cooldown": 0,
+            "baseDamage": 0,
             "attackRatio": 1.7999999523162842,
             "armorIgnore": 0.5,
-            "projectileSpeed": 8.0
+            "projectileSpeed": 8
         },
         {
             "skillId": 2005,
@@ -861,11 +861,11 @@
             "animation": 0,
             "centerOnCaster": true,
             "windup": 0.4000000059604645,
-            "cooldown": 0.0,
-            "baseDamage": 0.0,
+            "cooldown": 0,
+            "baseDamage": 0,
             "attackRatio": 1.5,
-            "armorIgnore": 0.0,
-            "projectileSpeed": 8.0
+            "armorIgnore": 0,
+            "projectileSpeed": 8
         },
         {
             "skillId": 2006,
@@ -878,12 +878,12 @@
             "delivery": 0,
             "animation": 0,
             "centerOnCaster": false,
-            "windup": 0.30000001192092898,
-            "cooldown": 0.0,
-            "baseDamage": 0.0,
+            "windup": 0.30000001192092896,
+            "cooldown": 0,
+            "baseDamage": 0,
             "attackRatio": 2.5,
-            "armorIgnore": 0.0,
-            "projectileSpeed": 8.0
+            "armorIgnore": 0,
+            "projectileSpeed": 8
         },
         {
             "skillId": 2007,
@@ -897,11 +897,11 @@
             "animation": 2,
             "centerOnCaster": false,
             "windup": 0.5,
-            "cooldown": 0.0,
-            "baseDamage": 30.0,
-            "attackRatio": 1.2000000476837159,
-            "armorIgnore": 0.0,
-            "projectileSpeed": 8.0
+            "cooldown": 0,
+            "baseDamage": 30,
+            "attackRatio": 1.2000000476837158,
+            "armorIgnore": 0,
+            "projectileSpeed": 8
         },
         {
             "skillId": 2008,
@@ -915,19 +915,19 @@
             "animation": 0,
             "centerOnCaster": false,
             "windup": 0.4000000059604645,
-            "cooldown": 0.0,
-            "baseDamage": 0.0,
+            "cooldown": 0,
+            "baseDamage": 0,
             "attackRatio": 1.7999999523162842,
-            "armorIgnore": 0.0,
-            "projectileSpeed": 8.0
+            "armorIgnore": 0,
+            "projectileSpeed": 8
         }
     ],
     "effects": [
         {
             "effectId": 3001,
             "kind": 0,
-            "value": 80.0,
-            "duration": 5.0,
+            "value": 80,
+            "duration": 5,
             "stacking": 1,
             "stat": 1,
             "operation": 0
@@ -935,8 +935,8 @@
         {
             "effectId": 3002,
             "kind": 1,
-            "value": 90.0,
-            "duration": 0.0,
+            "value": 90,
+            "duration": 0,
             "stacking": 1,
             "stat": 1,
             "operation": 0
@@ -944,11 +944,109 @@
         {
             "effectId": 3003,
             "kind": 2,
-            "value": 1.0,
+            "value": 1,
             "duration": 1.5,
             "stacking": 1,
             "stat": 1,
             "operation": 0
+        }
+    ],
+    "traits": [
+        {
+            "traitId": 4001,
+            "name": "Human",
+            "category": 0,
+            "groupId": 1,
+            "requiredCount": 2,
+            "effect": 0,
+            "value": 0.15,
+            "secondaryValue": 0,
+            "duration": 5,
+            "threshold": 0
+        },
+        {
+            "traitId": 4002,
+            "name": "Elf",
+            "category": 0,
+            "groupId": 2,
+            "requiredCount": 2,
+            "effect": 1,
+            "value": 20,
+            "secondaryValue": 0,
+            "duration": 0,
+            "threshold": 0
+        },
+        {
+            "traitId": 4003,
+            "name": "Undead",
+            "category": 0,
+            "groupId": 3,
+            "requiredCount": 2,
+            "effect": 2,
+            "value": 0.15,
+            "secondaryValue": 0,
+            "duration": 0,
+            "threshold": 0
+        },
+        {
+            "traitId": 4004,
+            "name": "Orc",
+            "category": 0,
+            "groupId": 4,
+            "requiredCount": 2,
+            "effect": 3,
+            "value": 0.25,
+            "secondaryValue": 0,
+            "duration": 0,
+            "threshold": 0.5
+        },
+        {
+            "traitId": 4101,
+            "name": "Swordsman",
+            "category": 1,
+            "groupId": 1,
+            "requiredCount": 2,
+            "effect": 4,
+            "value": 0.15,
+            "secondaryValue": 0,
+            "duration": 0,
+            "threshold": 0
+        },
+        {
+            "traitId": 4102,
+            "name": "Mage",
+            "category": 1,
+            "groupId": 2,
+            "requiredCount": 2,
+            "effect": 5,
+            "value": 0.2,
+            "secondaryValue": 0,
+            "duration": 0,
+            "threshold": 0
+        },
+        {
+            "traitId": 4103,
+            "name": "Archer",
+            "category": 1,
+            "groupId": 3,
+            "requiredCount": 2,
+            "effect": 6,
+            "value": 0.2,
+            "secondaryValue": 0,
+            "duration": 0,
+            "threshold": 0
+        },
+        {
+            "traitId": 4104,
+            "name": "Assassin",
+            "category": 1,
+            "groupId": 4,
+            "requiredCount": 2,
+            "effect": 7,
+            "value": 0.2,
+            "secondaryValue": 0.3,
+            "duration": 0,
+            "threshold": 0
         }
     ]
 }

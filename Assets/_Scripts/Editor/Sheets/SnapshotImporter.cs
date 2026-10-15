@@ -6,6 +6,7 @@ using System.Linq;
 using AutoBattler.Data.Snapshot;
 using AutoBattler.Data.Skills;
 using AutoBattler.Data.Units;
+using AutoBattler.Data.Traits;
 using AutoBattler.Battle.Units;
 using UnityEditor;
 using UnityEngine;
@@ -17,15 +18,16 @@ namespace AutoBattler.EditorTools.Sheets
     {
         public const string OutputPath="Assets/_Data/Snapshots/GameSnapshot.json";
         public static readonly string[] BaseTabs={"Manifest","Units","Rounds","RoundUnits","Levels","ShopRates","PoolCounts","Economy"};
-        public static readonly string[] Tabs=BaseTabs.Concat(new[]{"Skills","Effects"}).ToArray();
-        public static string[] TabsForSchema(int schema)=>schema==1?BaseTabs:Tabs;
+        public static readonly string[] SkillTabs=BaseTabs.Concat(new[]{"Skills","Effects"}).ToArray();
+        public static readonly string[] Tabs=SkillTabs.Concat(new[]{"Traits"}).ToArray();
+        public static string[] TabsForSchema(int schema)=>schema==1?BaseTabs:schema==2?SkillTabs:schema==3?Tabs:throw new FormatException("지원하지 않는 스키마.");
         public static GameSnapshot Build(Dictionary<string,CsvTable> tables)
         {
             foreach(string tab in BaseTabs) if(!tables.ContainsKey(tab)) throw new FormatException(tab+": 표 없음.");
             var manifest=tables["Manifest"];
             if(manifest.Rows.Count!=2) throw manifest.Error(1,"schema_version","단일 Manifest 행 필요.");
             int schema=manifest.Int(1,"schema_version");
-            if(manifest.Rows.Count!=2 || (schema!=1 && schema!=2)) throw manifest.Error(1,"schema_version","스키마 1 또는 2의 단일 Manifest 행 필요.");
+            if(manifest.Rows.Count!=2 || schema<1 || schema>3) throw manifest.Error(1,"schema_version","스키마 1~3의 단일 Manifest 행 필요.");
             foreach(string tab in TabsForSchema(schema)) if(!tables.ContainsKey(tab)) throw new FormatException(tab+": 표 없음.");
             var data=new GameSnapshot {schemaVersion=schema,dataVersion=manifest.Get(1,"data_version")};
             if(string.IsNullOrWhiteSpace(data.dataVersion)) throw manifest.Error(1,"data_version","버전 필요.");
@@ -49,7 +51,28 @@ namespace AutoBattler.EditorTools.Sheets
             data.effects=schema==1?Array.Empty<EffectRow>():Read(tables["Effects"],(t,r)=>new EffectRow {
                 effectId=t.Int(r,"effect_id"),kind=ReadEnum<EffectKind>(t,r,"kind"),value=t.Float(r,"value"),duration=t.Float(r,"duration"),
                 stacking=ReadEnum<EffectStacking>(t,r,"stacking"),stat=ReadEnum<StatType>(t,r,"stat"),operation=ReadEnum<ModifierOperation>(t,r,"operation") });
-            if(schema==2)
+            data.traits=schema<3?Array.Empty<TraitRow>():Read(tables["Traits"],(t,r)=>new TraitRow {
+                traitId=t.Int(r,"trait_id"),name=t.Get(r,"name"),category=ReadEnum<TraitCategory>(t,r,"category"),
+                groupId=t.Int(r,"group_id"),requiredCount=t.Int(r,"required_count"),effect=ReadEnum<TraitEffect>(t,r,"effect"),
+                value=t.Float(r,"value"),secondaryValue=t.Float(r,"secondary_value"),duration=t.Float(r,"duration"),threshold=t.Float(r,"threshold") });
+            if(schema>=3)
+            {
+                var t=tables["Traits"]; CheckIds(data.traits,x=>x.traitId,t);
+                var stages=new HashSet<(TraitCategory,int,int)>();
+                foreach(var trait in data.traits)
+                {
+                    int r=FindRow(t,"trait_id",trait.traitId);
+                    if(string.IsNullOrWhiteSpace(trait.name) || trait.groupId<1 || trait.groupId>4 || trait.requiredCount<1 || trait.requiredCount>10
+                        || trait.value<0 || trait.secondaryValue<0 || trait.duration<0 || trait.threshold<0 || trait.threshold>1
+                        || (trait.effect==TraitEffect.ShieldAtStart && trait.duration<=0)
+                        || (trait.effect==TraitEffect.LowHealthAttack && trait.threshold<=0)
+                        || (trait.effect==TraitEffect.StartingMana && (trait.value>100 || trait.value!=(int)trait.value)))
+                        throw t.Error(r,"trait_id","시너지 수치·집계 범위 오류.");
+                    if(!stages.Add((trait.category,trait.groupId,trait.requiredCount))) throw t.Error(r,"required_count","같은 시너지 단계 중복.");
+                }
+                if(data.traits.Select(x=>(x.category,x.groupId)).Distinct().Count()!=8) throw new FormatException("Traits: 계열 4종과 직업 4종 정의 필요.");
+            }
+            if(schema>=2)
             {
                 CheckIds(data.skills,x=>x.skillId,tables["Skills"]); CheckIds(data.effects,x=>x.effectId,tables["Effects"]);
                 foreach(var skill in data.skills)

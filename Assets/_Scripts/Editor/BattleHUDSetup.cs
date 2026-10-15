@@ -114,6 +114,7 @@ namespace AutoBattler.EditorTools
                     experience, experience.GetComponentInChildren<TextMeshProUGUI>(), sell, selected);
                 hud.ConfigureActions(start, retry, null);
                 ReusableUISetup.ConfigureResultPanel(rootRect, hud);
+                SynergyUISetup.ConfigurePanel(hud);
 
                 var prefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
                 ProjectSetupSettings.Current.SetBattleHUD(prefab.GetComponent<RunHUD>());
