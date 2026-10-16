@@ -63,6 +63,7 @@ namespace AutoBattler.EditorTools
             {
                 Time.timeScale=10f;
                 await SynergyUIChecks.RunPlay(run,UnityEngine.Object.FindFirstObjectByType<RunHUD>());
+                await AssassinEntryChecks.RunPlay(run);
                 await TraitChecks.RunPlay(run);
                 await DamageEventChecks.RunPlay(run);
                 await SkillChecks.RunPlay(run);

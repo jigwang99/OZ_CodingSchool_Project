@@ -25,7 +25,16 @@ namespace AutoBattler.Battle.Combat
         }
         public bool TryReserve(int id,HexCoord from,HexCoord to)
         {
-            if(from.DistanceTo(to)!=1 || !occupants.TryGetValue(from,out int owner) || owner!=id || !IsFree(to,id)) return false;
+            return from.DistanceTo(to)==1 && TryReserveDestination(id,from,to);
+        }
+        /// <summary>도약 전용 예약. 일반 이동의 인접 칸 제한은 유지.</summary>
+        public bool TryReserveJump(int id,HexCoord from,HexCoord to)
+        {
+            return from!=to && TryReserveDestination(id,from,to);
+        }
+        private bool TryReserveDestination(int id,HexCoord from,HexCoord to)
+        {
+            if(!occupants.TryGetValue(from,out int owner) || owner!=id || !IsFree(to,id)) return false;
             reservations[to]=id; Revision++; return true;
         }
         public bool TryArrive(int id,HexCoord from,HexCoord to)

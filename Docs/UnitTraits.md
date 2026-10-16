@@ -42,7 +42,7 @@ Importer는 시너지 ID·그룹·단계 중복·수치 범위를 기존 전체 
 현재 로컬 Manifest는 schema_version=3, data_version=2026-10-15-traits-initial.
 기존 구글 시트에 Traits 탭을 추가하고 Traits.csv를 가져온 뒤 Manifest.csv의 두 값을 함께 반영하면 Sheets Import로 갱신 가능.
 기존 다른 탭의 수치를 덮어쓸 필요 없음. 이전 스키마 1·2는 기존 동작과 호환되며 시너지 정의 없이 실행.
-시너지 UI와 암살자 전투 시작 후방 도약은 이 변경 범위에 포함하지 않음.
+시너지 UI는 `SynergyPanel`에 연결. 암살자는 시너지 활성 여부와 무관하게 전투 시작 후방 도약 사용. 상세 규칙은 `Docs/AssassinEntry.md` 참고.
 
 ## 검사
 
