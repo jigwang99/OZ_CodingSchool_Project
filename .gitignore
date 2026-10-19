@@ -110,6 +110,12 @@ InitTestScene*.unity*
 /Assets/Pixem/
 /Assets/Pixem.meta
 
+# SPUM 및 타격 이펙트 원본 에셋과 폴더 메타 파일 제외
+/Assets/SPUM/
+/Assets/SPUM.meta
+/Assets/HitEffectPack/
+/Assets/HitEffectPack.meta
+
 # 시트 생성 작업 파일과 미리보기 제외
 /outputs/
 
