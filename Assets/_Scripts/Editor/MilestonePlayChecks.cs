@@ -76,6 +76,7 @@ namespace AutoBattler.EditorTools
                 var huds=UnityEngine.Object.FindObjectsByType<RunHUD>(FindObjectsSortMode.None);
                 Expect(huds.Length==1 && huds[0].Controller==run,"씬의 BattleHUD 한 개와 진행 참조 사용");
                 var hud=huds[0];
+                Expect(hud.UnitInfo!=null && !hud.UnitInfo.gameObject.activeSelf,"미선택 상태의 유닛 정보 숨김");
                 using var renamedUI=new RenamedUIProbe(hud);
                 CheckShopItemView(run,hud);
                 await CheckReusableViews(hud);
@@ -119,6 +120,7 @@ namespace AutoBattler.EditorTools
                 InputSystem.QueueStateEvent(mouse,new MouseState {position=screen});
                 await UniTask.DelayFrame(2);
                 Expect(owned.Placement.Cell==prepared,"실제 마우스 드래그 배치");
+                Expect(hud.UnitInfo.BoundUnit==dragged && hud.UnitInfo.gameObject.activeSelf,"드래그 배치 뒤 유닛 정보 유지");
                 Expect(run.AllySynergies.Statuses.Count==8
                     && run.AllySynergies.Count(AutoBattler.Data.Traits.TraitCategory.Origin,dragged.Definition.OriginId)==1,
                     "실제 배치 후 시너지 집계 자동 갱신과 대기석 제외");
@@ -146,6 +148,7 @@ namespace AutoBattler.EditorTools
                 int gold=run.State.Gold; Expect(!run.State.TrySettle(true) && run.State.Gold==gold,"정산 중복 방지");
                 Click(hud.ResultPanel.NextRoundButton);
                 Expect(run.State.Round==2,"다음 라운드 버튼");
+                await AugmentChecks.CheckSelection(run,hud,mouse,dragged);
                 await UniTask.Yield();
                 var unit=UnityEngine.Object.FindObjectsByType<Unit>(FindObjectsSortMode.None).First(x=>x.InstanceId==owned.Placement.InstanceId && x.Team==UnitTeam.Ally);
                 Expect(unit.Health.CurrentHp==unit.Health.MaxHp && unit.CurrentCell==prepared,"부대 체력·좌표 복원");
@@ -169,6 +172,8 @@ namespace AutoBattler.EditorTools
                 int beforeSell=run.State.Gold, sellPrice=benchUnit.Definition.Cost, beforeUnits=run.State.Units.Count;
                 Click(hud.SellButton);
                 Expect(run.State.Gold==beforeSell+sellPrice && run.State.Units.Count==beforeUnits-1,"판매 버튼 정산");
+                await UniTask.DelayFrame(2);
+                Expect(!hud.UnitInfo.gameObject.activeSelf && run.Drag.InspectedUnit==null,"판매 후 선택 정보 제거");
                 int beforeXp=run.State.Gold;
                 Click(hud.BuyExperienceButton);
                 Expect(run.State.Gold==beforeXp-4 && run.State.Level==3,"경험치 버튼 구매와 레벨 상승");
@@ -385,7 +390,7 @@ namespace AutoBattler.EditorTools
                 foreach(var pair in names) if(pair.Key!=null) pair.Key.name=pair.Value;
             }
         }
-        private static void CapturePreview(string fileName="MilestonePreview.png")
+        internal static void CapturePreview(string fileName="MilestonePreview.png")
         {
             Camera camera=Camera.main;
             var target=new RenderTexture(1920,1080,24); target.Create();

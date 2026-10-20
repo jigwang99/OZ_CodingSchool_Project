@@ -39,7 +39,7 @@ namespace AutoBattler.Presentation.Battle
             bool available=ready && snapshot.Statuses.Count>0;
             content.SetActive(available);
             emptyText.text=ready?"Synergy data is unavailable.":"Loading synergies...";
-            statusText.text=phase==BattlePhase.Preparation?"Your deployed army":phase==BattlePhase.Combat?"Locked for this battle":"Last battle's synergies";
+            statusText.text=phase==BattlePhase.Preparation || phase==BattlePhase.AugmentSelection?"Your deployed army":phase==BattlePhase.Combat?"Locked for this battle":"Last battle's synergies";
             // 숨긴 행의 자리를 남기지 않고 그룹과 행을 위에서부터 배치.
             bool anyVisible=false;
             if(available) foreach(var row in rows)
@@ -71,7 +71,7 @@ namespace AutoBattler.Presentation.Battle
                 rect.anchoredPosition=new Vector2(rect.anchoredPosition.x,-top);
                 top+=rect.sizeDelta.y+4f;
             }
-            top+=18f;
+            top+=8f;
         }
         private void OnDisable() { displayed=null; hasShown=false; }
     }

@@ -113,6 +113,7 @@ namespace AutoBattler.EditorTools
             Expect(state.TrySettle(true) && state.Gold==gold+8,"기본 보상 + 이자");
             gold=state.Gold; Expect(!state.TrySettle(true) && state.Gold==gold,"중복 정산 방지");
             Expect(state.TryNextRound() && state.CanPrepare && state.Round==2,"다음 준비 단계"); Conservation(state);
+            if(state.Augments.HasPending) Expect(state.TrySelectAugment(state.Augments.OfferedIds[0]),"준비 전 강화 선택 완료");
             int lives=state.Lives; state.CanPrepare=false; Expect(state.TrySettle(false) && state.Lives==lives-1 && state.WinStreak==0,"패배 정산");
             Expect(state.TryNextRound(),"패배 후 다음 라운드");
             // 모든 1코스트 재고가 고갈되면 빈 상점. 확률 0인 코스트는 추첨하지 않음.

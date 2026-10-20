@@ -112,7 +112,7 @@ namespace AutoBattler.EditorTools
             }
             finally { CultureInfo.CurrentCulture=previousCulture; panel.Show(run.AllySynergies,run.IsReady,run.Flow.CurrentPhase); }
         }
-        private static void Capture(int width,int height,string name)
+        internal static void Capture(int width,int height,string name)
         {
             var camera=Camera.main; var target=new RenderTexture(width,height,24); target.Create();
             var previous=camera.targetTexture; camera.targetTexture=target;

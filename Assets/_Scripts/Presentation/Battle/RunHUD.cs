@@ -37,6 +37,9 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private Button sellButton;
         [SerializeField] private TextMeshProUGUI selectedUnitText;
         [SerializeField] private SynergyPanel synergyPanel;
+        [SerializeField] private AugmentSelectionPanel augmentPanel;
+        [SerializeField] private SelectedAugmentsView selectedAugments;
+        [SerializeField] private UnitInfoPanel unitInfo;
 
         [Header("전투와 결과")]
         [SerializeField] private Button startBattleButton;
@@ -67,6 +70,9 @@ namespace AutoBattler.Presentation.Battle
         public Button RetryLoadButton => retryLoadButton;
         public ResultPanel ResultPanel => resultPanel;
         public SynergyPanel SynergyPanel => synergyPanel;
+        public AugmentSelectionPanel AugmentPanel=>augmentPanel;
+        public SelectedAugmentsView SelectedAugments=>selectedAugments;
+        public UnitInfoPanel UnitInfo => unitInfo;
 
 #if UNITY_EDITOR
         // 셋업 도구는 필드 이름 조회 대신 명시적인 참조 주입 사용.
@@ -90,6 +96,9 @@ namespace AutoBattler.Presentation.Battle
         public void ConfigureShopItems(ShopItem[] items) => shopItems=items;
         public void ConfigureResultPanel(ResultPanel panel) => resultPanel=panel;
         public void ConfigureSynergies(SynergyPanel panel) => synergyPanel=panel;
+        public void ConfigureAugments(AugmentSelectionPanel panel)=>augmentPanel=panel;
+        public void ConfigureSelectedAugments(SelectedAugmentsView view)=>selectedAugments=view;
+        public void ConfigureUnitInfo(UnitInfoPanel panel) => unitInfo = panel;
 #endif
 
         public void ConfigureScene(RunController controller)
@@ -123,6 +132,7 @@ namespace AutoBattler.Presentation.Battle
             resultPanel.ContinueRequested += NextRound;
             retryLoadButton.onClick.AddListener(RetryLoad);
             run.DisplayChanged += Refresh;
+            if(augmentPanel!=null) { augmentPanel.Selected+=SelectAugment; augmentPanel.ToggleRequested+=ToggleAugments; }
             isBound = true;
             hasDisplayedPhase = false;
             Refresh();
@@ -135,6 +145,8 @@ namespace AutoBattler.Presentation.Battle
         private void SellSelected() => run.SellSelected();
         private void NextRound() => run.Continue();
         private void RetryLoad() => run.RetryLoad();
+        private void SelectAugment(int id)=>run.SelectAugment(id);
+        private void ToggleAugments()=>run.ToggleAugmentWindow();
 
         private bool CanPrepare() => run.IsReady && run.State.CanPrepare
             && !run.State.IsOver && run.Flow.CurrentPhase == BattlePhase.Preparation;
@@ -156,6 +168,11 @@ namespace AutoBattler.Presentation.Battle
             selectedUnitText.text = unit != null && unit.Definition != null
                 ? unit.Definition.Name : "Select a unit";
             sellButton.interactable = CanPrepare() && unit != null;
+            if (unitInfo != null)
+            {
+                var inspected = run.IsReady && run.Flow.CanInspectUnits ? run.Drag.InspectedUnit : null;
+                unitInfo.Show(inspected, run.IsReady ? run.State.Data : null);
+            }
         }
 
         private void Refresh()
@@ -163,6 +180,8 @@ namespace AutoBattler.Presentation.Battle
             if (!isBound)
                 return;
             bool ready = run.IsReady;
+            if(augmentPanel!=null) augmentPanel.Show(run);
+            if(selectedAugments!=null) selectedAugments.Show(run);
             bool prepare = CanPrepare();
             if(synergyPanel!=null) synergyPanel.Show(ready?run.AllySynergies:null,ready,run.Flow.CurrentPhase);
             messageText.text = run.Message;
@@ -233,10 +252,12 @@ namespace AutoBattler.Presentation.Battle
 
         private void Unbind()
         {
+            if (unitInfo != null) unitInfo.Hide();
             if (!isBound)
                 return;
             if (run != null)
                 run.DisplayChanged -= Refresh;
+            if(augmentPanel!=null) { augmentPanel.Selected-=SelectAugment; augmentPanel.ToggleRequested-=ToggleAugments; }
             for (int i = 0; i < shopItems.Length; i++)
                 shopItems[i].PurchaseRequested -= BuyShopItem;
             startBattleButton.onClick.RemoveListener(StartBattle);

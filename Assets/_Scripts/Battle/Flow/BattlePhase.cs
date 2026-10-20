@@ -4,6 +4,7 @@ namespace AutoBattler.Battle.Flow
     {
         Preparation,
         Combat,
-        Result
+        Result,
+        AugmentSelection
     }
 }

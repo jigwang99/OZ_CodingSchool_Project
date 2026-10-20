@@ -77,8 +77,8 @@ namespace AutoBattler.Run
                 lifetime.Token.ThrowIfCancellationRequested();
                 State=new RunState(repository,seed); drag.BindBoard(State.Board,State.Placement);
                 State.Changed+=OnStateChanged; IsReady=true;
-                SyncAllies(); CreateEnemies(); RefreshSynergies(); drag.enabled=true;
-                Message="Drag a bench unit onto the blue board, then start battle.";
+                SyncAllies(); CreateEnemies(); RefreshSynergies(); EnterPreparation();
+                Message=State.Augments.HasPending?"Choose an augment. Hide choices to reposition your army.":"Drag a bench unit onto the blue board, then start battle.";
             }
             catch(OperationCanceledException) { }
             catch(Exception exception) { Message="Load failed. Check Console and retry."; Debug.LogException(exception,this); }
@@ -114,6 +114,7 @@ namespace AutoBattler.Run
                     unit.gameObject.SetActive(true); allies.Add(id,unit);
                 }
                 else if(unit.Star!=owned.Star) ConfigureUnit(unit,owned.DefinitionId,owned.Star,id,UnitTeam.Ally);
+                AugmentApplicator.ApplyPersistent(unit,State.Augments.Selected);
             }
             Physics2D.SyncTransforms();
         }
@@ -143,6 +144,27 @@ namespace AutoBattler.Run
         public bool Buy(int slot)=>PrepareCommand(()=>State.TryBuy(slot));
         public bool RefreshShop()=>PrepareCommand(()=>State.TryRefresh());
         public bool BuyXp()=>PrepareCommand(()=>State.TryBuyXp());
+        public bool ToggleAugmentWindow()
+        {
+            if(!IsReady || !State.Augments.HasPending || flow.CurrentPhase!=BattlePhase.AugmentSelection) return false;
+            drag.CancelDrag();
+            if(!flow.SetAugmentWindowOpen(!flow.IsAugmentWindowOpen)) return false;
+            drag.enabled=flow.CanPlaceUnits;
+            Message=flow.IsAugmentWindowOpen?"Choose an augment. Hide choices to reposition your army.":"Reposition your army. Choose an augment to unlock the shop and battle.";
+            DisplayChanged?.Invoke(); return true;
+        }
+        public bool SelectAugment(int id)
+        {
+            if(!IsReady || flow.CurrentPhase!=BattlePhase.AugmentSelection || !flow.IsAugmentWindowOpen) return false;
+            if(!State.TrySelectAugment(id)) return false;
+            flow.TryFinishAugmentSelection(); drag.enabled=true;
+            Message="Augment selected. Prepare your army."; DisplayChanged?.Invoke(); return true;
+        }
+        private void EnterPreparation()
+        {
+            if(State.Augments.HasPending) flow.TryBeginAugmentSelection();
+            drag.enabled=flow.CanPlaceUnits;
+        }
         public bool SellSelected()
         {
             int id=drag.SelectedUnit?.State?.InstanceId ?? 0;
@@ -157,7 +179,7 @@ namespace AutoBattler.Run
         }
         public bool StartBattle()
         {
-            if(!IsReady || flow.CurrentPhase!=BattlePhase.Preparation || State.IsOver) return false;
+            if(!IsReady || flow.CurrentPhase!=BattlePhase.Preparation || State.IsOver || State.Augments.HasPending) return false;
             drag.CancelDrag();
             if(State.Board.DeployedCount==0) { Message="Deploy at least one unit."; DisplayChanged?.Invoke(); return false; }
             RefreshSynergies();
@@ -165,9 +187,10 @@ namespace AutoBattler.Run
             foreach(var unit in combatUnits) unit.BeginBattle();
             var battle=new AutoBattleController(combatUnits);
             if(!flow.TryStartCombat()) return false;
-            State.CanPrepare=false; drag.enabled=false;
+            State.CanPrepare=false; drag.enabled=true;
             battleSynergies=new TraitBattleSession(combatUnits,AllySynergies,EnemySynergies);
             battleSynergies.Start();
+            AugmentApplicator.ApplyBattleStart(combatUnits,State.Augments.Selected);
             combatCancellation=CancellationTokenSource.CreateLinkedTokenSource(lifetime.Token);
             combatDeadline=Time.time+State.Data.Rule(EconomyRule.CombatSeconds);
             Message="Automatic battle"; DisplayChanged?.Invoke();
@@ -204,8 +227,8 @@ namespace AutoBattler.Run
             if(!IsReady || flow.CurrentPhase!=BattlePhase.Result || State.IsOver) return false;
             if(!State.TryNextRound()) return false;
             foreach(var unit in allies.Values) unit.RestorePreparation();
-            CreateEnemies(); flow.TryBeginPreparation(); RefreshSynergies(); drag.enabled=true;
-            Message="Army restored. Prepare the next round.";
+            CreateEnemies(); flow.TryBeginPreparation(); EnterPreparation(); RefreshSynergies();
+            Message=State.Augments.HasPending?"Choose an augment. Hide choices to reposition your army.":"Army restored. Prepare the next round.";
             DisplayChanged?.Invoke(); return true;
         }
         private void OnDestroy()

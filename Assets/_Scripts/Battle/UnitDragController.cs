@@ -1,4 +1,5 @@
 using AutoBattler.Battle.Flow;
+using AutoBattler.Battle.Units;
 using AutoBattler.Battle.Placement;
 using AutoBattler.Presentation.Units;
 using UnityEngine;
@@ -27,6 +28,9 @@ namespace AutoBattler.Battle.Grid
         private UnitView draggedUnit;
         private Vector3 originalPosition;
         private Vector3 dragOffset;
+        private Unit inspectedUnit;
+        private int inspectedSpawnVersion;
+        private int inspectedInstanceId;
 
         private void Awake()
         {
@@ -56,8 +60,12 @@ namespace AutoBattler.Battle.Grid
         }
 
         public UnitView SelectedUnit { get; private set; }
+        // 풀 반환 후 같은 오브젝트가 재사용되어도 이전 선택을 이어받지 않도록 구분.
+        public Unit InspectedUnit => inspectedUnit != null && inspectedUnit.isActiveAndEnabled
+            && inspectedUnit.SpawnVersion == inspectedSpawnVersion
+            && inspectedUnit.InstanceId == inspectedInstanceId ? inspectedUnit : null;
         public event System.Action PlacementChanged;
-        public void ClearSelection() { CancelDrag(); SelectedUnit = null; }
+        public void ClearSelection() { CancelDrag(); SelectedUnit = null; inspectedUnit = null; }
         public void BindBoard(BoardState board, PlacementService service)
         {
             CancelDrag(); boardState = board; placementService = service;
@@ -120,7 +128,7 @@ namespace AutoBattler.Battle.Grid
 
         private void Update()
         {
-            if (battleFlow == null || !battleFlow.CanPlaceUnits
+            if (battleFlow == null || !battleFlow.CanInspectUnits
                 || Mouse.current == null || boardCamera == null || gridLayout == null)
             {
                 CancelDrag();
@@ -139,6 +147,11 @@ namespace AutoBattler.Battle.Grid
                 ClearDrag();
                 if (Mouse.current.leftButton.wasPressedThisFrame)
                     TryBeginDrag(mouseWorldPosition);
+            }
+            if (!battleFlow.CanPlaceUnits)
+            {
+                CancelDrag();
+                return;
             }
             if (draggedUnit == null)
                 return;
@@ -159,7 +172,28 @@ namespace AutoBattler.Battle.Grid
             if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
                 return;
             Collider2D hit = Physics2D.OverlapPoint(mouseWorldPosition, unitLayer);
+            Unit unit = hit != null ? hit.GetComponentInParent<Unit>() : null;
+            if (hit == null)
+            {
+                // 적군도 정보 확인 가능. 드래그 등록과 배치 변경은 아군만 허용.
+                foreach (var candidate in Physics2D.OverlapPointAll(mouseWorldPosition))
+                {
+                    var owner = candidate.GetComponentInParent<Unit>();
+                    if (candidate.gameObject.scene != gameObject.scene || owner == null
+                        || !owner.isActiveAndEnabled || owner.Definition == null) continue;
+                    hit = candidate; unit = owner; break;
+                }
+            }
             if (hit == null || hit.gameObject.scene != gameObject.scene)
+            {
+                ClearSelection();
+                return;
+            }
+            inspectedUnit = unit;
+            inspectedSpawnVersion = unit != null ? unit.SpawnVersion : 0;
+            inspectedInstanceId = unit != null ? unit.InstanceId : 0;
+            SelectedUnit = unit != null && unit.Team == UnitTeam.Ally ? unit.View : null;
+            if (!battleFlow.CanPlaceUnits || unit != null && unit.Team == UnitTeam.Enemy)
                 return;
             draggedUnit = RegisterUnit(hit);
             if (draggedUnit == null)

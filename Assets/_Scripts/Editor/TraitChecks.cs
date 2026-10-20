@@ -31,7 +31,7 @@ namespace AutoBattler.EditorTools
         public static void RunDomain()
         {
             checks=0; var data=SnapshotImporter.Build(Tables()); var repository=new DataRepository(data);
-            Expect(repository.Traits.Count==8 && data.schemaVersion==3,"시너지 데이터 8종과 스키마 3");
+            Expect(repository.Traits.Count==8 && data.schemaVersion==4,"시너지 데이터 8종과 스키마 4");
             var all=TraitCounter.Count(repository.Units.Values,repository.Traits);
             Expect(all.Active.Count==8 && all.Statuses.All(status=>status.Count==2),"계열·직업 각각 2종 독립 집계");
             var human=repository.Units[1001];

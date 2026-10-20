@@ -48,7 +48,7 @@ namespace AutoBattler.EditorTools
             {
                 var rect=root.GetComponent<RectTransform>();
                 rect.anchorMin=rect.anchorMax=rect.pivot=new Vector2(0f,1f);
-                rect.anchoredPosition=new Vector2(24f,-136f); rect.sizeDelta=new Vector2(352f,768f);
+                rect.anchoredPosition=new Vector2(24f,-200f); rect.sizeDelta=new Vector2(352f,748f);
                 root.GetComponent<Image>().color=new Color(.045f,.07f,.105f,.97f);
                 Label(rect,"Title",new Vector2(20f,-18f),new Vector2(312f,30f),25f,"SYNERGIES",true);
                 var status=Label(rect,"Status",new Vector2(20f,-52f),new Vector2(312f,22f),15f,"Your deployed army");

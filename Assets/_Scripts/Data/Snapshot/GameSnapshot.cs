@@ -5,6 +5,7 @@ using System.Linq;
 using AutoBattler.Data.Skills;
 using AutoBattler.Data.Units;
 using AutoBattler.Data.Traits;
+using AutoBattler.Data.Augments;
 
 namespace AutoBattler.Data.Snapshot
 {
@@ -22,6 +23,7 @@ namespace AutoBattler.Data.Snapshot
         public SkillRow[] skills;
         public EffectRow[] effects;
         public TraitRow[] traits;
+        public AugmentRow[] augments;
     }
     [Serializable] public sealed class UnitRow
     {
@@ -77,13 +79,17 @@ namespace AutoBattler.Data.Snapshot
         public IReadOnlyDictionary<int,SkillDefinition> Skills { get; }
         public IReadOnlyDictionary<int,EffectDefinition> Effects { get; }
         public IReadOnlyList<TraitDefinition> Traits { get; }
+        public IReadOnlyDictionary<int,AugmentDefinition> Augments { get; }
         private readonly Dictionary<int,int> levelXp, pool;
         private readonly Dictionary<int,int[]> rates;
         private readonly Dictionary<int,float> rules;
         public DataRepository(GameSnapshot data)
         {
-            if(data==null || data.schemaVersion<1 || data.schemaVersion>3) throw new ArgumentException("지원하지 않는 데이터 스키마.");
+            if(data==null || data.schemaVersion<1 || data.schemaVersion>4) throw new ArgumentException("지원하지 않는 데이터 스키마.");
             Version=data.dataVersion;
+            Augments=new ReadOnlyDictionary<int,AugmentDefinition>((data.schemaVersion>=4
+                ? data.augments ?? throw new ArgumentException("강화 정의 없음.") : Array.Empty<AugmentRow>())
+                .ToDictionary(row=>row.augmentId,row=>new AugmentDefinition(row)));
             Units=new ReadOnlyDictionary<int,UnitDefinition>(data.units.ToDictionary(x=>x.unitId,x=>new UnitDefinition(x)));
             Rounds=new ReadOnlyDictionary<int,RoundDefinition>(data.rounds.ToDictionary(x=>x.roundId,x=>new RoundDefinition(x,data.roundUnits.Where(e=>e.roundId==x.roundId))));
             Skills=new ReadOnlyDictionary<int,SkillDefinition>((data.skills ?? Array.Empty<SkillRow>()).ToDictionary(x=>x.skillId,x=>new SkillDefinition(x)));

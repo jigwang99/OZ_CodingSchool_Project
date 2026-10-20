@@ -20,6 +20,12 @@ MonoBehaviour:
   resultPanel: {fileID: 7638330283626845108, guid: 85f4a31895a3a754595b74ae8f60fa64, type: 3}
   healthBar: {fileID: 7604747378388361148, guid: b999a7218cc3c0748b54488abeaa4ef7, type: 3}
   synergyPanel: {fileID: 1170850315550061556, guid: 4c468fb7691357b41b1a112fcd355cd8, type: 3}
+  augmentPanel: {fileID: 1347563070252866809, guid: 26f9a0d7e14a7d745b71bcfef01e5611, type: 3}
+  augmentCard: {fileID: 256650611582251879, guid: 6b0a222794225f04b88cfcd412d4ab0c, type: 3}
+  selectedAugments: {fileID: 4625943450194183784, guid: e259ae50e9b5a6344902a57c9833a833, type: 3}
+  unitInfo: {fileID: 7786533259558899274, guid: 34e429d88397f614d8013abcb6ecbaae, type: 3}
+  unitInfoSourceFont: {fileID: 12800000, guid: 621a2fafdb9f6c949aafe3def523a38c, type: 3}
+  unitInfoFont: {fileID: 11400000, guid: 046faef00320d9d40b6fed2fa6ab7380, type: 2}
   uiPrefabFolder: {fileID: 102900000, guid: 5002d7e6e0174e14ab5b4c4fe9ee7123, type: 3}
   unitPrefabFolder: {fileID: 102900000, guid: 472f16cc66f6472a915e962ebaee35f0, type: 3}
   dataGroup: {fileID: 11400000, guid: adb32141412a8e047af026dc0e1ab53e, type: 2}

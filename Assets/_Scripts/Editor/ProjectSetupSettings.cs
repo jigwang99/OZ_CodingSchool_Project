@@ -8,6 +8,7 @@ using AutoBattler.Presentation.Units;
 using UnityEditor;
 using UnityEditor.AddressableAssets.Settings;
 using UnityEngine;
+using TMPro;
 
 namespace AutoBattler.EditorTools
 {
@@ -37,6 +38,12 @@ namespace AutoBattler.EditorTools
         [SerializeField] private ResultPanel resultPanel;
         [SerializeField] private UnitHealthBar healthBar;
         [SerializeField] private SynergyPanel synergyPanel;
+        [SerializeField] private AugmentSelectionPanel augmentPanel;
+        [SerializeField] private AugmentCard augmentCard;
+        [SerializeField] private SelectedAugmentsView selectedAugments;
+        [SerializeField] private UnitInfoPanel unitInfo;
+        [SerializeField] private Font unitInfoSourceFont;
+        [SerializeField] private TMP_FontAsset unitInfoFont;
         [SerializeField] private DefaultAsset uiPrefabFolder;
         [SerializeField] private DefaultAsset unitPrefabFolder;
         [SerializeField] private AddressableAssetGroup dataGroup;
@@ -51,6 +58,17 @@ namespace AutoBattler.EditorTools
         public ResultPanel ResultPanel => resultPanel;
         public UnitHealthBar HealthBar => healthBar;
         public SynergyPanel SynergyPanel => synergyPanel;
+        public AugmentSelectionPanel AugmentPanel=>augmentPanel;
+        public AugmentCard AugmentCard=>augmentCard;
+        public SelectedAugmentsView SelectedAugments=>selectedAugments;
+        public UnitInfoPanel UnitInfo => unitInfo;
+        public Font UnitInfoSourceFont => unitInfoSourceFont;
+        public TMP_FontAsset UnitInfoFont => unitInfoFont;
+        public string UnitInfoFontPath => Path.Combine(Path.GetDirectoryName(AssetDatabase.GetAssetPath(this)), "UnitInfoKoreanFont.asset").Replace('\\', '/');
+        public string UnitInfoPath => ExistingOrNew(unitInfo, uiPrefabFolder, "UnitInfoPanel.prefab");
+        public string SelectedAugmentsPath=>ExistingOrNew(selectedAugments,uiPrefabFolder,"SelectedAugments.prefab");
+        public string AugmentPanelPath=>ExistingOrNew(augmentPanel,uiPrefabFolder,"AugmentSelectionPanel.prefab");
+        public string AugmentCardPath=>ExistingOrNew(augmentCard,uiPrefabFolder,"AugmentCard.prefab");
         public AddressableAssetGroup DataGroup => dataGroup;
         public AddressableAssetGroup UnitGroup => unitGroup;
         public IReadOnlyList<UnitPrefabSetupEntry> Units => Array.AsReadOnly(units);
@@ -89,6 +107,11 @@ namespace AutoBattler.EditorTools
         public void SetResultPanel(ResultPanel prefab) => resultPanel=prefab;
         public void SetHealthBar(UnitHealthBar prefab) => healthBar=prefab;
         public void SetSynergyPanel(SynergyPanel prefab) => synergyPanel=prefab;
+        public void SetAugmentPanel(AugmentSelectionPanel prefab)=>augmentPanel=prefab;
+        public void SetAugmentCard(AugmentCard prefab)=>augmentCard=prefab;
+        public void SetSelectedAugments(SelectedAugmentsView prefab)=>selectedAugments=prefab;
+        public void SetUnitInfo(UnitInfoPanel prefab) => unitInfo = prefab;
+        public void SetUnitInfoFont(TMP_FontAsset font) => unitInfoFont = font;
         public void Configure(AssetCatalog assets, TextAsset data, SceneAsset scene, RunHUD hud, ShopItem shop,
             ResultPanel result, UnitHealthBar health, DefaultAsset uiFolder, DefaultAsset unitFolder,
             AddressableAssetGroup dataAssets, AddressableAssetGroup unitAssets, UnitPrefabSetupEntry[] entries)

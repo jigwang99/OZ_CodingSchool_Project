@@ -1460,8 +1460,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 24, y: -136}
-  m_SizeDelta: {x: 352, y: 768}
+  m_AnchoredPosition: {x: 24, y: -200}
+  m_SizeDelta: {x: 352, y: 748}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &5909447944058069155
 CanvasRenderer:
@@ -1516,9 +1516,6 @@ MonoBehaviour:
   content: {fileID: 4740382285765725847}
   statusText: {fileID: 6442007973704926154}
   emptyText: {fileID: 4150673042269323312}
-  originsTitle: {fileID: 3596173091448580901}
-  classesTitle: {fileID: 3722002351276488004}
-  rules: {fileID: 7774625929011313557}
   rows:
   - {fileID: 2615410008235981959}
   - {fileID: 8424069077086283561}
@@ -1528,6 +1525,9 @@ MonoBehaviour:
   - {fileID: 9028002816474658832}
   - {fileID: 6016130712972478207}
   - {fileID: 8475143253426334358}
+  originsTitle: {fileID: 3596173091448580901}
+  classesTitle: {fileID: 3722002351276488004}
+  rules: {fileID: 7774625929011313557}
 --- !u!1 &2597131080515073221
 GameObject:
   m_ObjectHideFlags: 0

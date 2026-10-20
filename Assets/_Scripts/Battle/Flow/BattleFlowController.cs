@@ -7,7 +7,10 @@ namespace AutoBattler.Battle.Flow
     public sealed class BattleFlowController : MonoBehaviour
     {
         public BattlePhase CurrentPhase { get; private set; } = BattlePhase.Preparation;
-        public bool CanPlaceUnits => isActiveAndEnabled && CurrentPhase == BattlePhase.Preparation;
+        public bool IsAugmentWindowOpen { get; private set; }
+        public bool CanInspectUnits => isActiveAndEnabled && (CanPlaceUnits || CurrentPhase == BattlePhase.Combat);
+        public bool CanPlaceUnits => isActiveAndEnabled && (CurrentPhase==BattlePhase.Preparation
+            || CurrentPhase==BattlePhase.AugmentSelection && !IsAugmentWindowOpen);
         public event Action<BattlePhase> PhaseChanged;
         private bool isChangingPhase;
 
@@ -19,6 +22,15 @@ namespace AutoBattler.Battle.Flow
 
         /// <summary>결과 처리가 끝난 뒤 다음 준비 단계로 전환.</summary>
         public bool TryBeginPreparation() => TryChangePhase(BattlePhase.Result, BattlePhase.Preparation);
+        public bool TryBeginAugmentSelection()=>TryChangePhase(BattlePhase.Preparation,BattlePhase.AugmentSelection);
+        public bool TryFinishAugmentSelection()=>TryChangePhase(BattlePhase.AugmentSelection,BattlePhase.Preparation);
+        public bool SetAugmentWindowOpen(bool open)
+        {
+            if(!isActiveAndEnabled || isChangingPhase || CurrentPhase!=BattlePhase.AugmentSelection || IsAugmentWindowOpen==open) return false;
+            isChangingPhase=true;
+            try { IsAugmentWindowOpen=open; PhaseChanged?.Invoke(CurrentPhase); return true; }
+            finally { isChangingPhase=false; }
+        }
 
         private bool TryChangePhase(BattlePhase expected, BattlePhase next)
         {
@@ -29,6 +41,7 @@ namespace AutoBattler.Battle.Flow
             try
             {
                 CurrentPhase = next;
+                IsAugmentWindowOpen=next==BattlePhase.AugmentSelection;
                 PhaseChanged?.Invoke(next);
                 return true;
             }

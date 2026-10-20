@@ -4,6 +4,7 @@ using System.Linq;
 using AutoBattler.Data.Snapshot;
 using AutoBattler.Battle.Grid;
 using AutoBattler.Battle.Placement;
+using AutoBattler.Data.Augments;
 
 namespace AutoBattler.Run
 {
@@ -18,6 +19,7 @@ namespace AutoBattler.Run
     public sealed class RunState
     {
         public DataRepository Data { get; }
+        public AugmentState Augments { get; }
         public BoardState Board { get; }=new BoardState();
         public PlacementService Placement { get; }
         public int Gold { get; private set; } public int Level { get; private set; }=1;
@@ -38,6 +40,7 @@ namespace AutoBattler.Run
         public RunState(DataRepository data,int seed)
         {
             Data=data; random=new Random(seed); Placement=new PlacementService(Board);
+            Augments=new AugmentState(data.Augments,seed);
             Gold=data.IntRule(EconomyRule.StartGold); Lives=data.IntRule(EconomyRule.StartLives);
             foreach(var unit in data.Units.Values) stock.Add(unit.Id,data.PoolCopies(unit.Cost));
             int starter=Draw(new int[]{100,0,0,0,0});
@@ -45,9 +48,16 @@ namespace AutoBattler.Run
             var initial=new OwnedUnit(starter,nextId++);
             Placement.TryRegisterUnit(initial.Placement,UnitLocation.OnBench(0)); owned.Add(initial);
             Reroll();
+            Augments.EnterRound(Round,Data.Rounds[Round].OffersAugment);
         }
         public int Stock(int definitionId)=>stock[definitionId];
-        private bool Ready()=>CanPrepare && !IsOver;
+        private bool Ready()=>CanPrepare && !IsOver && !Augments.HasPending;
+        public bool TrySelectAugment(int id)
+        {
+            if(!CanPrepare || IsOver || !Augments.TrySelect(Round,id,out var definition)) return false;
+            if(definition.Effect==AugmentEffect.ImmediateGold) Gold+=(int)definition.Value;
+            Notify(); return true;
+        }
         private bool Fail(string message) { LastError=message; return false; }
         private void Notify() { LastError=null; Changed?.Invoke(); }
         public bool TryRefresh()
@@ -112,22 +122,23 @@ namespace AutoBattler.Run
         }
         public bool TrySettle(bool won)
         {
-            if(IsOver || settledRound==Round || CanPrepare) return false;
+            if(IsOver || settledRound==Round || CanPrepare || Augments.HasPending) return false;
             settledRound=Round; WinStreak=won?WinStreak+1:0;
             int streak=WinStreak>=5?3:WinStreak==4?2:WinStreak==3?1:0;
             int interest=Math.Min(Data.IntRule(EconomyRule.InterestCap),Gold/Data.IntRule(EconomyRule.InterestDivisor));
-            int income=Data.Rounds[Round].Reward+streak+interest;
+            int augmentGold=won?Augments.Selected.Where(x=>x.Effect==AugmentEffect.VictoryGold).Sum(x=>(int)x.Value):0;
+            int income=Data.Rounds[Round].Reward+streak+interest+augmentGold;
             Gold+=income; AddXp(Data.IntRule(EconomyRule.RoundXp));
             if(!won) Lives--;
             IsOver=Lives<=0 || Round==Data.Rounds.Count;
             WonRun=IsOver && won && Round==Data.Rounds.Count;
-            LastResult=$"{(won?"Victory":"Defeat")}   +{income} gold (interest {interest}, streak {streak})";
+            LastResult=$"{(won?"Victory":"Defeat")}   +{income} gold (interest {interest}, streak {streak}, augments {augmentGold})";
             Notify(); return true;
         }
         public bool TryNextRound()
         {
             if(IsOver || settledRound!=Round || CanPrepare) return false;
-            Round++; CanPrepare=true; Reroll(); Notify(); return true;
+            Round++; CanPrepare=true; Reroll(); Augments.EnterRound(Round,Data.Rounds[Round].OffersAugment); Notify(); return true;
         }
         private void Reroll()
         {

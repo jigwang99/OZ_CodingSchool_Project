@@ -7,6 +7,7 @@ using AutoBattler.Data.Snapshot;
 using AutoBattler.Data.Skills;
 using AutoBattler.Data.Units;
 using AutoBattler.Data.Traits;
+using AutoBattler.Data.Augments;
 using AutoBattler.Battle.Units;
 using UnityEditor;
 using UnityEngine;
@@ -19,15 +20,16 @@ namespace AutoBattler.EditorTools.Sheets
         public const string OutputPath="Assets/_Data/Snapshots/GameSnapshot.json";
         public static readonly string[] BaseTabs={"Manifest","Units","Rounds","RoundUnits","Levels","ShopRates","PoolCounts","Economy"};
         public static readonly string[] SkillTabs=BaseTabs.Concat(new[]{"Skills","Effects"}).ToArray();
-        public static readonly string[] Tabs=SkillTabs.Concat(new[]{"Traits"}).ToArray();
-        public static string[] TabsForSchema(int schema)=>schema==1?BaseTabs:schema==2?SkillTabs:schema==3?Tabs:throw new FormatException("지원하지 않는 스키마.");
+        public static readonly string[] TraitTabs=SkillTabs.Concat(new[]{"Traits"}).ToArray();
+        public static readonly string[] Tabs=TraitTabs.Concat(new[]{"Augments"}).ToArray();
+        public static string[] TabsForSchema(int schema)=>schema==1?BaseTabs:schema==2?SkillTabs:schema==3?TraitTabs:schema==4?Tabs:throw new FormatException("지원하지 않는 스키마.");
         public static GameSnapshot Build(Dictionary<string,CsvTable> tables)
         {
             foreach(string tab in BaseTabs) if(!tables.ContainsKey(tab)) throw new FormatException(tab+": 표 없음.");
             var manifest=tables["Manifest"];
             if(manifest.Rows.Count!=2) throw manifest.Error(1,"schema_version","단일 Manifest 행 필요.");
             int schema=manifest.Int(1,"schema_version");
-            if(manifest.Rows.Count!=2 || schema<1 || schema>3) throw manifest.Error(1,"schema_version","스키마 1~3의 단일 Manifest 행 필요.");
+            if(manifest.Rows.Count!=2 || schema<1 || schema>4) throw manifest.Error(1,"schema_version","스키마 1~4의 단일 Manifest 행 필요.");
             foreach(string tab in TabsForSchema(schema)) if(!tables.ContainsKey(tab)) throw new FormatException(tab+": 표 없음.");
             var data=new GameSnapshot {schemaVersion=schema,dataVersion=manifest.Get(1,"data_version")};
             if(string.IsNullOrWhiteSpace(data.dataVersion)) throw manifest.Error(1,"data_version","버전 필요.");
@@ -55,6 +57,24 @@ namespace AutoBattler.EditorTools.Sheets
                 traitId=t.Int(r,"trait_id"),name=t.Get(r,"name"),category=ReadEnum<TraitCategory>(t,r,"category"),
                 groupId=t.Int(r,"group_id"),requiredCount=t.Int(r,"required_count"),effect=ReadEnum<TraitEffect>(t,r,"effect"),
                 value=t.Float(r,"value"),secondaryValue=t.Float(r,"secondary_value"),duration=t.Float(r,"duration"),threshold=t.Float(r,"threshold") });
+            data.augments=schema<4?Array.Empty<AugmentRow>():Read(tables["Augments"],(t,r)=>new AugmentRow {
+                augmentId=t.Int(r,"augment_id"),name=t.Get(r,"name"),description=t.Get(r,"description"),
+                effect=ReadEnum<AugmentEffect>(t,r,"effect"),stat=ReadEnum<StatType>(t,r,"stat"),
+                operation=ReadEnum<ModifierOperation>(t,r,"operation"),value=t.Float(r,"value"),duration=t.Float(r,"duration") });
+            if(schema>=4)
+            {
+                var t=tables["Augments"]; CheckIds(data.augments,x=>x.augmentId,t);
+                if(data.augments.Length!=8) throw new FormatException("Augments: 공통 강화 8종 필요.");
+                foreach(var augment in data.augments)
+                {
+                    int r=FindRow(t,"augment_id",augment.augmentId);
+                    if(string.IsNullOrWhiteSpace(augment.name) || string.IsNullOrWhiteSpace(augment.description) || augment.value<=0 || augment.duration<0
+                        || (augment.effect==AugmentEffect.StartingShield && augment.duration<=0)
+                        || (augment.effect==AugmentEffect.StartingMana && (augment.value>100 || augment.value!=(int)augment.value))
+                        || ((augment.effect==AugmentEffect.ImmediateGold || augment.effect==AugmentEffect.VictoryGold) && augment.value!=(int)augment.value))
+                        throw t.Error(r,"value/duration","강화 수치·설명 범위 오류.");
+                }
+            }
             if(schema>=3)
             {
                 var t=tables["Traits"]; CheckIds(data.traits,x=>x.traitId,t);

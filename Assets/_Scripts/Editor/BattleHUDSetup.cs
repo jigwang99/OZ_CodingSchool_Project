@@ -115,6 +115,9 @@ namespace AutoBattler.EditorTools
                 hud.ConfigureActions(start, retry, null);
                 ReusableUISetup.ConfigureResultPanel(rootRect, hud);
                 SynergyUISetup.ConfigurePanel(hud);
+                AugmentSetup.ConfigurePanel(hud);
+                SelectedAugmentsSetup.ConfigurePanel(hud);
+                UnitInfoSetup.ConfigurePanel(hud);
 
                 var prefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
                 ProjectSetupSettings.Current.SetBattleHUD(prefab.GetComponent<RunHUD>());
