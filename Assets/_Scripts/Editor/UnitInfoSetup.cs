@@ -74,7 +74,9 @@ namespace AutoBattler.EditorTools
                 var skillName=Label(root,"SkillName",new Vector2(22f,-512f),new Vector2(376f,32f),23f,"Skill");
                 skillName.fontStyle=FontStyles.Bold; skillName.color=new Color(.55f,.82f,1f);
                 var skill=Label(root,"Skill",new Vector2(22f,-556f),new Vector2(376f,162f),18f,"Skill details");
-                root.gameObject.AddComponent<UnitInfoPanel>().Configure(group,accent,title,identity,traits,hp,mp,hpFill,mpFill,stats,skillName,skill);
+                var panel=root.gameObject.AddComponent<UnitInfoPanel>();
+                panel.Configure(group,accent,title,identity,traits,hp,mp,hpFill,mpFill,stats,skillName,skill);
+                panel.ConfigureHealthSegments(ShieldBarSetup.CreateFill(hpFill));
                 root.gameObject.SetActive(false);
                 var prefab=PrefabUtility.SaveAsPrefabAsset(root.gameObject,setup.UnitInfoPath);
                 setup.SetUnitInfo(prefab.GetComponent<UnitInfoPanel>()); EditorUtility.SetDirty(setup);

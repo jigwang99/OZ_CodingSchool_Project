@@ -82,6 +82,7 @@ namespace AutoBattler.EditorTools
                 end.gameObject.SetActive(false);
                 var panel=prototype.AddComponent<ResultPanel>();
                 panel.ConfigureReferences(prototype.GetComponent<CanvasGroup>(),title,result,end,button);
+                GameEntrySetup.ConfigureResultPanel(panel);
                 prototype.SetActive(false);
                 var prefab=PrefabUtility.SaveAsPrefabAsset(prototype,path);
                 setup.SetResultPanel(prefab.GetComponent<ResultPanel>()); EditorUtility.SetDirty(setup);
@@ -95,12 +96,13 @@ namespace AutoBattler.EditorTools
             var setup=ProjectSetupSettings.Current;
             if(setup.HealthBar!=null)
             {
-                if(setup.HealthBar.GetComponentInChildren<UnitManaBar>(true)!=null)
+                if(setup.HealthBar.GetComponentInChildren<UnitManaBar>(true)!=null && setup.HealthBar.Segments!=null)
                     return setup.HealthBar.gameObject;
                 var contents=PrefabUtility.LoadPrefabContents(setup.HealthBarPath);
                 try
                 {
-                    CreateManaBar(contents.GetComponent<RectTransform>());
+                    if(contents.GetComponentInChildren<UnitManaBar>(true)==null) CreateManaBar(contents.GetComponent<RectTransform>());
+                    ShieldBarSetup.ConfigureUnitBar(contents.GetComponent<UnitHealthBar>());
                     return PrefabUtility.SaveAsPrefabAsset(contents,setup.HealthBarPath);
                 }
                 finally { PrefabUtility.UnloadPrefabContents(contents); }
@@ -120,6 +122,7 @@ namespace AutoBattler.EditorTools
                 fill.rectTransform.pivot=new Vector2(0f,.5f);
                 var label=Label(rect,"HealthText",new Vector2(0f,18f),new Vector2(140f,20f),18f,"--");
                 prototype.AddComponent<UnitHealthBar>().ConfigureReferences(canvas,fill,label);
+                ShieldBarSetup.ConfigureUnitBar(prototype.GetComponent<UnitHealthBar>());
                 CreateManaBar(rect);
                 foreach(var graphic in prototype.GetComponentsInChildren<Graphic>(true)) graphic.raycastTarget=false;
                 var prefab=PrefabUtility.SaveAsPrefabAsset(prototype,path);

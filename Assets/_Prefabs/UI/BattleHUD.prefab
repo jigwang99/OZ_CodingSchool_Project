@@ -2109,6 +2109,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Presentation.Battle.RunHUD
   run: {fileID: 0}
+  navigation: {fileID: 11400000, guid: 585998da02986af4185bccd0345e8ffc, type: 2}
   roundText: {fileID: 4865268920334366093}
   goldText: {fileID: 4884088141402342180}
   livesText: {fileID: 8151313849999820468}
@@ -2792,7 +2793,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2041558863434095548, guid: 85f4a31895a3a754595b74ae8f60fa64, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 250
+      value: 340
       objectReference: {fileID: 0}
     - target: {fileID: 2041558863434095548, guid: 85f4a31895a3a754595b74ae8f60fa64, type: 3}
       propertyPath: m_LocalPosition.x

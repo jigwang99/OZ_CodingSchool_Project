@@ -13,19 +13,22 @@ namespace AutoBattler.Presentation.Units
         [SerializeField] private Canvas healthCanvas;
         [SerializeField] private Image fillImage;
         [SerializeField] private TextMeshProUGUI healthText;
+        [SerializeField] private HealthBarFill segments;
         [SerializeField] private Color allyColor = new Color(0.2f, 0.9f, 0.35f);
         [SerializeField] private Color enemyColor = new Color(1f, 0.35f, 0.35f);
-        [SerializeField, Min(0f)] private float tweenDuration = 0.15f;
 
         private Unit owner;
         private UnitHealth boundHealth;
+        private UnitEffects boundEffects;
 
         public Canvas HealthCanvas => healthCanvas;
         public Image FillImage => fillImage;
         public TextMeshProUGUI HealthText => healthText;
+        public HealthBarFill Segments=>segments;
 #if UNITY_EDITOR
         public void ConfigureReferences(Canvas canvas, Image fill, TextMeshProUGUI label)
         { healthCanvas=canvas; fillImage=fill; healthText=label; }
+        public void ConfigureSegments(HealthBarFill view)=>segments=view;
 #endif
 
         public void Bind(Unit unit)
@@ -35,6 +38,8 @@ namespace AutoBattler.Presentation.Units
             boundHealth = owner != null ? owner.GetComponent<UnitHealth>() : null;
             if (boundHealth != null)
                 boundHealth.HealthChanged += OnHealthChanged;
+            boundEffects=owner!=null ? owner.Effects : null;
+            if(boundEffects!=null) boundEffects.Changed+=OnEffectsChanged;
             RefreshImmediate();
         }
 
@@ -47,25 +52,25 @@ namespace AutoBattler.Presentation.Units
         private void RefreshImmediate()
         {
             fillImage.rectTransform.DOKill();
-            bool initialized = boundHealth != null && boundHealth.IsInitialized;
-            float ratio = initialized ? (float)boundHealth.CurrentHp / boundHealth.MaxHp : 0f;
-            fillImage.rectTransform.localScale = new Vector3(Mathf.Clamp01(ratio), 1f, 1f);
-            healthText.text = initialized ? $"{boundHealth.CurrentHp}/{boundHealth.MaxHp}" : "--";
+            RefreshValues(false);
             RefreshColor();
             RefreshVisibility();
         }
 
         private void OnHealthChanged(int currentHp, int maxHp)
         {
-            fillImage.rectTransform.DOKill();
-            healthText.text = $"{currentHp}/{maxHp}";
             RefreshColor();
             RefreshVisibility();
-            float ratio = Mathf.Clamp01((float)currentHp / maxHp);
-            if (currentHp == 0 || currentHp == maxHp)
-                fillImage.rectTransform.localScale = new Vector3(ratio, 1f, 1f);
-            else
-                fillImage.rectTransform.DOScaleX(ratio, tweenDuration).SetUpdate(true);
+            RefreshValues(currentHp!=0 && currentHp!=maxHp);
+        }
+        private void OnEffectsChanged()=>RefreshValues(boundHealth!=null && boundHealth.IsAlive);
+        private void RefreshValues(bool animate)
+        {
+            bool initialized=boundHealth!=null && boundHealth.IsInitialized;
+            int shield=boundEffects?.Shield ?? 0;
+            healthText.text=initialized ? $"{boundHealth.CurrentHp}/{boundHealth.MaxHp}" : "--";
+            if(initialized && shield>0) healthText.text+=$" <color=#B8B8B8>+{shield}</color>";
+            segments.SetValues(initialized ? boundHealth.CurrentHp : 0,initialized ? boundHealth.MaxHp : 1,shield,animate);
         }
 
         private void RefreshColor()
@@ -86,7 +91,10 @@ namespace AutoBattler.Presentation.Units
             if (boundHealth != null)
                 boundHealth.HealthChanged -= OnHealthChanged;
             boundHealth = null;
+            if(boundEffects!=null) boundEffects.Changed-=OnEffectsChanged;
+            boundEffects=null;
             owner = null;
+            if(segments!=null) segments.Clear();
             if (fillImage != null)
                 fillImage.rectTransform.DOKill();
         }

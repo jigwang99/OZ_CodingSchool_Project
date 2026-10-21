@@ -51,6 +51,10 @@ namespace AutoBattler.Run
         private CancellationTokenSource lifetime;
         private float combatDeadline;
         private TraitBattleSession battleSynergies;
+        private bool shutdownStarted;
+        private UniTaskCompletionSource shutdownCompletion;
+        public bool IsShuttingDown=>shutdownStarted;
+        public int ActiveAssetHandleCount=>assets?.ActiveHandleCount ?? 0;
         private void Awake()
         {
             lifetime=CancellationTokenSource.CreateLinkedTokenSource(this.GetCancellationTokenOnDestroy());
@@ -63,10 +67,10 @@ namespace AutoBattler.Run
         private void Start()=>BootAsync().Forget();
         public void ConfigureScene(AssetCatalog assetsCatalog,BattleFlowController phase,UnitDragController input,HexGridLayout layout,BenchLayout seats)
         { catalog=assetsCatalog; flow=phase; drag=input; grid=layout; bench=seats; }
-        public void RetryLoad() { if(!IsLoading && !IsReady) BootAsync().Forget(); }
+        public void RetryLoad() { if(!shutdownStarted && !IsLoading && !IsReady) BootAsync().Forget(); }
         private async UniTask BootAsync()
         {
-            if(IsLoading || IsReady) return;
+            if(shutdownStarted || IsLoading || IsReady) return;
             IsLoading=true; Message="Loading data and unit assets..."; DisplayChanged?.Invoke();
             try
             {
@@ -231,17 +235,32 @@ namespace AutoBattler.Run
             Message=State.Augments.HasPending?"Choose an augment. Hide choices to reposition your army.":"Army restored. Prepare the next round.";
             DisplayChanged?.Invoke(); return true;
         }
-        private void OnDestroy()
+        public UniTask ShutdownAsync()
         {
+            if(shutdownCompletion!=null) return shutdownCompletion.Task;
+            shutdownStarted=true;
+            shutdownCompletion=new UniTaskCompletionSource();
+            CompleteShutdownAsync(shutdownCompletion).Forget();
+            return shutdownCompletion.Task;
+        }
+        private async UniTask CompleteShutdownAsync(UniTaskCompletionSource completion)
+        {
+            try { await ShutdownCoreAsync(); completion.TrySetResult(); }
+            catch(Exception exception) { completion.TrySetException(exception); }
+        }
+        private async UniTask ShutdownCoreAsync()
+        {
+            IsReady=false;
             lifetime?.Cancel(); combatCancellation?.Cancel();
             EndSynergies(battleSynergies);
             if(State!=null) State.Changed-=OnStateChanged;
-            if(drag!=null) drag.PlacementChanged-=OnPlacementChanged;
-            ReleaseAsync().Forget();
-        }
-        private async UniTask ReleaseAsync()
-        {
+            if(drag!=null)
+            {
+                drag.PlacementChanged-=OnPlacementChanged;
+                drag.ClearSelection(); drag.enabled=false;
+            }
             await pool.DisposeAsync(); dataLease?.Dispose(); assets.Dispose(); lifetime.Dispose();
         }
+        private void OnDestroy()=>ShutdownAsync().Forget();
     }
 }

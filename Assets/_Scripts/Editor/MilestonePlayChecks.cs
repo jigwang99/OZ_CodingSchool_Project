@@ -62,6 +62,7 @@ namespace AutoBattler.EditorTools
             try
             {
                 Time.timeScale=10f;
+                await ShieldBarChecks.RunPlay(run,UnityEngine.Object.FindFirstObjectByType<RunHUD>());
                 await SynergyUIChecks.RunPlay(run,UnityEngine.Object.FindFirstObjectByType<RunHUD>());
                 await AssassinEntryChecks.RunPlay(run);
                 await TraitChecks.RunPlay(run);
@@ -199,6 +200,7 @@ namespace AutoBattler.EditorTools
                 }
                 Debug.Log("PLAY_CHECKS_PASS purchase-placement-autobattle-settlement-restore-addressables");
                 Debug.Log("REFERENCE_PLAY_PASS renamed-ui-guid-load-handle-sharing-pool");
+                if(SessionState.GetBool(GameEntryChecks.Key,false)) await GameEntryChecks.RunFlowAsync(run);
                 Finish(0);
             }
             catch(Exception exception) { Debug.LogException(exception); Finish(1); }

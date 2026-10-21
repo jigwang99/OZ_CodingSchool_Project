@@ -15,10 +15,14 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private TextMeshProUGUI resultText;
         [SerializeField] private TextMeshProUGUI endMessageText;
         [SerializeField] private Button nextRoundButton;
+        [SerializeField] private Button retryButton;
+        [SerializeField] private Button titleButton;
         [SerializeField, Min(0f)] private float fadeDuration = 0.2f;
 
         public bool CanContinue { get; private set; }
         public event Action ContinueRequested;
+        public event Action RetryRequested;
+        public event Action TitleRequested;
         private bool isPresented;
 
         public CanvasGroup CanvasGroup => canvasGroup;
@@ -26,10 +30,14 @@ namespace AutoBattler.Presentation.Battle
         public TextMeshProUGUI ResultText => resultText;
         public TextMeshProUGUI EndMessageText => endMessageText;
         public Button NextRoundButton => nextRoundButton;
+        public Button RetryButton => retryButton;
+        public Button TitleButton => titleButton;
 #if UNITY_EDITOR
         public void ConfigureReferences(CanvasGroup group, TextMeshProUGUI title,
             TextMeshProUGUI result, TextMeshProUGUI endMessage, Button next)
         { canvasGroup=group; titleText=title; resultText=result; endMessageText=endMessage; nextRoundButton=next; }
+        public void ConfigureNavigation(Button retry,Button title)
+        { retryButton=retry; titleButton=title; }
 #endif
 
         public void Show(string title, string result, bool canContinue, bool animate = true)
@@ -42,6 +50,9 @@ namespace AutoBattler.Presentation.Battle
             nextRoundButton.interactable = canContinue;
             nextRoundButton.gameObject.SetActive(canContinue);
             endMessageText.gameObject.SetActive(!canContinue);
+            if(retryButton!=null) retryButton.gameObject.SetActive(!canContinue);
+            if(titleButton!=null) titleButton.gameObject.SetActive(!canContinue);
+            SetNavigationBusy(false);
             canvasGroup.interactable = true;
             canvasGroup.blocksRaycasts = true;
             gameObject.SetActive(true);
@@ -66,12 +77,19 @@ namespace AutoBattler.Presentation.Battle
         }
 
         public void StopAnimation() => canvasGroup.DOKill();
+        public void SetNavigationBusy(bool busy)
+        {
+            if(retryButton!=null) retryButton.interactable=!busy;
+            if(titleButton!=null) titleButton.interactable=!busy;
+        }
 
         private void OnEnable()
         {
             if (Application.isPlaying)
             {
                 nextRoundButton.onClick.AddListener(RequestContinue);
+                if(retryButton!=null) retryButton.onClick.AddListener(RequestRetry);
+                if(titleButton!=null) titleButton.onClick.AddListener(RequestTitle);
                 if (isPresented)
                     canvasGroup.alpha = 1f;
             }
@@ -82,11 +100,17 @@ namespace AutoBattler.Presentation.Battle
             if (CanContinue && nextRoundButton.IsInteractable())
                 ContinueRequested?.Invoke();
         }
+        private void RequestRetry()
+        { if(isPresented && gameObject.activeInHierarchy && !CanContinue && retryButton.IsInteractable()) RetryRequested?.Invoke(); }
+        private void RequestTitle()
+        { if(isPresented && gameObject.activeInHierarchy && !CanContinue && titleButton.IsInteractable()) TitleRequested?.Invoke(); }
 
         private void OnDisable()
         {
             if (nextRoundButton != null)
                 nextRoundButton.onClick.RemoveListener(RequestContinue);
+            if(retryButton!=null) retryButton.onClick.RemoveListener(RequestRetry);
+            if(titleButton!=null) titleButton.onClick.RemoveListener(RequestTitle);
             if (canvasGroup != null)
                 canvasGroup.DOKill();
         }

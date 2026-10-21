@@ -4,6 +4,7 @@ using AutoBattler.Data.Skills;
 using AutoBattler.Data.Snapshot;
 using AutoBattler.Data.Traits;
 using AutoBattler.Data.Units;
+using AutoBattler.Presentation.Units;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
@@ -23,6 +24,7 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private TextMeshProUGUI healthText;
         [SerializeField] private TextMeshProUGUI manaText;
         [SerializeField] private Image healthFill;
+        [SerializeField] private HealthBarFill healthSegments;
         [SerializeField] private Image manaFill;
         [SerializeField] private TextMeshProUGUI statsText;
         [SerializeField] private TextMeshProUGUI skillNameText;
@@ -39,6 +41,7 @@ namespace AutoBattler.Presentation.Battle
         public TextMeshProUGUI SkillText => skillText;
         public Image HealthFill => healthFill;
         public Image ManaFill => manaFill;
+        public HealthBarFill HealthSegments=>healthSegments;
 #if UNITY_EDITOR
         public void Configure(CanvasGroup canvasGroup, Image accent, TextMeshProUGUI title,
             TextMeshProUGUI identity, TextMeshProUGUI traits, TextMeshProUGUI hp, TextMeshProUGUI mp,
@@ -48,6 +51,7 @@ namespace AutoBattler.Presentation.Battle
             healthText=hp; manaText=mp; healthFill=hpFill; manaFill=mpFill;
             statsText=stats; skillNameText=skillName; skillText=skill;
         }
+        public void ConfigureHealthSegments(HealthBarFill view)=>healthSegments=view;
 #endif
         public void Show(Unit unit, DataRepository repository)
         {
@@ -68,7 +72,7 @@ namespace AutoBattler.Presentation.Battle
                 +$"   |   {(unit.Definition.IsRanged ? "Ranged" : "Melee")}";
             teamAccent.color=unit.Team==UnitTeam.Ally ? new Color(.2f,.85f,.85f) : new Color(1f,.35f,.4f);
             RefreshDetails();
-            SetBar(healthFill, unit.Health.CurrentHp, unit.Health.MaxHp, false);
+            RefreshHealth(false);
             SetBar(manaFill, unit.Mana.Current, unit.Mana.Maximum, false);
             group.DOKill(); group.alpha=0f; group.DOFade(1f,.12f).SetUpdate(true);
         }
@@ -81,8 +85,14 @@ namespace AutoBattler.Presentation.Battle
         private void OnHealthChanged(int current, int maximum)
         {
             if (!IsCurrent()) return;
-            healthText.text=$"HP  {current}/{maximum}";
-            SetBar(healthFill,current,maximum,true);
+            RefreshHealth(current!=0 && current!=maximum);
+        }
+        private void RefreshHealth(bool animate)
+        {
+            int shield=boundUnit.Effects.Shield;
+            healthText.text=$"HP  {boundUnit.Health.CurrentHp}/{boundUnit.Health.MaxHp}";
+            if(shield>0) healthText.text+=$"  <color=#B8B8B8>+{shield}</color>";
+            healthSegments.SetValues(boundUnit.Health.CurrentHp,boundUnit.Health.MaxHp,shield,animate);
         }
         private void OnManaChanged(int current, int maximum)
         {
@@ -103,7 +113,7 @@ namespace AutoBattler.Presentation.Battle
         {
             if (!IsCurrent()) return;
             var stats=boundUnit.Stats;
-            healthText.text=$"HP  {boundUnit.Health.CurrentHp}/{boundUnit.Health.MaxHp}";
+            RefreshHealth(boundUnit.Health.IsAlive);
             manaText.text=$"MP  {boundUnit.Mana.Current}/{boundUnit.Mana.Maximum}";
             statsText.text=$"Attack<pos=205>{stats.AttackDamage}\nArmor<pos=205>{stats.Defense}\n"
                 +$"Range<pos=205>{stats.AttackRange} hex\nAttack interval<pos=205>{stats.AttackCooldown:0.##}s\n"
@@ -155,6 +165,7 @@ namespace AutoBattler.Presentation.Battle
                 boundUnit.Effects.Changed-=RefreshDetails;
             }
             boundUnit=null; data=null;
+            if(healthSegments!=null) healthSegments.Clear();
             if (healthFill!=null) healthFill.transform.DOKill();
             if (manaFill!=null) manaFill.transform.DOKill();
         }

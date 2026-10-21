@@ -45,7 +45,8 @@ namespace AutoBattler.EditorTools
             camera.backgroundColor=new Color(.035f,.055f,.09f);
             EditorUtility.SetDirty(run); EditorUtility.SetDirty(hud);
             EditorSceneManager.MarkSceneDirty(scene); EditorSceneManager.SaveScene(scene);
-            EditorBuildSettings.scenes=new[]{new EditorBuildSettingsScene(setup.ScenePath,true)};
+            if(setup.TitleScene!=null) GameEntrySetup.ConfigureBuildScenes();
+            else EditorBuildSettings.scenes=new[]{new EditorBuildSettingsScene(setup.ScenePath,true)};
             AssetDatabase.SaveAssets(); Debug.Log("MILESTONE_SETUP_PASS");
         }
         internal static void AddAddress(AddressableAssetSettings settings,AddressableAssetGroup group,UnityEngine.Object asset)

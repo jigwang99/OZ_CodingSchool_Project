@@ -2,6 +2,7 @@ using AutoBattler.Battle.Flow;
 using AutoBattler.Battle.Units;
 using AutoBattler.Data.Snapshot;
 using AutoBattler.Run;
+using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
@@ -16,6 +17,7 @@ namespace AutoBattler.Presentation.Battle
     {
         [Header("진행 제어")]
         [SerializeField] private RunController run;
+        [SerializeField] private GameNavigationSettings navigation;
 
         [Header("상단 정보")]
         [SerializeField] private TextMeshProUGUI roundText;
@@ -52,6 +54,7 @@ namespace AutoBattler.Presentation.Battle
         private BattlePhase displayedPhase;
 
         public RunController Controller => run;
+        public GameNavigationSettings Navigation=>navigation;
         public TextMeshProUGUI RoundText => roundText;
         public TextMeshProUGUI GoldText => goldText;
         public TextMeshProUGUI LivesText => livesText;
@@ -99,6 +102,7 @@ namespace AutoBattler.Presentation.Battle
         public void ConfigureAugments(AugmentSelectionPanel panel)=>augmentPanel=panel;
         public void ConfigureSelectedAugments(SelectedAugmentsView view)=>selectedAugments=view;
         public void ConfigureUnitInfo(UnitInfoPanel panel) => unitInfo = panel;
+        public void ConfigureNavigation(GameNavigationSettings settings)=>navigation=settings;
 #endif
 
         public void ConfigureScene(RunController controller)
@@ -130,6 +134,8 @@ namespace AutoBattler.Presentation.Battle
             buyExperienceButton.onClick.AddListener(BuyExperience);
             sellButton.onClick.AddListener(SellSelected);
             resultPanel.ContinueRequested += NextRound;
+            resultPanel.RetryRequested += RetryRun;
+            resultPanel.TitleRequested += ReturnToTitle;
             retryLoadButton.onClick.AddListener(RetryLoad);
             run.DisplayChanged += Refresh;
             if(augmentPanel!=null) { augmentPanel.Selected+=SelectAugment; augmentPanel.ToggleRequested+=ToggleAugments; }
@@ -145,6 +151,22 @@ namespace AutoBattler.Presentation.Battle
         private void SellSelected() => run.SellSelected();
         private void NextRound() => run.Continue();
         private void RetryLoad() => run.RetryLoad();
+        private void RetryRun()=>NavigateAsync(false).Forget();
+        private void ReturnToTitle()=>NavigateAsync(true).Forget();
+        private async Cysharp.Threading.Tasks.UniTask NavigateAsync(bool title)
+        {
+            if((!run.IsReady && !run.IsShuttingDown) || run.State==null || !run.State.IsOver || GameNavigation.IsTransitioning) return;
+            resultPanel.SetNavigationBusy(true);
+            try
+            {
+                bool loaded=title ? await GameNavigation.ReturnToTitleAsync(navigation,run)
+                    : await GameNavigation.RetryAsync(navigation,run);
+                if(!loaded && this!=null) messageText.text="Scene unavailable. Please retry.";
+            }
+            catch(System.Exception exception)
+            { if(this!=null) messageText.text="Scene load failed. Please retry."; Debug.LogException(exception); }
+            finally { if(this!=null) resultPanel.SetNavigationBusy(false); }
+        }
         private void SelectAugment(int id)=>run.SelectAugment(id);
         private void ToggleAugments()=>run.ToggleAugmentWindow();
 
@@ -214,7 +236,7 @@ namespace AutoBattler.Presentation.Battle
             RefreshSelection();
 
             if (ready && run.State.IsOver)
-                messageText.text = run.State.WonRun ? "Challenge complete!" : "Challenge ended. Restart Play to try again.";
+                messageText.text = run.State.WonRun ? "Challenge complete!" : "Challenge ended. Retry or return to title.";
 
             bool showResult = ready && run.Flow.CurrentPhase == BattlePhase.Result;
             bool phaseChanged = !hasDisplayedPhase || displayedPhase != run.Flow.CurrentPhase;
@@ -265,6 +287,8 @@ namespace AutoBattler.Presentation.Battle
             buyExperienceButton.onClick.RemoveListener(BuyExperience);
             sellButton.onClick.RemoveListener(SellSelected);
             resultPanel.ContinueRequested -= NextRound;
+            resultPanel.RetryRequested -= RetryRun;
+            resultPanel.TitleRequested -= ReturnToTitle;
             retryLoadButton.onClick.RemoveListener(RetryLoad);
             preparationPanel.DOKill();
             resultPanel.StopAnimation();

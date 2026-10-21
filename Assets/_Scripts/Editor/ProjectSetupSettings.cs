@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using AutoBattler.Assets;
+using AutoBattler.Run;
 using AutoBattler.Presentation.Battle;
 using AutoBattler.Presentation.Units;
 using UnityEditor;
@@ -33,6 +34,10 @@ namespace AutoBattler.EditorTools
         [SerializeField] private AssetCatalog catalog;
         [SerializeField] private TextAsset snapshot;
         [SerializeField] private SceneAsset battleScene;
+        [SerializeField] private SceneAsset titleScene;
+        [SerializeField] private TitleMenu titleMenu;
+        [SerializeField] private GameNavigationSettings navigation;
+        [SerializeField] private StageDefinition firstStage;
         [SerializeField] private RunHUD battleHUD;
         [SerializeField] private ShopItem shopItem;
         [SerializeField] private ResultPanel resultPanel;
@@ -53,6 +58,14 @@ namespace AutoBattler.EditorTools
         public AssetCatalog Catalog => catalog;
         public TextAsset Snapshot => snapshot;
         public SceneAsset BattleScene => battleScene;
+        public SceneAsset TitleScene=>titleScene;
+        public TitleMenu TitleMenu=>titleMenu;
+        public GameNavigationSettings Navigation=>navigation;
+        public StageDefinition FirstStage=>firstStage;
+        public string TitleScenePath=>AssetDatabase.GetAssetPath(titleScene);
+        public string TitleMenuPath=>ExistingOrNew(titleMenu,uiPrefabFolder,"TitleMenu.prefab");
+        public string NavigationPath=>Path.Combine(Path.GetDirectoryName(AssetDatabase.GetAssetPath(this)),"GameNavigationSettings.asset").Replace('\\','/');
+        public string FirstStagePath=>Path.Combine(Path.GetDirectoryName(AssetDatabase.GetAssetPath(this)),"Stage_1_1.asset").Replace('\\','/');
         public RunHUD BattleHUD => battleHUD;
         public ShopItem ShopItem => shopItem;
         public ResultPanel ResultPanel => resultPanel;
@@ -112,6 +125,8 @@ namespace AutoBattler.EditorTools
         public void SetSelectedAugments(SelectedAugmentsView prefab)=>selectedAugments=prefab;
         public void SetUnitInfo(UnitInfoPanel prefab) => unitInfo = prefab;
         public void SetUnitInfoFont(TMP_FontAsset font) => unitInfoFont = font;
+        public void ConfigureEntryFlow(SceneAsset title,TitleMenu menu,GameNavigationSettings settings,StageDefinition stage)
+        { titleScene=title; titleMenu=menu; navigation=settings; firstStage=stage; }
         public void Configure(AssetCatalog assets, TextAsset data, SceneAsset scene, RunHUD hud, ShopItem shop,
             ResultPanel result, UnitHealthBar health, DefaultAsset uiFolder, DefaultAsset unitFolder,
             AddressableAssetGroup dataAssets, AddressableAssetGroup unitAssets, UnitPrefabSetupEntry[] entries)
