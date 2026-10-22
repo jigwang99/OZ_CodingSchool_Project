@@ -43,6 +43,7 @@ namespace AutoBattler.Run
         public float RemainingSeconds=>Mathf.Max(0f,combatDeadline-Time.time);
         public event Action DisplayChanged;
         private AssetService assets;
+        public BattleVisualService Visuals { get; private set; }
         private AssetService.Lease<TextAsset> dataLease;
         private UnitPrefabPool pool;
         private readonly Dictionary<int,Unit> allies=new Dictionary<int,Unit>();
@@ -78,6 +79,8 @@ namespace AutoBattler.Run
                 var repository=new DataRepository(JsonUtility.FromJson<GameSnapshot>(dataLease.Asset.text));
                 foreach(var address in repository.Units.Values.Select(x=>catalog.VisualPrefab(x.VisualId)).GroupBy(x=>x.RuntimeKey).Select(x=>x.First()))
                     await pool.PreloadAsync(address,lifetime.Token);
+                if(Visuals==null) Visuals=new BattleVisualService(assets,catalog.BattleVisuals,transform,flow,grid);
+                await Visuals.PreloadAsync(lifetime.Token);
                 lifetime.Token.ThrowIfCancellationRequested();
                 State=new RunState(repository,seed); drag.BindBoard(State.Board,State.Placement);
                 State.Changed+=OnStateChanged; IsReady=true;
@@ -192,6 +195,7 @@ namespace AutoBattler.Run
             var battle=new AutoBattleController(combatUnits);
             if(!flow.TryStartCombat()) return false;
             State.CanPrepare=false; drag.enabled=true;
+            Visuals.BeginBattle(combatUnits);
             battleSynergies=new TraitBattleSession(combatUnits,AllySynergies,EnemySynergies);
             battleSynergies.Start();
             AugmentApplicator.ApplyBattleStart(combatUnits,State.Augments.Selected);
@@ -259,6 +263,7 @@ namespace AutoBattler.Run
                 drag.PlacementChanged-=OnPlacementChanged;
                 drag.ClearSelection(); drag.enabled=false;
             }
+            if(Visuals!=null) await Visuals.DisposeAsync();
             await pool.DisposeAsync(); dataLease?.Dispose(); assets.Dispose(); lifetime.Dispose();
         }
         private void OnDestroy()=>ShutdownAsync().Forget();

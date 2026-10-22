@@ -29,6 +29,10 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private TextMeshProUGUI statsText;
         [SerializeField] private TextMeshProUGUI skillNameText;
         [SerializeField] private TextMeshProUGUI skillText;
+        [SerializeField] private AutoBattler.Assets.AssetCatalog catalog;
+        [SerializeField] private Image unitIcon,skillIcon,shieldIcon;
+        public Image UnitIcon=>unitIcon;
+        public Image SkillIcon=>skillIcon;
         private Unit boundUnit;
         private DataRepository data;
         private int spawnVersion;
@@ -39,6 +43,7 @@ namespace AutoBattler.Presentation.Battle
         public TextMeshProUGUI ManaText => manaText;
         public TextMeshProUGUI StatsText => statsText;
         public TextMeshProUGUI SkillText => skillText;
+        public TextMeshProUGUI SkillNameText=>skillNameText;
         public Image HealthFill => healthFill;
         public Image ManaFill => manaFill;
         public HealthBarFill HealthSegments=>healthSegments;
@@ -51,6 +56,8 @@ namespace AutoBattler.Presentation.Battle
             healthText=hp; manaText=mp; healthFill=hpFill; manaFill=mpFill;
             statsText=stats; skillNameText=skillName; skillText=skill;
         }
+        public void ConfigureIcons(AutoBattler.Assets.AssetCatalog assets,Image unit,Image skill,Image shield)
+        { catalog=assets; unitIcon=unit; skillIcon=skill; shieldIcon=shield; }
         public void ConfigureHealthSegments(HealthBarFill view)=>healthSegments=view;
 #endif
         public void Show(Unit unit, DataRepository repository)
@@ -71,6 +78,8 @@ namespace AutoBattler.Presentation.Battle
             traitsText.text=$"{TraitName(TraitCategory.Origin, unit.Definition.OriginId)} / {TraitName(TraitCategory.Class, unit.Definition.ClassId)}"
                 +$"   |   {(unit.Definition.IsRanged ? "Ranged" : "Melee")}";
             teamAccent.color=unit.Team==UnitTeam.Ally ? new Color(.2f,.85f,.85f) : new Color(1f,.35f,.4f);
+            if(unitIcon!=null) { unitIcon.sprite=catalog.Icon(unit.Definition.IconId); unitIcon.enabled=unitIcon.sprite!=null; }
+            if(skillIcon!=null) { skillIcon.sprite=catalog.BattleVisuals.Skill(unit.Skill.Definition?.Id ?? 0)?.icon; skillIcon.enabled=skillIcon.sprite!=null; }
             RefreshDetails();
             RefreshHealth(false);
             SetBar(manaFill, unit.Mana.Current, unit.Mana.Maximum, false);
@@ -90,6 +99,7 @@ namespace AutoBattler.Presentation.Battle
         private void RefreshHealth(bool animate)
         {
             int shield=boundUnit.Effects.Shield;
+            if(shieldIcon!=null) shieldIcon.enabled=shield>0;
             healthText.text=$"HP  {boundUnit.Health.CurrentHp}/{boundUnit.Health.MaxHp}";
             if(shield>0) healthText.text+=$"  <color=#B8B8B8>+{shield}</color>";
             healthSegments.SetValues(boundUnit.Health.CurrentHp,boundUnit.Health.MaxHp,shield,animate);

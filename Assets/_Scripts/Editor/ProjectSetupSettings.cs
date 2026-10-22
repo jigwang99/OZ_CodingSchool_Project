@@ -32,6 +32,12 @@ namespace AutoBattler.EditorTools
     public sealed class ProjectSetupSettings : ScriptableObject
     {
         [SerializeField] private AssetCatalog catalog;
+        [SerializeField] private AutoBattler.Presentation.Units.BattleVisualSettings battleVisuals;
+        [SerializeField] private AddressableAssetGroup battleVisualGroup;
+        public AutoBattler.Presentation.Units.BattleVisualSettings BattleVisuals=>battleVisuals;
+        public AddressableAssetGroup BattleVisualGroup=>battleVisualGroup;
+        public void SetBattleVisuals(AutoBattler.Presentation.Units.BattleVisualSettings settings,AddressableAssetGroup group)
+        { battleVisuals=settings; battleVisualGroup=group; }
         [SerializeField] private TextAsset snapshot;
         [SerializeField] private SceneAsset battleScene;
         [SerializeField] private SceneAsset titleScene;

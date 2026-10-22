@@ -59,6 +59,13 @@ namespace AutoBattler.Pooling
             if(disposed) throw new ObjectDisposedException(nameof(ObjectPoolManager));
             return key!=null && keyedPools.TryGetValue(key,out var pool)?Rent<T>(pool,activate):null;
         }
+        // 전투 표현처럼 고정 용량 재사용이 필요한 호출자를 위한 대여.
+        public bool TryGetObject<T>(Enum key,out T component,bool activate=true) where T:Component
+        {
+            component=null;
+            if(disposed || key==null || !keyedPools.TryGetValue(key,out var pool) || pool.AvailableCount==0) return false;
+            component=Rent<T>(pool,activate); return component!=null;
+        }
         private T Rent<T>(Pool pool,bool activate) where T:Component
         {
             // Init·OnEnable 전에 소유 풀 등록. 초기화 중 자체 반환도 소유권 유지.

@@ -75,20 +75,21 @@ MonoBehaviour:
       m_SubObjectType: 
       m_SubObjectGUID: 
       m_EditorAssetChanged: 0
+  battleVisuals: {fileID: 11400000, guid: f6d543aa2f7e115429c4fa6849845736, type: 2}
   icons:
   - id: 1
-    sprite: {fileID: 0}
+    sprite: {fileID: 21300000, guid: 7e90e810597984e9d992c5445b61875a, type: 3}
   - id: 2
-    sprite: {fileID: 0}
+    sprite: {fileID: 21300000, guid: 292c2536b7cf5415db56d0a05903422a, type: 3}
   - id: 3
-    sprite: {fileID: 0}
+    sprite: {fileID: 21300000, guid: 5789f18cea9464fd59a185abbaa7b9b2, type: 3}
   - id: 4
-    sprite: {fileID: 0}
+    sprite: {fileID: 21300000, guid: 13c035a6820ee40139858ef1f949e854, type: 3}
   - id: 5
-    sprite: {fileID: 0}
+    sprite: {fileID: 21300000, guid: be32bdc704c87480caa40bcbeba59dda, type: 3}
   - id: 6
-    sprite: {fileID: 0}
+    sprite: {fileID: 21300000, guid: 66e30fe342c0c4003952f3b752f28d7b, type: 3}
   - id: 7
-    sprite: {fileID: 0}
+    sprite: {fileID: 21300000, guid: ec19b57ff2b9d4c8ea79f30947f223a7, type: 3}
   - id: 8
-    sprite: {fileID: 0}
+    sprite: {fileID: 21300000, guid: 3f82b9e9a95984dd4a724ffa6ec07bfe, type: 3}

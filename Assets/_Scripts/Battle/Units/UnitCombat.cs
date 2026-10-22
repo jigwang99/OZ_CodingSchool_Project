@@ -21,6 +21,7 @@ namespace AutoBattler.Battle.Units
         public bool CanFight=>isActiveAndEnabled && unit!=null && unit.IsInCombat && health!=null && health.IsAlive;
         public bool CanAttack=>CanFight && !unit.Effects.IsStunned && !IsAttacking && !unit.Skill.IsCasting && Time.time>=nextAttackTime && !unit.Move.IsMoving;
         public event Action<UnitCombat> AttackStarted;
+        public event Action<UnitCombat,float> ProjectileReleased;
         public event Action<DamageResult> DamageDealt;
         public event Action<KillEvent> Killed;
         internal void NotifyDamageDealt(DamageResult result)
@@ -82,6 +83,7 @@ namespace AutoBattler.Battle.Units
                 if(unit.Definition!=null && unit.Definition.IsRanged)
                 {
                     float seconds=unit.CurrentCell.Value.DistanceTo(target.unit.CurrentCell.Value)/unit.ProjectileSpeed;
+                    CombatEventDispatcher.Publish(ProjectileReleased,target,seconds);
                     await UniTask.Delay(TimeSpan.FromSeconds(seconds),cancellationToken:token);
                 }
                 if(generation==roundGeneration && CanFight && targetReference.IsAlive && target!=null && target.CanFight)

@@ -1,0 +1,150 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29cda49787c97144eaadcab9d1485b0b, type: 3}
+  m_Name: BattleVisualSettings
+  m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Presentation.Units.BattleVisualSettings
+  effects:
+  - id: 0
+    prefab:
+      m_AssetGUID: 61c0d45e71d60414b9a84c225878761d
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 32
+    scale: .15
+    lifetime: 1.5
+  - id: 1
+    prefab:
+      m_AssetGUID: 5e7f35e7697cc1e4c947348d379da0f7
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 24
+    scale: .16
+    lifetime: 1.5
+  - id: 2
+    prefab:
+      m_AssetGUID: 1a16de034bdaadd41afd8cd6f5544808
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 8
+    scale: 0.38
+    lifetime: 1.5
+  - id: 3
+    prefab:
+      m_AssetGUID: 51dbb0c3e7bb999448274f6e9abee29e
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 12
+    scale: .12
+    lifetime: 1.5
+  - id: 4
+    prefab:
+      m_AssetGUID: 089eee584ffcfed41998417631995344
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 20
+    scale: .13
+    lifetime: 1.5
+  - id: 5
+    prefab:
+      m_AssetGUID: e0feb8eb0f44c3142b3f6b48fa3d85f5
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 8
+    scale: 0.32
+    lifetime: 1.5
+  - id: 6
+    prefab:
+      m_AssetGUID: 1feefd6de7dd74244946c6c3693a9c36
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 32
+    scale: 1
+    lifetime: 12
+  - id: 7
+    prefab:
+      m_AssetGUID: 362dbe5486c8e6d49bed694c84bf3bbf
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 20
+    scale: 1
+    lifetime: 1.5
+  skills:
+  - skillId: 2001
+    icon: {fileID: 21300000, guid: a051a723e69914b44b02412e386f0325, type: 3}
+    impact: 4
+    areaImpact: 0
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+  - skillId: 2002
+    icon: {fileID: 21300000, guid: 292c2536b7cf5415db56d0a05903422a, type: 3}
+    impact: 0
+    areaImpact: 0
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+  - skillId: 2003
+    icon: {fileID: 21300000, guid: e211b620d4f344184b2e098eee4f570d, type: 3}
+    impact: 3
+    areaImpact: 0
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+  - skillId: 2004
+    icon: {fileID: 21300000, guid: 13c035a6820ee40139858ef1f949e854, type: 3}
+    impact: 0
+    areaImpact: 0
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+  - skillId: 2005
+    icon: {fileID: 21300000, guid: be32bdc704c87480caa40bcbeba59dda, type: 3}
+    impact: 5
+    areaImpact: 1
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+  - skillId: 2006
+    icon: {fileID: 21300000, guid: 66e30fe342c0c4003952f3b752f28d7b, type: 3}
+    impact: 0
+    areaImpact: 0
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+  - skillId: 2007
+    icon: {fileID: 21300000, guid: ec19b57ff2b9d4c8ea79f30947f223a7, type: 3}
+    impact: 2
+    areaImpact: 1
+    magicProjectile: 1
+    projectileColor: {r: 1, g: 0.35, b: 0.08, a: 1}
+  - skillId: 2008
+    icon: {fileID: 21300000, guid: bd84a00653c8a48078d52dd78200141d, type: 3}
+    impact: 0
+    areaImpact: 0
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+  arrow: {fileID: 21300000, guid: 392a42fac20e044729fd9892ca268f05, type: 3}
+  magicOrb: {fileID: 21300000, guid: eb9cf9cef884e564fb9e99a3dd8cb56a, type: 3}
+  stun: {fileID: 21300000, guid: bd84a00653c8a48078d52dd78200141d, type: 3}
+  health: {fileID: 21300000, guid: bdf61281d398c41d994dd17f775cfe8c, type: 3}
+  mana: {fileID: 21300000, guid: fe7b8029ae8d74a438e969a58088470c, type: 3}
+  shield: {fileID: 21300000, guid: a051a723e69914b44b02412e386f0325, type: 3}

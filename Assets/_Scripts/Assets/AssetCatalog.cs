@@ -12,6 +12,8 @@ namespace AutoBattler.Assets
         [SerializeField] private AssetReferenceT<TextAsset> snapshot;
         public AssetReferenceT<TextAsset> Snapshot => snapshot;
         public CatalogEntry[] visuals;
+        [SerializeField] private AutoBattler.Presentation.Units.BattleVisualSettings battleVisuals;
+        public AutoBattler.Presentation.Units.BattleVisualSettings BattleVisuals=>battleVisuals;
         [Header("시트 icon_id에 연결할 유닛 아이콘")]
         public UnitIconEntry[] icons = Array.Empty<UnitIconEntry>();
 
@@ -29,6 +31,7 @@ namespace AutoBattler.Assets
             throw new ArgumentException($"미등록 visual_id: {id}");
         }
 #if UNITY_EDITOR
+        public void ConfigureBattleVisuals(AutoBattler.Presentation.Units.BattleVisualSettings settings)=>battleVisuals=settings;
         public void ConfigureReferences(AssetReferenceT<TextAsset> snapshotReference, CatalogEntry[] entries)
         {
             snapshot = snapshotReference;

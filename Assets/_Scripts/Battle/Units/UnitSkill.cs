@@ -36,6 +36,8 @@ namespace AutoBattler.Battle.Units
             && Time.time>=nextCastTime && unit.Mana.Current>=Definition.ManaCost;
         public event Action<SkillCastContext> CastStarted;
         public event Action<SkillCastContext> EffectReleased;
+        public event Action<SkillCastContext> EffectApplied;
+        internal void NotifyEffectApplied(SkillCastContext context)=>AutoBattler.Battle.Combat.CombatEventDispatcher.Publish(EffectApplied,context);
         public event Action CastFinished;
         private void Awake()=>unit=GetComponent<Unit>();
         private void OnEnable()=>BindUnit(GetComponent<Unit>());
@@ -91,7 +93,7 @@ namespace AutoBattler.Battle.Units
                 }
                 op.Released=true; nextCastTime=Time.time+Definition.Cooldown;
                 context.Center=Definition.CenterOnCaster?unit.CurrentCell.Value:context.Target.Unit.CurrentCell.Value;
-                EffectReleased?.Invoke(context);
+                AutoBattler.Battle.Combat.CombatEventDispatcher.Publish(EffectReleased,context);
                 await SkillExecutor.ExecuteAsync(context,data,op.Cancellation.Token);
             }
             catch(OperationCanceledException) { }

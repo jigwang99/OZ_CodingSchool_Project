@@ -49,6 +49,7 @@ namespace AutoBattler.Battle.Skills
                     && unit.CurrentCell.HasValue && unit.CurrentCell.Value.DistanceTo(center)<=skill.Radius)
                     .OrderBy(unit=>unit.InstanceId).Select(unit=>new SkillTarget(unit)).ToArray();
             else targets=new[]{context.Target};
+            caster.Skill.NotifyEffectApplied(context);
             foreach(var target in targets)
             {
                 if(!target.IsValid) continue;

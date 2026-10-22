@@ -140,7 +140,7 @@ namespace AutoBattler.EditorTools
                 "초기 라운드·레벨·골드·목숨·경험치");
             Expect(run.State.Units.Count==1 && run.State.Board.DeployedCount==0 && run.State.Augments.SelectedIds.Count==0,
                 "초기 기물·배치·증강 상태");
-            Expect(run.State.Shop.Count(id=>id!=0)==5 && run.ActiveAssetHandleCount==9,"상점과 데이터·8종 프리팹 로드");
+            Expect(run.State.Shop.Count(id=>id!=0)==5 && run.ActiveAssetHandleCount==9+run.Visuals.PrefabLeaseCount,"상점과 데이터·8종 프리팹 로드");
             Expect(UnityEngine.Object.FindObjectsByType<RunHUD>(FindObjectsSortMode.None).Length==1
                 && UnityEngine.Object.FindObjectsByType<EventSystem>(FindObjectsSortMode.None).Length==1,"HUD·EventSystem 중복 없음");
         }

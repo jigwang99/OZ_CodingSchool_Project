@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: BattleVFX
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: BattleVFX
+  m_GUID: 4d361eb6034ee764faf36ecd05a14490
+  m_SerializeEntries:
+  - m_GUID: 089eee584ffcfed41998417631995344
+    m_Address: Assets/_Prefabs/VFX/Shield.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1a16de034bdaadd41afd8cd6f5544808
+    m_Address: Assets/_Prefabs/VFX/Fire.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1feefd6de7dd74244946c6c3693a9c36
+    m_Address: Assets/_Prefabs/VFX/Projectile.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 362dbe5486c8e6d49bed694c84bf3bbf
+    m_Address: Assets/_Prefabs/VFX/Stun.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 51dbb0c3e7bb999448274f6e9abee29e
+    m_Address: Assets/_Prefabs/VFX/Heal.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5e7f35e7697cc1e4c947348d379da0f7
+    m_Address: Assets/_Prefabs/VFX/MagicHit.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 61c0d45e71d60414b9a84c225878761d
+    m_Address: Assets/_Prefabs/VFX/Hit.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e0feb8eb0f44c3142b3f6b48fa3d85f5
+    m_Address: Assets/_Prefabs/VFX/Spin.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 6df106da10895bd40864c2afe15707c6, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: b60c4f32a5d904e43b337f31c8fbd418, type: 2}
+    - {fileID: 11400000, guid: 985a71a9e7131cb43a94ae00982a596f, type: 2}

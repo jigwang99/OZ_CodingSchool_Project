@@ -62,6 +62,7 @@ namespace AutoBattler.EditorTools
             try
             {
                 Time.timeScale=10f;
+                await BattleVisualChecks.RunPlay(run,UnityEngine.Object.FindFirstObjectByType<RunHUD>());
                 await ShieldBarChecks.RunPlay(run,UnityEngine.Object.FindFirstObjectByType<RunHUD>());
                 await SynergyUIChecks.RunPlay(run,UnityEngine.Object.FindFirstObjectByType<RunHUD>());
                 await AssassinEntryChecks.RunPlay(run);
