@@ -18,6 +18,8 @@ namespace AutoBattler.Presentation.Battle
         [Header("진행 제어")]
         [SerializeField] private RunController run;
         [SerializeField] private GameNavigationSettings navigation;
+        [SerializeField] private CanvasGroup interactionRoot;
+        private GameSettingsView gameSettings;
 
         [Header("상단 정보")]
         [SerializeField] private TextMeshProUGUI roundText;
@@ -55,6 +57,7 @@ namespace AutoBattler.Presentation.Battle
 
         public RunController Controller => run;
         public GameNavigationSettings Navigation=>navigation;
+        public GameSettingsView GameSettings=>gameSettings;
         public TextMeshProUGUI RoundText => roundText;
         public TextMeshProUGUI GoldText => goldText;
         public TextMeshProUGUI LivesText => livesText;
@@ -103,12 +106,14 @@ namespace AutoBattler.Presentation.Battle
         public void ConfigureSelectedAugments(SelectedAugmentsView view)=>selectedAugments=view;
         public void ConfigureUnitInfo(UnitInfoPanel panel) => unitInfo = panel;
         public void ConfigureNavigation(GameNavigationSettings settings)=>navigation=settings;
+        public void ConfigureSettingsRoot(CanvasGroup group)=>interactionRoot=group;
 #endif
 
         public void ConfigureScene(RunController controller)
         {
             Unbind();
             run = controller;
+            if(gameSettings!=null) gameSettings.BindContext(interactionRoot,run);
             if (Application.isPlaying && isActiveAndEnabled)
                 Bind();
         }
@@ -116,7 +121,11 @@ namespace AutoBattler.Presentation.Battle
         private void OnEnable()
         {
             if (Application.isPlaying)
+            {
+                gameSettings=AutoBattler.Managers.GameManager.instance.Settings;
+                if(gameSettings!=null) gameSettings.BindContext(interactionRoot,run);
                 Bind();
+            }
         }
 
         private void Bind()
@@ -295,6 +304,10 @@ namespace AutoBattler.Presentation.Battle
             isBound = false;
         }
 
-        private void OnDisable() => Unbind();
+        private void OnDisable()
+        {
+            if(gameSettings!=null) gameSettings.UnbindContext(interactionRoot);
+            Unbind();
+        }
     }
 }

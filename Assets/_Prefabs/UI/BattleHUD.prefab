@@ -2000,6 +2000,7 @@ GameObject:
   - component: {fileID: 2857497496808006572}
   - component: {fileID: 7589047186213388379}
   - component: {fileID: 875217052286444846}
+  - component: {fileID: 8008990319573823391}
   m_Layer: 5
   m_Name: BattleHUD
   m_TagString: Untagged
@@ -2110,6 +2111,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Presentation.Battle.RunHUD
   run: {fileID: 0}
   navigation: {fileID: 11400000, guid: 585998da02986af4185bccd0345e8ffc, type: 2}
+  interactionRoot: {fileID: 8008990319573823391}
   roundText: {fileID: 4865268920334366093}
   goldText: {fileID: 4884088141402342180}
   livesText: {fileID: 8151313849999820468}
@@ -2139,6 +2141,18 @@ MonoBehaviour:
   resultPanel: {fileID: 7208713145894663678}
   retryLoadButton: {fileID: 317415584453242591}
   fadeDuration: 0.2
+--- !u!225 &8008990319573823391
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7106810589765283209}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &7799506212395028884
 GameObject:
   m_ObjectHideFlags: 0

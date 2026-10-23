@@ -74,6 +74,7 @@ namespace AutoBattler.EditorTools
             }
             EditorSceneManager.MarkSceneDirty(scene); EditorSceneManager.SaveScene(scene);
             ConfigureBuildScenes(); AssetDatabase.SaveAssets();
+            GameSettingsSetup.Connect();
         }
         public static void ConfigureBuildScenes()
         {

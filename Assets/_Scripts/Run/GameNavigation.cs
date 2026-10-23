@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 
 namespace AutoBattler.Run
 {
-    /// <summary>중복 전환 차단과 도전 정리 후 장면 이동. 영속 게임 오브젝트 없이 선택만 유지.</summary>
+    /// <summary>중복 전환 차단과 도전 정리 후 장면 이동, 선택 스테이지 유지.</summary>
     public static class GameNavigation
     {
         public static bool IsTransitioning { get; private set; }

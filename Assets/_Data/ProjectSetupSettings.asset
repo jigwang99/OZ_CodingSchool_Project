@@ -19,6 +19,7 @@ MonoBehaviour:
   battleScene: {fileID: 102900000, guid: b60de5195cf03044781824f20feae9eb, type: 3}
   titleScene: {fileID: 102900000, guid: 8436f69d462a10e41b7291c4393583c2, type: 3}
   titleMenu: {fileID: 4709349770433537752, guid: 17027556a860eb44a8fdad197a33ec35, type: 3}
+  gameSettings: {fileID: 7312866062706173347, guid: da2dfbccfd5b4b0448ef9f7ed47652ca, type: 3}
   navigation: {fileID: 11400000, guid: 585998da02986af4185bccd0345e8ffc, type: 2}
   firstStage: {fileID: 11400000, guid: 654c4bc2f32190b41a4b2292cdc456de, type: 2}
   battleHUD: {fileID: 875217052286444846, guid: a5f680cd0e8ea30498a2005d31f49383, type: 3}

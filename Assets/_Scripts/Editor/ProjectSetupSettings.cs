@@ -42,6 +42,7 @@ namespace AutoBattler.EditorTools
         [SerializeField] private SceneAsset battleScene;
         [SerializeField] private SceneAsset titleScene;
         [SerializeField] private TitleMenu titleMenu;
+        [SerializeField] private GameSettingsView gameSettings;
         [SerializeField] private GameNavigationSettings navigation;
         [SerializeField] private StageDefinition firstStage;
         [SerializeField] private RunHUD battleHUD;
@@ -66,6 +67,8 @@ namespace AutoBattler.EditorTools
         public SceneAsset BattleScene => battleScene;
         public SceneAsset TitleScene=>titleScene;
         public TitleMenu TitleMenu=>titleMenu;
+        public GameSettingsView GameSettings=>gameSettings;
+        public string GameSettingsPath=>ExistingOrNew(gameSettings,uiPrefabFolder,"GameSettings.prefab");
         public GameNavigationSettings Navigation=>navigation;
         public StageDefinition FirstStage=>firstStage;
         public string TitleScenePath=>AssetDatabase.GetAssetPath(titleScene);
@@ -122,6 +125,7 @@ namespace AutoBattler.EditorTools
             throw new ArgumentException($"셋업에 연결되지 않은 외형 ID: {visualId}");
         }
         public void SetBattleHUD(RunHUD prefab) => battleHUD=prefab;
+        public void SetGameSettings(GameSettingsView prefab)=>gameSettings=prefab;
         public void SetShopItem(ShopItem prefab) => shopItem=prefab;
         public void SetResultPanel(ResultPanel prefab) => resultPanel=prefab;
         public void SetHealthBar(UnitHealthBar prefab) => healthBar=prefab;

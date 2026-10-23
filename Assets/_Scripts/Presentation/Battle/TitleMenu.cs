@@ -24,6 +24,8 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private TextMeshProUGUI stageDescriptionText;
         [SerializeField] private TextMeshProUGUI statusText;
         [SerializeField] private GameObject loadingOverlay;
+        [SerializeField] private CanvasGroup interactionRoot;
+        private GameSettingsView gameSettings;
         private StageDefinition selection;
         private bool busy;
         public GameNavigationSettings Settings=>settings;
@@ -36,7 +38,9 @@ namespace AutoBattler.Presentation.Battle
         public Button BackButton=>backButton;
         public TextMeshProUGUI StageNameText=>stageNameText;
         public TextMeshProUGUI StatusText=>statusText;
+        public GameSettingsView GameSettings=>gameSettings;
 #if UNITY_EDITOR
+        public void ConfigureSettingsRoot(CanvasGroup group)=>interactionRoot=group;
         public void Configure(GameNavigationSettings navigation,CanvasGroup title,CanvasGroup stages,
             Button open,Button quit,Button choose,Button start,Button back,TextMeshProUGUI stageName,
             TextMeshProUGUI description,TextMeshProUGUI status,GameObject loading)
@@ -49,6 +53,8 @@ namespace AutoBattler.Presentation.Battle
         private void OnEnable()
         {
             if(!Application.isPlaying) return;
+            gameSettings=AutoBattler.Managers.GameManager.instance.Settings;
+            if(gameSettings!=null) gameSettings.BindContext(interactionRoot,null);
             openStagesButton.onClick.AddListener(OpenStages);
             quitButton.onClick.AddListener(Quit);
             stageButton.onClick.AddListener(SelectStage);
@@ -108,14 +114,11 @@ namespace AutoBattler.Presentation.Battle
         private void Quit()
         {
             if(busy || GameNavigation.IsTransitioning) return;
-#if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying=false;
-#else
-            Application.Quit();
-#endif
+            AutoBattler.Managers.GameManager.instance.QuitGame();
         }
         private void OnDisable()
         {
+            if(gameSettings!=null) gameSettings.UnbindContext(interactionRoot);
             if(openStagesButton!=null) openStagesButton.onClick.RemoveListener(OpenStages);
             if(quitButton!=null) quitButton.onClick.RemoveListener(Quit);
             if(stageButton!=null) stageButton.onClick.RemoveListener(SelectStage);

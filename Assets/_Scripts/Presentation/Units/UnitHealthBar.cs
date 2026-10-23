@@ -1,4 +1,5 @@
 using AutoBattler.Battle.Units;
+using AutoBattler.Battle.Placement;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
@@ -16,6 +17,8 @@ namespace AutoBattler.Presentation.Units
         [FormerlySerializedAs("healthText")]
         [SerializeField] private TextMeshProUGUI starText;
         [SerializeField] private HealthBarFill segments;
+        [SerializeField] private RectTransform healthRoot;
+        [SerializeField] private RectTransform manaRoot;
         [SerializeField] private Color allyColor = new Color(0.2f, 0.9f, 0.35f);
         [SerializeField] private Color enemyColor = new Color(1f, 0.35f, 0.35f);
 
@@ -27,10 +30,14 @@ namespace AutoBattler.Presentation.Units
         public Image FillImage => fillImage;
         public TextMeshProUGUI StarText => starText;
         public HealthBarFill Segments=>segments;
+        public RectTransform HealthRoot => healthRoot;
+        public RectTransform ManaRoot => manaRoot;
 #if UNITY_EDITOR
         public void ConfigureReferences(Canvas canvas, Image fill, TextMeshProUGUI label)
         { healthCanvas=canvas; fillImage=fill; starText=label; }
         public void ConfigureSegments(HealthBarFill view)=>segments=view;
+        public void ConfigurePresentation(RectTransform health, RectTransform mana)
+        { healthRoot = health; manaRoot = mana; }
 #endif
 
         public void Bind(Unit unit)
@@ -81,8 +88,20 @@ namespace AutoBattler.Presentation.Units
 
         private void RefreshVisibility()
         {
-            healthCanvas.enabled = owner != null && boundHealth != null && boundHealth.IsInitialized
-                && owner.IsOnBoard && boundHealth.IsAlive;
+            bool alive = owner != null && boundHealth != null && boundHealth.IsInitialized && boundHealth.IsAlive;
+            bool onBoard = alive && owner.IsOnBoard;
+            bool onBench = alive && owner.View != null && owner.View.State != null
+                && owner.View.State.Location.Kind == UnitLocationKind.Bench;
+            healthCanvas.enabled = onBoard || onBench;
+            // 대기석에서는 성급만 표시하고 전장에 배치되면 HP·MP 표시 복원.
+            SetVisible(healthRoot, onBoard);
+            SetVisible(manaRoot, onBoard);
+        }
+
+        private static void SetVisible(RectTransform root, bool visible)
+        {
+            if (root != null && root.gameObject.activeSelf != visible)
+                root.gameObject.SetActive(visible);
         }
 
         private void LateUpdate() => RefreshVisibility();

@@ -96,13 +96,15 @@ namespace AutoBattler.EditorTools
             var setup=ProjectSetupSettings.Current;
             if(setup.HealthBar!=null)
             {
-                if(setup.HealthBar.GetComponentInChildren<UnitManaBar>(true)!=null && setup.HealthBar.Segments!=null)
+                if(setup.HealthBar.GetComponentInChildren<UnitManaBar>(true)!=null && setup.HealthBar.Segments!=null
+                    && setup.HealthBar.HealthRoot!=null && setup.HealthBar.ManaRoot!=null)
                     return setup.HealthBar.gameObject;
                 var contents=PrefabUtility.LoadPrefabContents(setup.HealthBarPath);
                 try
                 {
                     if(contents.GetComponentInChildren<UnitManaBar>(true)==null) CreateManaBar(contents.GetComponent<RectTransform>());
                     ShieldBarSetup.ConfigureUnitBar(contents.GetComponent<UnitHealthBar>());
+                    ConfigureHealthPresentation(contents.GetComponent<UnitHealthBar>());
                     return PrefabUtility.SaveAsPrefabAsset(contents,setup.HealthBarPath);
                 }
                 finally { PrefabUtility.UnloadPrefabContents(contents); }
@@ -125,12 +127,47 @@ namespace AutoBattler.EditorTools
                 prototype.AddComponent<UnitHealthBar>().ConfigureReferences(canvas,fill,label);
                 ShieldBarSetup.ConfigureUnitBar(prototype.GetComponent<UnitHealthBar>());
                 CreateManaBar(rect);
+                ConfigureHealthPresentation(prototype.GetComponent<UnitHealthBar>());
                 foreach(var graphic in prototype.GetComponentsInChildren<Graphic>(true)) graphic.raycastTarget=false;
                 var prefab=PrefabUtility.SaveAsPrefabAsset(prototype,path);
                 setup.SetHealthBar(prefab.GetComponent<UnitHealthBar>()); EditorUtility.SetDirty(setup);
                 return prefab;
             }
             finally { UnityEngine.Object.DestroyImmediate(prototype); }
+        }
+
+        private static void ConfigureHealthPresentation(UnitHealthBar bar)
+        {
+            var canvas=bar.HealthCanvas.GetComponent<RectTransform>();
+            var mana=bar.GetComponentInChildren<UnitManaBar>(true).GetComponent<RectTransform>();
+            var health=bar.HealthRoot;
+            if(health==null)
+            {
+                var fillParent=bar.FillImage.rectTransform.parent as RectTransform;
+                if(fillParent!=canvas)
+                    health=fillParent;
+                else
+                {
+                    health=Rect(canvas,"HealthRoot",Vector2.zero,Vector2.zero);
+                    health.anchorMin=Vector2.zero; health.anchorMax=Vector2.one;
+                    health.pivot=canvas.pivot;
+                    health.SetAsFirstSibling();
+                    // 기존 Canvas 직속 HP 이미지들만 이동. 성급과 마나의 계층·위치는 유지.
+                    foreach(var image in canvas.GetComponentsInChildren<Image>(true))
+                    {
+                        var visual=image.rectTransform;
+                        if(visual.parent!=canvas || visual==mana || visual.IsChildOf(mana)) continue;
+                        var anchorMin=visual.anchorMin; var anchorMax=visual.anchorMax; var pivot=visual.pivot;
+                        var size=visual.sizeDelta; var position=visual.anchoredPosition3D;
+                        var rotation=visual.localRotation; var scale=visual.localScale;
+                        visual.SetParent(health,false);
+                        visual.anchorMin=anchorMin; visual.anchorMax=anchorMax; visual.pivot=pivot;
+                        visual.sizeDelta=size; visual.anchoredPosition3D=position;
+                        visual.localRotation=rotation; visual.localScale=scale;
+                    }
+                }
+            }
+            bar.ConfigurePresentation(health,mana);
         }
 
         private static void CreateManaBar(RectTransform parent)

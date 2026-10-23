@@ -105,7 +105,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 9110051802094074788}
+  m_Father: {fileID: 1417783802040307038}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -150,6 +150,44 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!1 &4238737535451973498
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1417783802040307038}
+  m_Layer: 5
+  m_Name: HealthRoot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1417783802040307038
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4238737535451973498}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 6442100386223440516}
+  - {fileID: 1403849898387449678}
+  - {fileID: 4337317090756444036}
+  m_Father: {fileID: 9110051802094074788}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &5241050349433509200
 GameObject:
   m_ObjectHideFlags: 0
@@ -272,9 +310,7 @@ RectTransform:
   m_LocalScale: {x: 0.01, y: 0.01, z: 0.01}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 6442100386223440516}
-  - {fileID: 1403849898387449678}
-  - {fileID: 4337317090756444036}
+  - {fileID: 1417783802040307038}
   - {fileID: 3698599720436023314}
   - {fileID: 1449908516411781569}
   m_Father: {fileID: 0}
@@ -323,6 +359,8 @@ MonoBehaviour:
   fillImage: {fileID: 5541340560670385508}
   starText: {fileID: 8621527256470617578}
   segments: {fileID: 2773290252889708380}
+  healthRoot: {fileID: 1417783802040307038}
+  manaRoot: {fileID: 1449908516411781569}
   allyColor: {r: 0.2, g: 0.9, b: 0.35, a: 1}
   enemyColor: {r: 1, g: 0.35, b: 0.35, a: 1}
 --- !u!114 &2773290252889708380
@@ -507,7 +545,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 9110051802094074788}
+  m_Father: {fileID: 1417783802040307038}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -582,7 +620,7 @@ RectTransform:
   m_LocalScale: {x: 0, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 9110051802094074788}
+  m_Father: {fileID: 1417783802040307038}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}

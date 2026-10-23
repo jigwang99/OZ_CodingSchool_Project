@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace AutoBattler.Presentation.Units
 {
-    /// <summary>체력바 아래에 현재 마나 비율 표시. 표시 여부는 부모 체력바 Canvas에서 관리.</summary>
+    /// <summary>체력바 아래에 현재 마나 비율 표시. 표시 여부는 UnitHealthBar에서 관리.</summary>
     [DisallowMultipleComponent]
     public sealed class UnitManaBar : MonoBehaviour
     {

@@ -39,7 +39,8 @@ namespace AutoBattler.EditorTools
             if(!string.IsNullOrEmpty(missing)) throw new System.InvalidOperationException("전투 한글 폰트에 필요한 글리프 누락: "+missing);
             EditorUtility.SetDirty(font);
             var paths=new[]{setup.ShopItemPath,setup.ResultPath,setup.HealthBarPath,setup.SynergyPanelPath,
-                setup.AugmentCardPath,setup.AugmentPanelPath,setup.SelectedAugmentsPath,setup.UnitInfoPath,setup.HUDPath};
+                setup.AugmentCardPath,setup.AugmentPanelPath,setup.SelectedAugmentsPath,setup.UnitInfoPath,setup.HUDPath,
+                setup.GameSettingsPath};
             foreach(var path in paths)
             {
                 var root=PrefabUtility.LoadPrefabContents(path);
