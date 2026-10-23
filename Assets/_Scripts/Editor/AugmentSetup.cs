@@ -43,9 +43,9 @@ namespace AutoBattler.EditorTools
                     var inner=Rect(root,"Body",new Vector2(310f,380f),Vector2.zero);
                     inner.gameObject.AddComponent<Image>().color=new Color(.035f,.16f,.22f);
                     var number=Label(inner,"Number",new Vector2(0f,115f),new Vector2(260f,95f),70f,"01"); number.color=new Color(.47f,.91f,1f);
-                    var title=Label(inner,"Name",new Vector2(0f,18f),new Vector2(275f,65f),27f,"AUGMENT"); title.fontStyle=FontStyles.Bold;
-                    var description=Label(inner,"Description",new Vector2(0f,-78f),new Vector2(266f,110f),21f,"Description");
-                    var hint=Label(inner,"Hint",new Vector2(0f,-160f),new Vector2(270f,30f),15f,"CLICK TO SELECT"); hint.color=new Color(.7f,.8f,.84f);
+                    var title=Label(inner,"Name",new Vector2(0f,18f),new Vector2(275f,65f),27f,"증강"); title.fontStyle=FontStyles.Bold;
+                    var description=Label(inner,"Description",new Vector2(0f,-78f),new Vector2(266f,110f),21f,"설명");
+                    var hint=Label(inner,"Hint",new Vector2(0f,-160f),new Vector2(270f,30f),15f,""); hint.color=new Color(.7f,.8f,.84f);
                     root.gameObject.AddComponent<AugmentCard>().Configure(button,title,description,number);
                     setup.SetAugmentCard(PrefabUtility.SaveAsPrefabAsset(root.gameObject,setup.AugmentCardPath).GetComponent<AugmentCard>());
                 }
@@ -59,8 +59,8 @@ namespace AutoBattler.EditorTools
                     var overlay=Rect(root,"Overlay",Vector2.zero,Vector2.zero); Stretch(overlay);
                     overlay.gameObject.AddComponent<Image>().color=new Color(.015f,.03f,.055f,.93f);
                     var group=overlay.gameObject.AddComponent<CanvasGroup>();
-                    var title=Label(overlay,"Title",new Vector2(0f,270f),new Vector2(900f,55f),38f,"CHOOSE AN AUGMENT"); title.fontStyle=FontStyles.Bold;
-                    Label(overlay,"Subtitle",new Vector2(0f,225f),new Vector2(1000f,35f),20f,"Choose one. Its benefits last for this challenge.");
+                    var title=Label(overlay,"Title",new Vector2(0f,270f),new Vector2(900f,55f),38f,"증강 선택"); title.fontStyle=FontStyles.Bold;
+                    Label(overlay,"Subtitle",new Vector2(0f,225f),new Vector2(1000f,35f),20f,"");
                     var cards=new AugmentCard[3];
                     for(int i=0;i<3;i++)
                     {
@@ -70,7 +70,7 @@ namespace AutoBattler.EditorTools
                     var toggle=Rect(root,"Toggle",new Vector2(320f,60f),new Vector2(0f,-270f));
                     var image=toggle.gameObject.AddComponent<Image>(); image.color=new Color(.07f,.36f,.43f);
                     var button=toggle.gameObject.AddComponent<Button>(); button.targetGraphic=image;
-                    var toggleText=Label(toggle,"Label",Vector2.zero,new Vector2(300f,50f),24f,"Hide choices");
+                    var toggleText=Label(toggle,"Label",Vector2.zero,new Vector2(300f,50f),24f,"증강 닫기");
                     root.gameObject.SetActive(false);
                     root.gameObject.AddComponent<AugmentSelectionPanel>().Configure(overlay.gameObject,group,button,toggleText,cards);
                     setup.SetAugmentPanel(PrefabUtility.SaveAsPrefabAsset(root.gameObject,setup.AugmentPanelPath).GetComponent<AugmentSelectionPanel>());
@@ -91,7 +91,7 @@ namespace AutoBattler.EditorTools
         private static TextMeshProUGUI Label(RectTransform parent,string name,Vector2 position,Vector2 size,float fontSize,string text)
         {
             var label=Rect(parent,name,size,position).gameObject.AddComponent<TextMeshProUGUI>();
-            label.font=TMP_Settings.defaultFontAsset; label.fontSize=fontSize; label.text=text;
+            label.font=ProjectSetupSettings.Current.UnitInfoFont; label.fontSize=fontSize; label.text=text;
             label.alignment=TextAlignmentOptions.Center; label.textWrappingMode=TextWrappingModes.Normal;
             label.overflowMode=TextOverflowModes.Ellipsis; label.color=Color.white; label.raycastTarget=false; return label;
         }

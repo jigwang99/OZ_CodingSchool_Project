@@ -37,7 +37,7 @@ namespace AutoBattler.Presentation.Battle
         public void Show(IEnumerable<AugmentDefinition> selected,bool allowHover)
         {
             var definitions=selected.ToArray(); SelectedCount=definitions.Length;
-            countText.text=$"AUGMENTS {SelectedCount}/3";
+            countText.text=$"증강 {SelectedCount}/3";
             for(int i=0;i<slots.Length;i++)
             {
                 bool owned=i<definitions.Length;
@@ -46,11 +46,11 @@ namespace AutoBattler.Presentation.Battle
                 slotTexts[i].color=owned?new Color(1f,.84f,.39f):new Color(.4f,.47f,.53f);
             }
             var text=new StringBuilder();
-            if(definitions.Length==0) text.Append("No augments selected yet.\nChoose augments at rounds 1-2, 2-1 and 3-1.");
+            if(definitions.Length==0) text.Append("선택한 증강이 없습니다.");
             for(int i=0;i<definitions.Length;i++)
             {
                 if(i>0) text.Append("\n\n");
-                text.Append("<b>").Append(definitions[i].Name).Append("</b>\n").Append(definitions[i].Description);
+                text.Append("<b>").Append(BattleText.AugmentName(definitions[i])).Append("</b>\n").Append(BattleText.AugmentDescription(definitions[i]));
             }
             tooltipText.text=text.ToString();
             float height=tooltipText.GetPreferredValues(tooltipText.text,388f,Mathf.Infinity).y;

@@ -21,7 +21,7 @@ namespace AutoBattler.Presentation.Battle
         { button=select; titleText=title; descriptionText=description; indexText=index; }
 #endif
         public void Show(AugmentDefinition definition,int index)
-        { DisplayedId=definition.Id; titleText.text=definition.Name; descriptionText.text=definition.Description; indexText.text=(index+1).ToString("00"); }
+        { DisplayedId=definition.Id; titleText.text=BattleText.AugmentName(definition); descriptionText.text=BattleText.AugmentDescription(definition); indexText.text=(index+1).ToString("00"); }
         private void OnEnable() { if(Application.isPlaying && button!=null) button.onClick.AddListener(Request); }
         private void OnDisable() { if(button!=null) button.onClick.RemoveListener(Request); }
         private void Request()=>Selected?.Invoke(DisplayedId);

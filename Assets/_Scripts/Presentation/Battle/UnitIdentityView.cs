@@ -7,7 +7,11 @@ namespace AutoBattler.Presentation.Battle
     /// <summary>PIXEM 샘플 외형에 종류·성급·팀을 표시하는 임시 표현 어댑터.</summary>
     public sealed class UnitIdentityView : MonoBehaviour
     {
+        [SerializeField] private TMP_FontAsset koreanFont;
         private TextMeshProUGUI label;
+#if UNITY_EDITOR
+        public void ConfigureFont(TMP_FontAsset font) => koreanFont = font;
+#endif
         public void Apply(Unit unit)
         {
             if(label==null)
@@ -18,9 +22,10 @@ namespace AutoBattler.Presentation.Battle
                 var canvas=canvasObj.GetComponent<Canvas>(); canvas.renderMode=RenderMode.WorldSpace; canvas.sortingOrder=60;
                 var obj=new GameObject("Identity",typeof(RectTransform),typeof(TextMeshProUGUI)); obj.transform.SetParent(canvasObj.transform,false);
                 label=obj.GetComponent<TextMeshProUGUI>(); label.fontSize=20f; label.alignment=TextAlignmentOptions.Center;
+                if(koreanFont!=null) label.font=koreanFont;
                 label.rectTransform.sizeDelta=new Vector2(250f,60f); label.raycastTarget=false;
             }
-            label.text=$"{unit.Definition.Name}\n{(unit.Star==2?"**":"*")}";
+            label.text=$"{BattleText.UnitName(unit.Definition)}\n{(unit.Star==2?"**":"*")}";
             label.color=unit.Team==UnitTeam.Ally?new Color(.6f,1f,1f):new Color(1f,.65f,.65f);
         }
         private void LateUpdate()

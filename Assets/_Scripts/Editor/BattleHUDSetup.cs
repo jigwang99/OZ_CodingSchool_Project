@@ -13,7 +13,7 @@ using UnityEngine.UI;
 namespace AutoBattler.EditorTools
 {
     /// <summary>편집 가능한 BattleHUD 프리팹 생성과 씬 연결. 런타임에는 실행하지 않음.</summary>
-    public static class BattleHUDSetup
+    public static partial class BattleHUDSetup
     {
         public static string PrefabPath => ProjectSetupSettings.Current.HUDPath;
         private static string ScenePath => ProjectSetupSettings.Current.ScenePath;
@@ -91,14 +91,14 @@ namespace AutoBattler.EditorTools
                 var header = Panel(rootRect, "Header", new Vector2(0.5f, 1f), new Vector2(0f, -58f), new Vector2(1920f, 116f));
                 StretchWidth(header);
                 string[] names = { "RoundText", "GoldText", "LivesText", "LevelText", "ExperienceText", "DeploymentText" };
-                string[] initial = { "Round --", "Gold --", "Lives --", "Level --", "XP --", "Deployed --" };
+                string[] initial = { "라운드 --", "골드 --", "목숨 --", "레벨 --", "경험치 --", "배치 --" };
                 var labels = new TextMeshProUGUI[names.Length];
                 for (int i = 0; i < labels.Length; i++)
                     labels[i] = Label(header, names[i], new Vector2(-780f + i * 312f, 25f), new Vector2(290f, 40f), 27f, initial[i]);
-                var message = Label(header, "MessageText", new Vector2(-220f, -25f), new Vector2(1370f, 38f), 21f, "Loading data...");
+                var message = Label(header, "MessageText", new Vector2(-220f, -25f), new Vector2(1370f, 38f), 21f, "불러오는 중...");
                 hud.ConfigureHeader(labels[0], labels[1], labels[2], labels[3], labels[4], labels[5], message);
-                var start = Button(header, "StartBattleButton", "Start battle", new Vector2(780f, -25f), new Vector2(270f, 46f));
-                var retry = Button(header, "RetryLoadButton", "Retry load", new Vector2(780f, -25f), new Vector2(270f, 46f));
+                var start = Button(header, "StartBattleButton", "전투 시작", new Vector2(780f, -25f), new Vector2(270f, 46f));
+                var retry = Button(header, "RetryLoadButton", "다시 불러오기", new Vector2(780f, -25f), new Vector2(270f, 46f));
 
                 var preparation = Panel(rootRect, "PreparationPanel", new Vector2(0.5f, 0f), new Vector2(0f, 64f), new Vector2(1920f, 128f));
                 StretchWidth(preparation);
@@ -106,10 +106,10 @@ namespace AutoBattler.EditorTools
                 RectTransform shopContainer = Rect(preparation, "ShopContainer", new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1920f, 128f));
                 hud.ConfigureShopContainer(shopContainer);
                 ShopItemSetup.ConfigureSlots(shopContainer, hud);
-                var refresh = Button(preparation, "RefreshButton", "Refresh", new Vector2(650f, 32f), new Vector2(190f, 54f));
-                var experience = Button(preparation, "BuyExperienceButton", "Buy XP", new Vector2(855f, 32f), new Vector2(180f, 54f));
-                var sell = Button(preparation, "SellButton", "Sell selected", new Vector2(650f, -32f), new Vector2(190f, 54f));
-                var selected = Label(preparation, "SelectedUnitText", new Vector2(855f, -32f), new Vector2(180f, 60f), 19f, "Select a unit");
+                var refresh = Button(preparation, "RefreshButton", "새로고침", new Vector2(650f, 32f), new Vector2(190f, 54f));
+                var experience = Button(preparation, "BuyExperienceButton", "경험치 구매", new Vector2(855f, 32f), new Vector2(180f, 54f));
+                var sell = Button(preparation, "SellButton", "판매", new Vector2(650f, -32f), new Vector2(190f, 54f));
+                var selected = Label(preparation, "SelectedUnitText", new Vector2(855f, -32f), new Vector2(180f, 60f), 19f, "기물 선택");
                 hud.ConfigurePreparation(preparationGroup, shopContainer, hud.ShopItems.ToArray(), refresh, refresh.GetComponentInChildren<TextMeshProUGUI>(),
                     experience, experience.GetComponentInChildren<TextMeshProUGUI>(), sell, selected);
                 hud.ConfigureActions(start, retry, null);
@@ -161,7 +161,7 @@ namespace AutoBattler.EditorTools
         {
             var rect = Rect(parent, name, new Vector2(0.5f, 0.5f), position, size);
             var label = rect.gameObject.AddComponent<TextMeshProUGUI>();
-            label.font = TMP_Settings.defaultFontAsset;
+            label.font = ProjectSetupSettings.Current.UnitInfoFont;
             label.fontSize = fontSize;
             label.alignment = TextAlignmentOptions.Center;
             label.color = Color.white;
@@ -186,29 +186,6 @@ namespace AutoBattler.EditorTools
             return button;
         }
 
-        public static void BuildForVerification()
-        {
-            var scene = EditorSceneManager.OpenScene(ScenePath);
-            var run = UnityEngine.Object.FindFirstObjectByType<RunController>();
-            var hud = Connect(scene, run);
-            if (!PrefabUtility.IsPartOfPrefabInstance(hud))
-                throw new InvalidOperationException("씬의 BattleHUD 프리팹 연결 실패.");
-            // 에디터에서 프리팹 참조와 재실행 시 사용자 배치 보존 확인.
-            var prefab = EnsurePrefab();
-            var view = prefab.GetComponent<RunHUD>();
-            UnityEngine.Object[] references = { view.RoundText, view.GoldText, view.LivesText, view.LevelText,
-                view.ExperienceText, view.DeploymentText, view.MessageText, view.PreparationPanel,
-                view.ShopContainer, view.RefreshButton, view.BuyExperienceButton, view.SellButton,
-                view.SelectedUnitText, view.StartBattleButton, view.RetryLoadButton, view.ResultPanel };
-            if (references.Any(reference => reference == null) || view.ShopItems.Any(item => item == null))
-                throw new InvalidOperationException("BattleHUD 참조 연결 필요.");
-            int id = hud.GetInstanceID();
-            if (Connect(scene, run).GetInstanceID() != id)
-                throw new InvalidOperationException("기존 BattleHUD 인스턴스 보존 실패.");
-            EditorSceneManager.SaveScene(scene);
-            AssetDatabase.SaveAssets();
-            Debug.Log("BATTLE_HUD_PREFAB_PASS");
-        }
     }
 }
 #endif

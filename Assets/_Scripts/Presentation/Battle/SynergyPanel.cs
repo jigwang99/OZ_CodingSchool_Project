@@ -38,8 +38,10 @@ namespace AutoBattler.Presentation.Battle
             displayed=snapshot; displayedPhase=phase; wasReady=ready; hasShown=true;
             bool available=ready && snapshot.Statuses.Count>0;
             content.SetActive(available);
-            emptyText.text=ready?"Synergy data is unavailable.":"Loading synergies...";
-            statusText.text=phase==BattlePhase.Preparation || phase==BattlePhase.AugmentSelection?"Your deployed army":phase==BattlePhase.Combat?"Locked for this battle":"Last battle's synergies";
+            emptyText.text=ready?"시너지 정보가 없음.":"시너지 불러오는 중...";
+            statusText.text=string.Empty;
+            statusText.gameObject.SetActive(false);
+            rules.gameObject.SetActive(false);
             // 숨긴 행의 자리를 남기지 않고 그룹과 행을 위에서부터 배치.
             bool anyVisible=false;
             if(available) foreach(var row in rows)
@@ -48,13 +50,11 @@ namespace AutoBattler.Presentation.Battle
                 anyVisible|=row.gameObject.activeSelf;
             }
             emptyText.gameObject.SetActive(!anyVisible);
-            if(available && !anyVisible) emptyText.text="Deploy units to discover synergies.";
-            float top=86f;
+            if(available && !anyVisible) emptyText.text="기물을 배치하면 시너지 표시.";
+            float top=52f;
             LayoutGroup(TraitCategory.Origin,originsTitle,available,ref top);
             LayoutGroup(TraitCategory.Class,classesTitle,available,ref top);
-            rules.gameObject.SetActive(anyVisible);
-            if(anyVisible) rules.anchoredPosition=new Vector2(rules.anchoredPosition.x,-(top-8f));
-            ((RectTransform)transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,anyVisible?top+34f:208f);
+            ((RectTransform)transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,anyVisible?top+8f:148f);
         }
         private void LayoutGroup(TraitCategory category,RectTransform title,bool available,ref float top)
         {

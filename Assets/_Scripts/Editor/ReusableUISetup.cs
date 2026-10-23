@@ -10,7 +10,7 @@ using UnityEngine.UI;
 namespace AutoBattler.EditorTools
 {
     /// <summary>설정 SO의 공통 결과 패널과 체력바 프리팹 연결.</summary>
-    public static class ReusableUISetup
+    public static partial class ReusableUISetup
     {
         public static string ResultPath => ProjectSetupSettings.Current.ResultPath;
         public static string HealthBarPath => ProjectSetupSettings.Current.HealthBarPath;
@@ -72,13 +72,13 @@ namespace AutoBattler.EditorTools
                 rect.sizeDelta=new Vector2(720f,250f); rect.anchoredPosition=new Vector2(0f,50f);
                 prototype.layer=LayerMask.NameToLayer("UI");
                 prototype.GetComponent<Image>().color=new Color(.075f,.11f,.17f,.96f);
-                var title=Label(rect,"TitleText",new Vector2(0f,80f),new Vector2(660f,44f),30f,"Battle result");
-                var result=Label(rect,"ResultText",new Vector2(0f,15f),new Vector2(660f,75f),24f,"Victory / Defeat");
+                var title=Label(rect,"TitleText",new Vector2(0f,80f),new Vector2(660f,44f),30f,"전투 결과");
+                var result=Label(rect,"ResultText",new Vector2(0f,15f),new Vector2(660f,75f),24f,"승리 / 패배");
                 var next=Rect(rect,"NextRoundButton",new Vector2(0f,-80f),new Vector2(240f,52f));
                 var image=next.gameObject.AddComponent<Image>(); image.color=new Color(.17f,.28f,.4f);
                 var button=next.gameObject.AddComponent<Button>(); button.targetGraphic=image;
-                Label(next,"Label",Vector2.zero,new Vector2(224f,44f),22f,"Next round");
-                var end=Label(rect,"EndMessageText",new Vector2(0f,-80f),new Vector2(660f,44f),21f,"Restart Play to try again.");
+                Label(next,"Label",Vector2.zero,new Vector2(224f,44f),22f,"다음 라운드");
+                var end=Label(rect,"EndMessageText",new Vector2(0f,-80f),new Vector2(660f,44f),21f,"");
                 end.gameObject.SetActive(false);
                 var panel=prototype.AddComponent<ResultPanel>();
                 panel.ConfigureReferences(prototype.GetComponent<CanvasGroup>(),title,result,end,button);
@@ -170,26 +170,8 @@ namespace AutoBattler.EditorTools
         private static TextMeshProUGUI Label(RectTransform parent,string name,Vector2 position,Vector2 size,float fontSize,string text)
         {
             var label=Rect(parent,name,position,size).gameObject.AddComponent<TextMeshProUGUI>();
-            label.font=TMP_Settings.defaultFontAsset; label.fontSize=fontSize; label.alignment=TextAlignmentOptions.Center;
+            label.font=ProjectSetupSettings.Current.UnitInfoFont; label.fontSize=fontSize; label.alignment=TextAlignmentOptions.Center;
             label.textWrappingMode=TextWrappingModes.Normal; label.raycastTarget=false; label.color=Color.white; label.text=text; return label;
-        }
-        public static void BuildForVerification()
-        {
-            ConnectPrefabs();
-            var setup=ProjectSetupSettings.Current;
-            string beforeHud=System.IO.File.ReadAllText(setup.HUDPath);
-            ConnectPrefabs();
-            if(beforeHud!=System.IO.File.ReadAllText(setup.HUDPath))
-                throw new InvalidOperationException("재연결 시 HUD 변경 발생.");
-            foreach(var entry in setup.Units)
-            {
-                var bars=entry.UnitPrefab.GetComponentsInChildren<UnitHealthBar>(true);
-                if(bars.Length!=1 || PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(bars[0])!=HealthBarPath)
-                    throw new InvalidOperationException("공통 체력바 중첩 프리팹 연결 실패.");
-            }
-            BattleHUDSetup.BuildForVerification();
-            Debug.Log("REUSABLE_UI_PREFABS_PASS");
-            MilestonePlayChecks.Start();
         }
     }
 }

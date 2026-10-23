@@ -161,10 +161,10 @@ namespace AutoBattler.Presentation.Battle
             {
                 bool loaded=title ? await GameNavigation.ReturnToTitleAsync(navigation,run)
                     : await GameNavigation.RetryAsync(navigation,run);
-                if(!loaded && this!=null) messageText.text="Scene unavailable. Please retry.";
+                if(!loaded && this!=null) messageText.text="장면을 열 수 없습니다. 다시 시도해 주세요.";
             }
             catch(System.Exception exception)
-            { if(this!=null) messageText.text="Scene load failed. Please retry."; Debug.LogException(exception); }
+            { if(this!=null) messageText.text="장면을 불러오지 못했습니다. 다시 시도해 주세요."; Debug.LogException(exception); }
             finally { if(this!=null) resultPanel.SetNavigationBusy(false); }
         }
         private void SelectAugment(int id)=>run.SelectAugment(id);
@@ -178,7 +178,7 @@ namespace AutoBattler.Presentation.Battle
             if (!isBound)
                 return;
             if (run.IsReady && run.Flow.CurrentPhase == BattlePhase.Combat)
-                messageText.text = $"Automatic battle   {Mathf.CeilToInt(run.RemainingSeconds)}s remaining";
+                messageText.text = $"전투 중   남은 시간 {Mathf.CeilToInt(run.RemainingSeconds)}초";
             RefreshSelection();
         }
 
@@ -188,7 +188,7 @@ namespace AutoBattler.Presentation.Battle
             var unit = selected != null && selected.State != null
                 ? selected.GetComponent<Unit>() : null;
             selectedUnitText.text = unit != null && unit.Definition != null
-                ? unit.Definition.Name : "Select a unit";
+                ? BattleText.UnitName(unit.Definition) : "기물 선택";
             sellButton.interactable = CanPrepare() && unit != null;
             if (unitInfo != null)
             {
@@ -207,14 +207,14 @@ namespace AutoBattler.Presentation.Battle
             bool prepare = CanPrepare();
             if(synergyPanel!=null) synergyPanel.Show(ready?run.AllySynergies:null,ready,run.Flow.CurrentPhase);
             messageText.text = run.Message;
-            roundText.text = ready ? $"Round {(run.State.Round - 1) / 4 + 1}-{(run.State.Round - 1) % 4 + 1}" : "Round --";
-            goldText.text = ready ? $"Gold {run.State.Gold}" : "Gold --";
-            livesText.text = ready ? $"Lives {run.State.Lives}" : "Lives --";
-            levelText.text = ready ? $"Level {run.State.Level}" : "Level --";
+            roundText.text = ready ? $"라운드 {(run.State.Round - 1) / 4 + 1}-{(run.State.Round - 1) % 4 + 1}" : "라운드 --";
+            goldText.text = ready ? $"골드 {run.State.Gold}" : "골드 --";
+            livesText.text = ready ? $"목숨 {run.State.Lives}" : "목숨 --";
+            levelText.text = ready ? $"레벨 {run.State.Level}" : "레벨 --";
             experienceText.text = ready
-                ? run.State.Level == 10 ? "XP MAX" : $"XP {run.State.Xp}/{run.State.Data.RequiredXp(run.State.Level)}"
-                : "XP --";
-            deploymentText.text = ready ? $"Deployed {run.State.Board.DeployedCount}/{run.State.Level}" : "Deployed --";
+                ? run.State.Level == 10 ? "경험치 최대" : $"경험치 {run.State.Xp}/{run.State.Data.RequiredXp(run.State.Level)}"
+                : "경험치 --";
+            deploymentText.text = ready ? $"배치 {run.State.Board.DeployedCount}/{run.State.Level}" : "배치 --";
 
             for (int i = 0; i < shopItems.Length; i++)
             {
@@ -225,8 +225,8 @@ namespace AutoBattler.Presentation.Battle
             }
 
             // 비용 표시도 시트의 경제 규칙을 사용.
-            refreshLabel.text = ready ? $"Refresh ({run.State.Data.IntRule(EconomyRule.RefreshCost)}G)" : "Refresh";
-            buyExperienceLabel.text = ready ? $"XP ({run.State.Data.IntRule(EconomyRule.XpCost)}G)" : "Buy XP";
+            refreshLabel.text = ready ? $"새로고침 ({run.State.Data.IntRule(EconomyRule.RefreshCost)}골드)" : "새로고침";
+            buyExperienceLabel.text = ready ? $"경험치 ({run.State.Data.IntRule(EconomyRule.XpCost)}골드)" : "경험치 구매";
             refreshButton.interactable = prepare;
             buyExperienceButton.interactable = prepare && run.State.Level < 10;
             startBattleButton.interactable = prepare && run.State.Board.DeployedCount > 0;
@@ -236,7 +236,7 @@ namespace AutoBattler.Presentation.Battle
             RefreshSelection();
 
             if (ready && run.State.IsOver)
-                messageText.text = run.State.WonRun ? "Challenge complete!" : "Challenge ended. Retry or return to title.";
+                messageText.text = run.State.WonRun ? "도전 성공!" : "도전 종료";
 
             bool showResult = ready && run.Flow.CurrentPhase == BattlePhase.Result;
             bool phaseChanged = !hasDisplayedPhase || displayedPhase != run.Flow.CurrentPhase;
@@ -244,8 +244,8 @@ namespace AutoBattler.Presentation.Battle
             if (showResult)
             {
                 string title = run.State.IsOver
-                    ? run.State.WonRun ? "Challenge complete!" : "Challenge ended"
-                    : "Battle result";
+                    ? run.State.WonRun ? "도전 성공!" : "도전 종료"
+                    : "전투 결과";
                 resultPanel.Show(title, run.State.LastResult, !run.State.IsOver, hasDisplayedPhase);
             }
             else

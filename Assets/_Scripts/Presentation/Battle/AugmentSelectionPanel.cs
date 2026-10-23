@@ -35,7 +35,7 @@ namespace AutoBattler.Presentation.Battle
             bool open=run.Flow.IsAugmentWindowOpen;
             for(int i=0;i<cards.Length;i++) cards[i].Show(run.State.Data.Augments[run.State.Augments.OfferedIds[i]],i);
             overlay.SetActive(open);
-            toggleText.text=open?"Hide choices":"Show choices";
+            toggleText.text=open?"증강 닫기":"증강 열기";
             if(open && !wasOpen) { overlayGroup.DOKill(); overlayGroup.alpha=0f; overlayGroup.DOFade(1f,.15f).SetUpdate(true); }
             wasOpen=open;
         }

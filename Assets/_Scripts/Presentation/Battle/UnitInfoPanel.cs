@@ -73,10 +73,10 @@ namespace AutoBattler.Presentation.Battle
             unit.StatModifiers.Changed+=RefreshDetails;
             unit.Effects.Changed+=RefreshDetails;
             gameObject.SetActive(true);
-            nameText.text=unit.Definition.Name;
-            identityText.text=$"{unit.Team}   {new string('*', unit.Star)}   Cost {unit.Definition.Cost}G";
+            nameText.text=BattleText.UnitName(unit.Definition);
+            identityText.text=$"{(unit.Team==UnitTeam.Ally ? "아군" : "적군")}   {new string('*', unit.Star)}   비용 {unit.Definition.Cost}G";
             traitsText.text=$"{TraitName(TraitCategory.Origin, unit.Definition.OriginId)} / {TraitName(TraitCategory.Class, unit.Definition.ClassId)}"
-                +$"   |   {(unit.Definition.IsRanged ? "Ranged" : "Melee")}";
+                +$"   |   {(unit.Definition.IsRanged ? "원거리" : "근거리")}";
             teamAccent.color=unit.Team==UnitTeam.Ally ? new Color(.2f,.85f,.85f) : new Color(1f,.35f,.4f);
             if(unitIcon!=null) { unitIcon.sprite=catalog.Icon(unit.Definition.IconId); unitIcon.enabled=unitIcon.sprite!=null; }
             if(skillIcon!=null) { skillIcon.sprite=catalog.BattleVisuals.Skill(unit.Skill.Definition?.Id ?? 0)?.icon; skillIcon.enabled=skillIcon.sprite!=null; }
@@ -88,8 +88,8 @@ namespace AutoBattler.Presentation.Battle
         private string TraitName(TraitCategory category, int id)
         {
             if (data != null) foreach (var trait in data.Traits)
-                if (trait.Category==category && trait.GroupId==id) return trait.Name;
-            return category.ToString();
+                if (trait.Category==category && trait.GroupId==id) return BattleText.TraitName(category,id,trait.Name);
+            return BattleText.TraitName(category,id,category==TraitCategory.Origin ? "종족" : "직업");
         }
         private void OnHealthChanged(int current, int maximum)
         {
@@ -125,40 +125,53 @@ namespace AutoBattler.Presentation.Battle
             var stats=boundUnit.Stats;
             RefreshHealth(boundUnit.Health.IsAlive);
             manaText.text=$"MP  {boundUnit.Mana.Current}/{boundUnit.Mana.Maximum}";
-            statsText.text=$"Attack<pos=205>{stats.AttackDamage}\nArmor<pos=205>{stats.Defense}\n"
-                +$"Range<pos=205>{stats.AttackRange} hex\nAttack interval<pos=205>{stats.AttackCooldown:0.##}s\n"
-                +$"Critical<pos=205>{boundUnit.StatModifiers.CritChance:P0} / {boundUnit.StatModifiers.CritMultiplier:0.##}x\n"
-                +$"Skill power<pos=205>{boundUnit.StatModifiers.SkillPower:P0}\nShield<pos=205>{boundUnit.Effects.Shield}";
+            statsText.text=$"공격력<pos=205>{stats.AttackDamage}\n방어력<pos=205>{stats.Defense}\n"
+                +$"사거리<pos=205>{stats.AttackRange}칸\n공격 간격<pos=205>{stats.AttackCooldown:0.##}초\n"
+                +$"치명타<pos=205>{boundUnit.StatModifiers.CritChance:P0} / {boundUnit.StatModifiers.CritMultiplier:0.##}배\n"
+                +$"스킬 위력<pos=205>{boundUnit.StatModifiers.SkillPower:P0}\n보호막<pos=205>{boundUnit.Effects.Shield}";
             var skill=boundUnit.Skill.Definition;
-            skillNameText.text=skill?.Name ?? "No skill";
-            if (skill==null) { skillText.text="This unit has no active skill."; return; }
-            string target=skill.TargetRule==SkillTargetRule.Self ? "Self"
-                : skill.TargetRule==SkillTargetRule.LowestHealthAlly ? "Lowest HP ally" : "Current enemy";
+            skillNameText.text=skill?.Name ?? "스킬 없음";
+            if (skill==null) { skillText.text=""; return; }
+            string target=skill.TargetRule==SkillTargetRule.Self ? "자신"
+                : skill.TargetRule==SkillTargetRule.LowestHealthAlly ? "체력이 가장 낮은 아군" : "현재 공격 대상";
             var description=new StringBuilder();
-            description.Append($"{target}  |  {skill.ManaCost} MP\nWindup {skill.Windup:0.##}s  /  Cooldown {skill.Cooldown:0.##}s\n");
-            description.Append($"Range {skill.CastRange} hex  /  Radius {skill.Radius} hex\n");
+            description.Append($"{target}  |  {skill.ManaCost} MP\n시전 준비 {skill.Windup:0.##}초  /  재사용 {skill.Cooldown:0.##}초\n");
+            description.Append($"사거리 {skill.CastRange}칸  /  반경 {skill.Radius}칸\n");
             float starScale=boundUnit.Star==2 && data!=null ? data.Rule(EconomyRule.StarMultiplier) : 1f;
             float power=boundUnit.StatModifiers.SkillPower;
             if (skill.BaseDamage>0 || skill.AttackRatio>0)
             {
                 float damage=(skill.BaseDamage*starScale+stats.AttackDamage*skill.AttackRatio)*power;
-                description.Append($"Damage {damage:0.#} before armor\n");
+                description.Append($"피해량 {damage:0.#} (방어력 적용 전)\n");
             }
-            if (skill.ArmorIgnore>0) description.Append($"Ignore armor {skill.ArmorIgnore:P0}\n");
+            if (skill.ArmorIgnore>0) description.Append($"방어력 무시 {skill.ArmorIgnore:P0}\n");
             if (data!=null && data.Effects.TryGetValue(skill.EffectId,out var effect))
             {
                 float value=effect.Value;
                 if (effect.Kind==EffectKind.Heal || effect.Kind==EffectKind.Shield) value*=starScale*power;
-                if (effect.Kind==EffectKind.Slow) description.Append($"Slow {value:P0}");
-                else if (effect.Kind==EffectKind.Stun) description.Append("Stun");
-                else if (effect.Kind==EffectKind.StatModifier) description.Append($"{effect.Stat} {effect.Operation} {value:0.##}");
-                else description.Append($"{effect.Kind} {value:0.#}");
-                if (effect.Duration>0) description.Append($" for {effect.Duration:0.##}s");
+                if (effect.Kind==EffectKind.Slow) description.Append($"둔화 {value:P0}");
+                else if (effect.Kind==EffectKind.Stun) description.Append("기절");
+                else if (effect.Kind==EffectKind.StatModifier) description.Append($"{StatName(effect.Stat)} {(effect.Operation==ModifierOperation.Flat ? "고정" : "비율")} {value:0.##}");
+                else description.Append($"{(effect.Kind==EffectKind.Heal ? "체력 회복" : "보호막")} {value:0.#}");
+                if (effect.Duration>0) description.Append($" ({effect.Duration:0.##}초)");
                 description.AppendLine();
             }
-            if (skill.Delivery==SkillDelivery.Projectile) description.Append("Projectile");
+            if (skill.Delivery==SkillDelivery.Projectile) description.Append("투사체");
             skillText.text=description.ToString().TrimEnd();
         }
+        private static string StatName(StatType stat) => stat switch
+        {
+            StatType.MaxHp => "최대 체력",
+            StatType.AttackDamage => "공격력",
+            StatType.Defense => "방어력",
+            StatType.AttackSpeed => "공격 속도",
+            StatType.MoveSpeed => "이동 속도",
+            StatType.SkillPower => "스킬 위력",
+            StatType.CritChance => "치명타 확률",
+            StatType.CritMultiplier => "치명타 피해",
+            StatType.BasicAttackPower => "기본 공격 위력",
+            _ => "능력치"
+        };
         public void Hide()
         {
             Unbind();

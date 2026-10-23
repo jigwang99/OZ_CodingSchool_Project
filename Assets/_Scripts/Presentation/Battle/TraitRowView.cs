@@ -61,9 +61,9 @@ namespace AutoBattler.Presentation.Battle
             // 배치 종류가 없는 그룹은 숨김. 재배치 시 현재 수치로 복원.
             if(Count==0) { gameObject.SetActive(false); return; }
             gameObject.SetActive(true);
-            nameText.text=value.Definition.Name;
-            countText.text=$"{Count}/{RequiredCount}"+(IsActive?" ACTIVE":"");
-            effectText.text=$"{value.Definition.Name} units: {Describe(value.Definition)}";
+            nameText.text=BattleText.TraitName(category,groupId,value.Definition.Name);
+            countText.text=$"{Count}/{RequiredCount}"+(IsActive?" 활성":"");
+            effectText.text=Describe(value.Definition);
             StopAnimation();
             var panelColor=IsActive?activeColor:inactiveColor; var accent=IsActive?activeAccent:inactiveAccent;
             if(animate)
@@ -83,14 +83,14 @@ namespace AutoBattler.Presentation.Battle
         {
             switch(trait.Effect)
             {
-                case TraitEffect.ShieldAtStart: return $"{Percent(trait.Value)} max HP shield ({Number(trait.Duration)}s)";
-                case TraitEffect.StartingMana: return $"+{Number(trait.Value)} starting MP";
-                case TraitEffect.HealOnKill: return $"heal {Percent(trait.Value)} max HP on kill";
-                case TraitEffect.LowHealthAttack: return $"ATK +{Percent(trait.Value)} at {Percent(trait.Threshold)} HP or less";
-                case TraitEffect.BasicAttackPower: return $"basic attack damage +{Percent(trait.Value)}";
-                case TraitEffect.SkillPower: return $"skill damage / healing / shields +{Percent(trait.Value)}";
-                case TraitEffect.AttackSpeed: return $"attack speed +{Percent(trait.Value)}";
-                case TraitEffect.Critical: return $"crit chance +{Number(trait.Value*100f)}%p, multiplier +{Number(trait.SecondaryValue)}";
+                case TraitEffect.ShieldAtStart: return $"최대 체력의 {Percent(trait.Value)} 보호막 ({Number(trait.Duration)}초)";
+                case TraitEffect.StartingMana: return $"시작 마나 +{Number(trait.Value)}";
+                case TraitEffect.HealOnKill: return $"처치 시 최대 체력의 {Percent(trait.Value)} 회복";
+                case TraitEffect.LowHealthAttack: return $"체력 {Percent(trait.Threshold)} 이하 시 공격력 +{Percent(trait.Value)}";
+                case TraitEffect.BasicAttackPower: return $"기본 공격 피해 +{Percent(trait.Value)}";
+                case TraitEffect.SkillPower: return $"스킬 피해·회복·보호막 +{Percent(trait.Value)}";
+                case TraitEffect.AttackSpeed: return $"공격 속도 +{Percent(trait.Value)}";
+                case TraitEffect.Critical: return $"치명타 확률 +{Number(trait.Value*100f)}%p, 배율 +{Number(trait.SecondaryValue)}";
                 default: return "";
             }
         }

@@ -62,11 +62,13 @@ namespace AutoBattler.Presentation.Battle
             iconImage.sprite = hasUnit ? icon : null;
             iconImage.color = icon != null ? Color.white : placeholderColor;
             iconPlaceholderText.gameObject.SetActive(icon == null);
-            nameText.text = hasUnit ? unit.Name : "";
-            priceText.text = hasUnit ? $"{unit.Cost} gold" : "";
-            poolText.text = hasUnit ? $"Pool {remainingCopies}" : "";
+            nameText.text = hasUnit ? BattleText.UnitName(unit) : "";
+            priceText.text = hasUnit ? $"{unit.Cost}골드" : "";
+            poolText.text = string.Empty;
+            poolText.gameObject.SetActive(false);
+            emptyText.text = "빈 상점";
             priceText.color = hasUnit && gold < unit.Cost ? unaffordableColor : priceColor;
-            iconPlaceholderText.text = hasUnit && !string.IsNullOrEmpty(unit.Name) ? unit.Name.Substring(0, 1) : "?";
+            iconPlaceholderText.text = hasUnit && !string.IsNullOrEmpty(nameText.text) ? nameText.text.Substring(0, 1) : "?";
         }
 
         private void OnEnable()

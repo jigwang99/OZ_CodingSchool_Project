@@ -99,6 +99,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6668148790688865655, guid: 3794911705c6f7943b6bf62dcd116146, type: 3}
       insertIndex: -1
       addedObject: {fileID: 677661547326829491}
+    - targetCorrespondingSourceObject: {fileID: 6668148790688865655, guid: 3794911705c6f7943b6bf62dcd116146, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5574787920080694665}
   m_SourcePrefab: {fileID: 100100000, guid: 3794911705c6f7943b6bf62dcd116146, type: 3}
 --- !u!4 &999835500362991006 stripped
 Transform:
@@ -168,6 +171,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8fa90fdb5dda4a43b21091556e4ce157, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Battle.Units.UnitMove
+  jumpSeconds: 0.35
+  jumpHeight: 0.8
 --- !u!114 &4260797327441578227
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -180,6 +185,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2bd6723e8ff1494391ee79488d47868a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Battle.Units.UnitCombat
+  manaOnDamage: 10
 --- !u!61 &973773259010380780
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -301,6 +307,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3a3700b51bfc45409b5760825196a82, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Presentation.Units.UnitSkillView
+--- !u!114 &5574787920080694665
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5242355543544568808}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 39178d7bedeea134a9f23935301773ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Presentation.Battle.UnitIdentityView
+  koreanFont: {fileID: 11400000, guid: 046faef00320d9d40b6fed2fa6ab7380, type: 2}
 --- !u!1001 &1763052348457580798
 PrefabInstance:
   m_ObjectHideFlags: 0

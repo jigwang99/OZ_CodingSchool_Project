@@ -10,7 +10,7 @@ using UnityEngine.UI;
 namespace AutoBattler.EditorTools
 {
     /// <summary>상점 카드 프리팹 생성과 BattleHUD의 기존 슬롯 교체.</summary>
-    public static class ShopItemSetup
+    public static partial class ShopItemSetup
     {
         public static string PrefabPath => ProjectSetupSettings.Current.ShopItemPath;
 
@@ -94,10 +94,10 @@ namespace AutoBattler.EditorTools
                 iconImage.preserveAspect = true;
                 iconImage.color = new Color(0.25f, 0.4f, 0.55f);
                 var placeholder = Label(icon, "IconPlaceholderText", Vector2.zero, new Vector2(60f, 60f), 34f, "?");
-                var nameLabel = Label(content, "NameText", new Vector2(35f, 29f), new Vector2(142f, 32f), 21f, "Unit");
-                var price = Label(content, "PriceText", new Vector2(35f, 0f), new Vector2(142f, 28f), 19f, "1 gold");
-                var pool = Label(content, "PoolText", new Vector2(35f, -27f), new Vector2(142f, 26f), 17f, "Pool 0");
-                var empty = Label(root.GetComponent<RectTransform>(), "EmptyText", Vector2.zero, new Vector2(220f, 90f), 23f, "Empty");
+                var nameLabel = Label(content, "NameText", new Vector2(35f, 29f), new Vector2(142f, 32f), 21f, "기물");
+                var price = Label(content, "PriceText", new Vector2(35f, 0f), new Vector2(142f, 28f), 19f, "1골드");
+                var pool = Label(content, "PoolText", new Vector2(35f, -27f), new Vector2(142f, 26f), 17f, "");
+                var empty = Label(root.GetComponent<RectTransform>(), "EmptyText", Vector2.zero, new Vector2(220f, 90f), 23f, "빈 상점");
                 content.gameObject.SetActive(false);
                 item.ConfigureReferences(button, content.gameObject, iconImage, placeholder, nameLabel, price, pool, empty);
                 var prefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
@@ -134,7 +134,7 @@ namespace AutoBattler.EditorTools
         private static TextMeshProUGUI Label(RectTransform parent, string name, Vector2 position, Vector2 size, float fontSize, string text)
         {
             var label = Rect(parent, name, position, size).gameObject.AddComponent<TextMeshProUGUI>();
-            label.font = TMP_Settings.defaultFontAsset;
+            label.font = ProjectSetupSettings.Current.UnitInfoFont;
             label.fontSize = fontSize;
             label.color = Color.white;
             label.alignment = TextAlignmentOptions.Center;
@@ -144,31 +144,6 @@ namespace AutoBattler.EditorTools
             return label;
         }
 
-        public static void BuildForVerification()
-        {
-            UpgradeBattleHUD();
-            var root = PrefabUtility.LoadPrefabContents(BattleHUDSetup.PrefabPath);
-            try
-            {
-                var items = root.GetComponentsInChildren<ShopItem>(true);
-                if (items.Length != 5)
-                    throw new InvalidOperationException("상점 카드 5개 연결 필요.");
-                foreach (var item in items)
-                {
-                    if (PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(item) != PrefabPath)
-                        throw new InvalidOperationException("상점 카드의 중첩 프리팹 연결 실패.");
-                }
-            }
-            finally { PrefabUtility.UnloadPrefabContents(root); }
-            // 재실행해도 슬롯과 사용자 레이아웃을 교체하지 않음.
-            string before = System.IO.File.ReadAllText(BattleHUDSetup.PrefabPath);
-            UpgradeBattleHUD();
-            if (before != System.IO.File.ReadAllText(BattleHUDSetup.PrefabPath))
-                throw new InvalidOperationException("상점 카드 재연결 시 프리팹 변경 발생.");
-            BattleHUDSetup.BuildForVerification();
-            Debug.Log("SHOP_ITEM_PREFAB_PASS");
-            MilestonePlayChecks.Start();
-        }
     }
 }
 #endif

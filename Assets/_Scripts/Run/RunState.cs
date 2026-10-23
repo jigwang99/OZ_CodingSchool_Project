@@ -62,21 +62,21 @@ namespace AutoBattler.Run
         private void Notify() { LastError=null; Changed?.Invoke(); }
         public bool TryRefresh()
         {
-            if(!Ready()) return Fail("Refresh is available during preparation.");
+            if(!Ready()) return Fail("준비 단계에서 새로고침할 수 있습니다.");
             int cost=Data.IntRule(EconomyRule.RefreshCost);
-            if(Gold<cost) return Fail("Not enough gold.");
+            if(Gold<cost) return Fail("골드가 부족합니다.");
             Gold-=cost; Reroll(); Notify(); return true;
         }
         public bool TryBuy(int slot)
         {
-            if(!Ready() || slot<0 || slot>=shop.Length || shop[slot]==0) return Fail("This shop slot is unavailable.");
+            if(!Ready() || slot<0 || slot>=shop.Length || shop[slot]==0) return Fail("구매할 수 없는 상점입니다.");
             int id=shop[slot], cost=Data.Units[id].Cost;
-            if(Gold<cost) return Fail("Not enough gold.");
+            if(Gold<cost) return Fail("골드가 부족합니다.");
             var matches=owned.Where(x=>x.DefinitionId==id && x.Star==1)
                 .OrderBy(x=>x.Placement.Location.Kind==UnitLocationKind.Board ? 0:1)
                 .ThenBy(x=>PositionOrder(x.Placement.Location)).ThenBy(x=>x.Placement.InstanceId).Take(2).ToArray();
             int free=Placement.FindFreeBenchSlot();
-            if(free<0 && matches.Length<2) return Fail("The bench is full.");
+            if(free<0 && matches.Length<2) return Fail("대기석이 가득 찼습니다.");
             // 변경 조건을 모두 확인한 뒤 예약 1개와 보유 2개를 한 번에 합성.
             if(matches.Length==2)
             {
@@ -85,7 +85,7 @@ namespace AutoBattler.Run
             else
             {
                 var unit=new OwnedUnit(id,nextId);
-                if(!Placement.TryRegisterUnit(unit.Placement,UnitLocation.OnBench(free))) return Fail("Could not place the purchased unit.");
+                if(!Placement.TryRegisterUnit(unit.Placement,UnitLocation.OnBench(free))) return Fail("구매한 기물을 배치할 수 없습니다.");
                 nextId++; owned.Add(unit);
             }
             shop[slot]=0; Gold-=cost; Notify(); return true;
@@ -97,19 +97,19 @@ namespace AutoBattler.Run
         }
         public bool TrySell(int instanceId)
         {
-            if(!Ready()) return Fail("Sell during preparation.");
+            if(!Ready()) return Fail("준비 단계에서 판매할 수 있습니다.");
             var unit=owned.FirstOrDefault(x=>x.Placement.InstanceId==instanceId);
-            if(unit==null) return Fail("Select a unit first.");
+            if(unit==null) return Fail("판매할 기물을 선택해 주세요.");
             int copies=unit.Star==2?3:1, cost=Data.Units[unit.DefinitionId].Cost;
-            if(!Board.TryUnregister(unit.Placement)) return Fail("Placement state is missing.");
+            if(!Board.TryUnregister(unit.Placement)) return Fail("기물의 배치 정보를 찾을 수 없습니다.");
             owned.Remove(unit); stock[unit.DefinitionId]+=copies; Gold+=unit.Star==2 ? cost*3-1:cost;
             Notify(); return true;
         }
         public bool TryBuyXp()
         {
-            if(!Ready() || Level==10) return Fail("XP purchase is unavailable.");
+            if(!Ready() || Level==10) return Fail("경험치를 구매할 수 없습니다.");
             int cost=Data.IntRule(EconomyRule.XpCost);
-            if(Gold<cost) return Fail("Not enough gold.");
+            if(Gold<cost) return Fail("골드가 부족합니다.");
             Gold-=cost; AddXp(Data.IntRule(EconomyRule.PurchasedXp)); Notify(); return true;
         }
         private void AddXp(int amount)
@@ -132,7 +132,7 @@ namespace AutoBattler.Run
             if(!won) Lives--;
             IsOver=Lives<=0 || Round==Data.Rounds.Count;
             WonRun=IsOver && won && Round==Data.Rounds.Count;
-            LastResult=$"{(won?"Victory":"Defeat")}   +{income} gold (interest {interest}, streak {streak}, augments {augmentGold})";
+            LastResult=$"{(won?"승리":"패배")}   +{income}골드\n이자 {interest} · 연승 {streak} · 증강 {augmentGold}";
             Notify(); return true;
         }
         public bool TryNextRound()

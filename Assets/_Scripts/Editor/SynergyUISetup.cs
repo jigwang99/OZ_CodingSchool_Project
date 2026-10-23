@@ -48,19 +48,20 @@ namespace AutoBattler.EditorTools
             {
                 var rect=root.GetComponent<RectTransform>();
                 rect.anchorMin=rect.anchorMax=rect.pivot=new Vector2(0f,1f);
-                rect.anchoredPosition=new Vector2(24f,-200f); rect.sizeDelta=new Vector2(352f,748f);
+                rect.anchoredPosition=new Vector2(24f,-200f); rect.sizeDelta=new Vector2(352f,688f);
                 root.GetComponent<Image>().color=new Color(.045f,.07f,.105f,.97f);
-                Label(rect,"Title",new Vector2(20f,-18f),new Vector2(312f,30f),25f,"SYNERGIES",true);
-                var status=Label(rect,"Status",new Vector2(20f,-52f),new Vector2(312f,22f),15f,"Your deployed army");
+                Label(rect,"Title",new Vector2(20f,-18f),new Vector2(312f,30f),25f,"시너지",true);
+                var status=Label(rect,"Status",new Vector2(20f,-52f),new Vector2(312f,22f),15f,string.Empty);
                 status.color=new Color(.62f,.73f,.84f);
+                status.gameObject.SetActive(false);
                 var content=Rect(rect,"Content",Vector2.zero,new Vector2(352f,768f));
-                var origins=Label(content,"OriginsTitle",new Vector2(20f,-86f),new Vector2(312f,20f),15f,"ORIGINS",true);
-                var classes=Label(content,"ClassesTitle",new Vector2(20f,-410f),new Vector2(312f,20f),15f,"CLASSES",true);
+                var origins=Label(content,"OriginsTitle",new Vector2(20f,-52f),new Vector2(312f,20f),15f,"종족",true);
+                var classes=Label(content,"ClassesTitle",new Vector2(20f,-376f),new Vector2(312f,20f),15f,"직업",true);
                 var rows=new TraitRowView[8];
                 for(int i=0;i<rows.Length;i++)
                 {
                     bool origin=i<4; int group=i%4+1;
-                    var card=Rect(content,"Trait"+(i+1),new Vector2(20f,(origin?-112f:-436f)-(group-1)*70f),new Vector2(312f,66f));
+                    var card=Rect(content,"Trait"+(i+1),new Vector2(20f,(origin?-78f:-402f)-(group-1)*70f),new Vector2(312f,66f));
                     var background=card.gameObject.AddComponent<Image>(); background.color=new Color(.12f,.12f,.12f);
                     var stripe=Rect(card,"Indicator",Vector2.zero,new Vector2(4f,66f)).gameObject.AddComponent<Image>();
                     stripe.color=new Color(.6f,.6f,.6f);
@@ -73,9 +74,10 @@ namespace AutoBattler.EditorTools
                     row.ConfigureReferences(origin?TraitCategory.Origin:TraitCategory.Class,group,background,stripe,name,count,effect);
                     rows[i]=row;
                 }
-                var footer=Label(content,"Rules",new Vector2(20f,-726f),new Vector2(312f,34f),13.5f,"Duplicates count once.\nBuffs lock at battle start.");
+                var footer=Label(content,"Rules",new Vector2(20f,-692f),new Vector2(312f,34f),13.5f,string.Empty);
                 footer.color=new Color(.62f,.73f,.84f);
-                var empty=Label(rect,"Empty",new Vector2(20f,-112f),new Vector2(312f,80f),18f,"Loading synergies...");
+                footer.gameObject.SetActive(false);
+                var empty=Label(rect,"Empty",new Vector2(20f,-66f),new Vector2(312f,66f),18f,"시너지 불러오는 중...");
                 empty.gameObject.SetActive(false);
                 root.AddComponent<SynergyPanel>().ConfigureReferences(content.gameObject,status,empty,rows,
                     origins.rectTransform,classes.rectTransform,footer.rectTransform);

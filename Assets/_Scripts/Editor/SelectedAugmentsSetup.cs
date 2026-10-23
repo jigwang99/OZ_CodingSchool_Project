@@ -58,7 +58,7 @@ namespace AutoBattler.EditorTools
             try
             {
                 var area=root.gameObject.AddComponent<Image>(); area.color=new Color(.045f,.07f,.105f,.97f);
-                var count=Label(root,"Count",new Vector2(12f,-17f),new Vector2(154f,25f),18f,"AUGMENTS 0/3"); count.fontStyle=FontStyles.Bold;
+                var count=Label(root,"Count",new Vector2(12f,-17f),new Vector2(154f,25f),18f,"증강 0/3"); count.fontStyle=FontStyles.Bold;
                 var slots=new Image[3]; var labels=new TextMeshProUGUI[3];
                 for(int i=0;i<3;i++)
                 {
@@ -68,7 +68,7 @@ namespace AutoBattler.EditorTools
                 }
                 var popup=Rect(root,"Tooltip",new Vector2(364f,0f),new Vector2(420f,160f));
                 popup.gameObject.AddComponent<Image>().color=new Color(.045f,.11f,.16f,.99f);
-                var text=Label(popup,"Description",new Vector2(16f,-16f),new Vector2(388f,128f),19f,"No augments selected yet.");
+                var text=Label(popup,"Description",new Vector2(16f,-16f),new Vector2(388f,128f),19f,"선택한 증강이 없습니다.");
                 var group=popup.gameObject.AddComponent<CanvasGroup>(); group.blocksRaycasts=false; group.interactable=false; group.alpha=0f;
                 foreach(var graphic in popup.GetComponentsInChildren<Graphic>(true)) graphic.raycastTarget=false;
                 popup.gameObject.SetActive(false);
@@ -89,7 +89,7 @@ namespace AutoBattler.EditorTools
         private static TextMeshProUGUI Label(Transform parent,string name,Vector2 position,Vector2 size,float fontSize,string text)
         {
             var label=Rect(parent,name,position,size).gameObject.AddComponent<TextMeshProUGUI>();
-            label.font=TMP_Settings.defaultFontAsset; label.fontSize=fontSize; label.text=text; label.color=Color.white;
+            label.font=ProjectSetupSettings.Current.UnitInfoFont; label.fontSize=fontSize; label.text=text; label.color=Color.white;
             label.alignment=TextAlignmentOptions.TopLeft; label.textWrappingMode=TextWrappingModes.Normal;
             label.overflowMode=TextOverflowModes.Ellipsis; label.raycastTarget=false; return label;
         }

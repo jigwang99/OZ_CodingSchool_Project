@@ -1,23 +1,17 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using AutoBattler.Assets;
-using AutoBattler.Data.Snapshot;
 using AutoBattler.Battle.Flow;
 using AutoBattler.Battle.Grid;
-using AutoBattler.Battle.Placement;
-using AutoBattler.Battle.Units;
-using AutoBattler.Battle.Combat;
 using AutoBattler.Battle.Traits;
-using AutoBattler.Presentation.Battle;
+using AutoBattler.Managers;
 using AutoBattler.Presentation.Units;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace AutoBattler.Run
 {
-    /// <summary>데이터 로드 → 준비 → 자동 전투 → 정산 → 다음 준비 연결.</summary>
+    /// <summary>씬 참조 주입과 도전 초기화·종료 순서 조정. 기능 처리는 각 매니저에 위임.</summary>
     [DisallowMultipleComponent]
     public sealed class RunController : MonoBehaviour
     {
@@ -28,243 +22,111 @@ namespace AutoBattler.Run
         [SerializeField] private BenchLayout bench;
         [SerializeField] private int seed=20261012;
         [SerializeField,Min(0)] private int unitPoolSize=1;
+        [Header("기능별 매니저")]
+        [SerializeField] private AssetManager assets;
+        [SerializeField] private UnitManager units;
+        [SerializeField] private BattleManager battle;
+        [SerializeField] private ShopManager shop;
+        [SerializeField] private AugmentManager augments;
+        [SerializeField] private SynergyManager synergies;
+        public AssetManager Assets=>assets;
+        public UnitManager Units=>units;
+        public BattleManager Battle=>battle;
+        public ShopManager Shop=>shop;
+        public AugmentManager Augments=>augments;
+        public SynergyManager Synergies=>synergies;
         public RunState State { get; private set; }
         public BattleFlowController Flow=>flow;
         public UnitDragController Drag=>drag;
         public AssetCatalog Catalog=>catalog;
         public HexGridLayout Grid=>grid;
         public BenchLayout Bench=>bench;
-        public TraitSnapshot AllySynergies { get; private set; }=TraitSnapshot.Empty;
-        public TraitSnapshot EnemySynergies { get; private set; }=TraitSnapshot.Empty;
+        public TraitSnapshot AllySynergies=>synergies!=null ? synergies.Allies : TraitSnapshot.Empty;
+        public TraitSnapshot EnemySynergies=>synergies!=null ? synergies.Enemies : TraitSnapshot.Empty;
         public bool IsReady { get; private set; }
         public bool IsLoading { get; private set; }
-        public Sprite UnitIcon(int iconId) => catalog.Icon(iconId);
-        public string Message { get; private set; }="Loading data...";
-        public float RemainingSeconds=>Mathf.Max(0f,combatDeadline-Time.time);
+        public bool IsShuttingDown=>shutdownCompletion!=null;
+        public int ActiveAssetHandleCount=>assets!=null ? assets.ActiveHandleCount : 0;
+        public BattleVisualService Visuals=>assets!=null ? assets.Visuals : null;
+        public float RemainingSeconds=>battle!=null ? battle.RemainingSeconds : 0f;
+        public Sprite UnitIcon(int iconId)=>catalog.Icon(iconId);
+        public string Message { get; private set; }="불러오는 중...";
         public event Action DisplayChanged;
-        private AssetService assets;
-        public BattleVisualService Visuals { get; private set; }
-        private AssetService.Lease<TextAsset> dataLease;
-        private UnitPrefabPool pool;
-        private readonly Dictionary<int,Unit> allies=new Dictionary<int,Unit>();
-        private readonly List<Unit> enemies=new List<Unit>();
-        private CancellationTokenSource combatCancellation;
         private CancellationTokenSource lifetime;
-        private float combatDeadline;
-        private TraitBattleSession battleSynergies;
-        private bool shutdownStarted;
         private UniTaskCompletionSource shutdownCompletion;
-        public bool IsShuttingDown=>shutdownStarted;
-        public int ActiveAssetHandleCount=>assets?.ActiveHandleCount ?? 0;
         private void Awake()
         {
             lifetime=CancellationTokenSource.CreateLinkedTokenSource(this.GetCancellationTokenOnDestroy());
-            assets=new AssetService();
-            var poolRoot=new GameObject("UnitPool").transform; poolRoot.SetParent(transform,false);
-            pool=new UnitPrefabPool(assets,poolRoot,unitPoolSize);
-            drag.enabled=false;
-            drag.PlacementChanged+=OnPlacementChanged;
+            assets.Initialize(catalog,flow,grid,unitPoolSize);
+            units.Initialize(assets.Units,catalog,flow,drag,grid,bench);
+            shop.Initialize(flow,drag,Report);
+            augments.Initialize(flow,drag,Report);
+            synergies.Initialize(units,flow);
+            battle.Initialize(flow,drag,units,assets,synergies,augments,Report,lifetime.Token);
+            drag.enabled=false; drag.PlacementChanged+=OnPlacementChanged;
         }
         private void Start()=>BootAsync().Forget();
         public void ConfigureScene(AssetCatalog assetsCatalog,BattleFlowController phase,UnitDragController input,HexGridLayout layout,BenchLayout seats)
         { catalog=assetsCatalog; flow=phase; drag=input; grid=layout; bench=seats; }
-        public void RetryLoad() { if(!shutdownStarted && !IsLoading && !IsReady) BootAsync().Forget(); }
+#if UNITY_EDITOR
+        public void ConfigureManagers(AssetManager content,UnitManager roster,BattleManager combat,ShopManager store,AugmentManager choices,SynergyManager traits)
+        { assets=content; units=roster; battle=combat; shop=store; augments=choices; synergies=traits; }
+#endif
+        public void RetryLoad() { if(!IsShuttingDown && !IsLoading && !IsReady) BootAsync().Forget(); }
         private async UniTask BootAsync()
         {
-            if(shutdownStarted || IsLoading || IsReady) return;
-            IsLoading=true; Message="Loading data and unit assets..."; DisplayChanged?.Invoke();
+            if(IsShuttingDown || IsLoading || IsReady) return;
+            IsLoading=true; Report("불러오는 중...");
             try
             {
-                if(dataLease==null) dataLease=await assets.AcquireAsync<TextAsset>(catalog.Snapshot,lifetime.Token);
-                var repository=new DataRepository(JsonUtility.FromJson<GameSnapshot>(dataLease.Asset.text));
-                foreach(var address in repository.Units.Values.Select(x=>catalog.VisualPrefab(x.VisualId)).GroupBy(x=>x.RuntimeKey).Select(x=>x.First()))
-                    await pool.PreloadAsync(address,lifetime.Token);
-                if(Visuals==null) Visuals=new BattleVisualService(assets,catalog.BattleVisuals,transform,flow,grid);
-                await Visuals.PreloadAsync(lifetime.Token);
-                lifetime.Token.ThrowIfCancellationRequested();
-                State=new RunState(repository,seed); drag.BindBoard(State.Board,State.Placement);
-                State.Changed+=OnStateChanged; IsReady=true;
-                SyncAllies(); CreateEnemies(); RefreshSynergies(); EnterPreparation();
-                Message=State.Augments.HasPending?"Choose an augment. Hide choices to reposition your army.":"Drag a bench unit onto the blue board, then start battle.";
+                await assets.LoadAsync(lifetime.Token); lifetime.Token.ThrowIfCancellationRequested();
+                State=new RunState(assets.Data,seed); units.Bind(State); shop.Bind(State); augments.Bind(State); synergies.Bind(State); battle.Bind(State);
+                drag.BindBoard(State.Board,State.Placement); State.Changed+=OnStateChanged; IsReady=true;
+                units.SyncAllies(); units.CreateEnemies(); synergies.Refresh(); augments.EnterPreparation();
+                Report(State.Augments.HasPending?"증강 선택":"준비");
             }
             catch(OperationCanceledException) { }
-            catch(Exception exception) { Message="Load failed. Check Console and retry."; Debug.LogException(exception,this); }
+            catch(Exception exception) { Report("불러오기에 실패했습니다. 다시 시도해 주세요."); Debug.LogException(exception,this); }
             finally { IsLoading=false; DisplayChanged?.Invoke(); }
         }
-        private void OnPlacementChanged() { RefreshSynergies(); DisplayChanged?.Invoke(); }
-        private void RefreshSynergies()
-        {
-            if(!IsReady || flow.CurrentPhase==BattlePhase.Combat) return;
-            var roster=allies.Values.Concat(enemies);
-            AllySynergies=TraitCounter.CountTeam(roster,UnitTeam.Ally,State.Data.Traits);
-            EnemySynergies=TraitCounter.CountTeam(roster,UnitTeam.Enemy,State.Data.Traits);
-        }
+        private void Report(string message) { Message=message; DisplayChanged?.Invoke(); }
+        private void OnPlacementChanged() { if(IsReady) synergies.Refresh(); DisplayChanged?.Invoke(); }
         private void OnStateChanged()
         {
             drag.SetPlayerLevel(State.Level);
-            if(State.CanPrepare) { SyncAllies(); RefreshSynergies(); }
+            if(State.CanPrepare) { units.SyncAllies(); synergies.Refresh(); }
             DisplayChanged?.Invoke();
         }
-        private void SyncAllies()
-        {
-            drag.ClearSelection();
-            foreach(var pair in allies.ToArray())
-                if(!State.Units.Any(x=>x.Placement.InstanceId==pair.Key)) { pool.Return(pair.Value); allies.Remove(pair.Key); }
-            foreach(var owned in State.Units)
-            {
-                int id=owned.Placement.InstanceId;
-                if(!allies.TryGetValue(id,out Unit unit))
-                {
-                    unit=pool.Rent(catalog.VisualPrefab(State.Data.Units[owned.DefinitionId].VisualId));
-                    ConfigureUnit(unit,owned.DefinitionId,owned.Star,id,UnitTeam.Ally);
-                    drag.BindView(unit.View,owned.Placement);
-                    unit.gameObject.SetActive(true); allies.Add(id,unit);
-                }
-                else if(unit.Star!=owned.Star) ConfigureUnit(unit,owned.DefinitionId,owned.Star,id,UnitTeam.Ally);
-                AugmentApplicator.ApplyPersistent(unit,State.Augments.Selected);
-            }
-            Physics2D.SyncTransforms();
-        }
-        private void ConfigureUnit(Unit unit,int definitionId,int star,int id,UnitTeam team,HexCoord? cell=null,int boss=0)
-        {
-            unit.Configure(State.Data.Units[definitionId],star,id,team,State.Data,flow,grid,bench,cell,boss);
-            UnitIdentityView identity=unit.GetComponent<UnitIdentityView>();
-            if(identity==null) identity=unit.gameObject.AddComponent<UnitIdentityView>();
-            identity.Apply(unit);
-            if(unit.GetComponent<UnitAnimationView>()==null) unit.gameObject.AddComponent<UnitAnimationView>();
-        }
-        private void CreateEnemies()
-        {
-            foreach(var unit in enemies) pool.Return(unit); enemies.Clear();
-            int id=100000;
-            foreach(var definition in State.Data.Rounds[State.Round].Enemies)
-            {
-                HexCoord cell=HexCoord.FromOffset(definition.Col,definition.Row);
-                Unit unit=pool.Rent(catalog.VisualPrefab(State.Data.Units[definition.UnitId].VisualId));
-                ConfigureUnit(unit,definition.UnitId,definition.Star,id++,UnitTeam.Enemy,cell,definition.BossProfileId);
-                var displayState=new UnitState(unit.InstanceId) { Location=UnitLocation.OnBoard(cell) };
-                unit.View.Bind(displayState,null);
-                unit.transform.position=grid.CellToWorld(cell);
-                unit.gameObject.SetActive(true); enemies.Add(unit);
-            }
-        }
-        public bool Buy(int slot)=>PrepareCommand(()=>State.TryBuy(slot));
-        public bool RefreshShop()=>PrepareCommand(()=>State.TryRefresh());
-        public bool BuyXp()=>PrepareCommand(()=>State.TryBuyXp());
-        public bool ToggleAugmentWindow()
-        {
-            if(!IsReady || !State.Augments.HasPending || flow.CurrentPhase!=BattlePhase.AugmentSelection) return false;
-            drag.CancelDrag();
-            if(!flow.SetAugmentWindowOpen(!flow.IsAugmentWindowOpen)) return false;
-            drag.enabled=flow.CanPlaceUnits;
-            Message=flow.IsAugmentWindowOpen?"Choose an augment. Hide choices to reposition your army.":"Reposition your army. Choose an augment to unlock the shop and battle.";
-            DisplayChanged?.Invoke(); return true;
-        }
-        public bool SelectAugment(int id)
-        {
-            if(!IsReady || flow.CurrentPhase!=BattlePhase.AugmentSelection || !flow.IsAugmentWindowOpen) return false;
-            if(!State.TrySelectAugment(id)) return false;
-            flow.TryFinishAugmentSelection(); drag.enabled=true;
-            Message="Augment selected. Prepare your army."; DisplayChanged?.Invoke(); return true;
-        }
-        private void EnterPreparation()
-        {
-            if(State.Augments.HasPending) flow.TryBeginAugmentSelection();
-            drag.enabled=flow.CanPlaceUnits;
-        }
-        public bool SellSelected()
-        {
-            int id=drag.SelectedUnit?.State?.InstanceId ?? 0;
-            return PrepareCommand(()=>State.TrySell(id));
-        }
-        private bool PrepareCommand(Func<bool> command)
-        {
-            if(!IsReady || flow.CurrentPhase!=BattlePhase.Preparation || !State.CanPrepare || State.IsOver) return false;
-            drag.CancelDrag();
-            bool result=command(); Message=result?"Ready.":State.LastError;
-            DisplayChanged?.Invoke(); return result;
-        }
-        public bool StartBattle()
-        {
-            if(!IsReady || flow.CurrentPhase!=BattlePhase.Preparation || State.IsOver || State.Augments.HasPending) return false;
-            drag.CancelDrag();
-            if(State.Board.DeployedCount==0) { Message="Deploy at least one unit."; DisplayChanged?.Invoke(); return false; }
-            RefreshSynergies();
-            var combatUnits=allies.Values.Where(x=>x.IsOnBoard).Concat(enemies).OrderBy(x=>x.InstanceId).ToArray();
-            foreach(var unit in combatUnits) unit.BeginBattle();
-            var battle=new AutoBattleController(combatUnits);
-            if(!flow.TryStartCombat()) return false;
-            State.CanPrepare=false; drag.enabled=true;
-            Visuals.BeginBattle(combatUnits);
-            battleSynergies=new TraitBattleSession(combatUnits,AllySynergies,EnemySynergies);
-            battleSynergies.Start();
-            AugmentApplicator.ApplyBattleStart(combatUnits,State.Augments.Selected);
-            combatCancellation=CancellationTokenSource.CreateLinkedTokenSource(lifetime.Token);
-            combatDeadline=Time.time+State.Data.Rule(EconomyRule.CombatSeconds);
-            Message="Automatic battle"; DisplayChanged?.Invoke();
-            BattleAsync(battle,combatCancellation,battleSynergies).Forget(); return true;
-        }
-        private async UniTask BattleAsync(AutoBattleController battle,CancellationTokenSource operation,TraitBattleSession synergies)
-        {
-            try
-            {
-                bool won=await battle.RunAsync(State.Data.Rule(EconomyRule.CombatSeconds),operation.Token);
-                if(!flow.TryFinishCombat()) return;
-                operation.Cancel();
-                EndSynergies(synergies);
-                foreach(var unit in allies.Values.Concat(enemies)) { unit.Move.Stop(); unit.Combat.ResetForRound(); }
-                if(State.TrySettle(won)) Message=State.LastResult;
-                DisplayChanged?.Invoke();
-            }
-            catch(OperationCanceledException) { }
-            catch(Exception exception)
-            {
-                operation.Cancel(); EndSynergies(synergies); Debug.LogException(exception,this);
-                if(flow.TryFinishCombat()) State.TrySettle(false);
-                Message="Battle error. Check Console."; DisplayChanged?.Invoke();
-            }
-            finally { EndSynergies(synergies); if(ReferenceEquals(combatCancellation,operation)) combatCancellation=null; operation.Dispose(); }
-        }
-        private void EndSynergies(TraitBattleSession session)
-        {
-            session?.Dispose();
-            if(ReferenceEquals(battleSynergies,session)) battleSynergies=null;
-        }
-        public bool Continue()
-        {
-            if(!IsReady || flow.CurrentPhase!=BattlePhase.Result || State.IsOver) return false;
-            if(!State.TryNextRound()) return false;
-            foreach(var unit in allies.Values) unit.RestorePreparation();
-            CreateEnemies(); flow.TryBeginPreparation(); EnterPreparation(); RefreshSynergies();
-            Message=State.Augments.HasPending?"Choose an augment. Hide choices to reposition your army.":"Army restored. Prepare the next round.";
-            DisplayChanged?.Invoke(); return true;
-        }
+        // 기존 HUD·씬의 공개 명령 유지. 실제 동작은 기능별 매니저에서 처리.
+        public bool Buy(int slot)=>IsReady && shop.Buy(slot);
+        public bool RefreshShop()=>IsReady && shop.RefreshShop();
+        public bool BuyXp()=>IsReady && shop.BuyXp();
+        public bool SellSelected()=>IsReady && shop.SellSelected();
+        public bool ToggleAugmentWindow()=>IsReady && augments.ToggleWindow();
+        public bool SelectAugment(int id)=>IsReady && augments.Select(id);
+        public bool StartBattle()=>IsReady && battle.StartBattle();
+        public bool Continue()=>IsReady && battle.Continue();
         public UniTask ShutdownAsync()
         {
             if(shutdownCompletion!=null) return shutdownCompletion.Task;
-            shutdownStarted=true;
-            shutdownCompletion=new UniTaskCompletionSource();
-            CompleteShutdownAsync(shutdownCompletion).Forget();
-            return shutdownCompletion.Task;
+            shutdownCompletion=new UniTaskCompletionSource(); ShutdownCoreAsync(shutdownCompletion).Forget(); return shutdownCompletion.Task;
         }
-        private async UniTask CompleteShutdownAsync(UniTaskCompletionSource completion)
+        private async UniTask ShutdownCoreAsync(UniTaskCompletionSource completion)
         {
-            try { await ShutdownCoreAsync(); completion.TrySetResult(); }
-            catch(Exception exception) { completion.TrySetException(exception); }
-        }
-        private async UniTask ShutdownCoreAsync()
-        {
-            IsReady=false;
-            lifetime?.Cancel(); combatCancellation?.Cancel();
-            EndSynergies(battleSynergies);
-            if(State!=null) State.Changed-=OnStateChanged;
-            if(drag!=null)
+            try
             {
-                drag.PlacementChanged-=OnPlacementChanged;
-                drag.ClearSelection(); drag.enabled=false;
+                IsReady=false; lifetime?.Cancel();
+                if(State!=null) State.Changed-=OnStateChanged;
+                if(drag!=null) { drag.PlacementChanged-=OnPlacementChanged; drag.ClearSelection(); drag.enabled=false; }
+                if(shop!=null) shop.Bind(null);
+                if(augments!=null) augments.Bind(null);
+                if(battle!=null) await battle.StopAsync();
+                if(synergies!=null) { synergies.EndBattle(); synergies.Bind(null); }
+                if(units!=null) units.Clear();
+                if(assets!=null) await assets.ShutdownAsync();
+                lifetime?.Dispose(); completion.TrySetResult();
             }
-            if(Visuals!=null) await Visuals.DisposeAsync();
-            await pool.DisposeAsync(); dataLease?.Dispose(); assets.Dispose(); lifetime.Dispose();
+            catch(Exception exception) { completion.TrySetException(exception); }
         }
         private void OnDestroy()=>ShutdownAsync().Forget();
     }

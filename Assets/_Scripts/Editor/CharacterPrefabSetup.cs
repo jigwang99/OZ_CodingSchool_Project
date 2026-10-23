@@ -4,6 +4,7 @@ using System.Linq;
 using AutoBattler.Assets;
 using AutoBattler.Battle.Units;
 using AutoBattler.Presentation.Units;
+using AutoBattler.Presentation.Battle;
 using UnityEditor;
 using UnityEditor.AddressableAssets;
 using UnityEngine;
@@ -12,7 +13,7 @@ using UnityEngine.AddressableAssets;
 namespace AutoBattler.EditorTools
 {
     /// <summary>설정 SO의 원본 프리팹을 상속하고 전투 모듈과 AssetReference 연결.</summary>
-    public static class CharacterPrefabSetup
+    public static partial class CharacterPrefabSetup
     {
         [MenuItem("PixelTactics/Setup/Connect Character Prefabs")]
         public static void Connect()
@@ -63,6 +64,8 @@ namespace AutoBattler.EditorTools
                 AddIfMissing<UnitCombat>(root);
                 AddIfMissing<UnitFacingView>(root);
                 AddIfMissing<UnitSkillView>(root);
+                AddIfMissing<UnitIdentityView>(root);
+                root.GetComponent<UnitIdentityView>().ConfigureFont(ProjectSetupSettings.Current.UnitInfoFont);
                 var facing=root.GetComponent<UnitFacingView>();
                 if(facing.SpriteRenderers.Count==0)
                     facing.ConfigureRenderers(root.GetComponentsInChildren<SpriteRenderer>(true));
@@ -82,40 +85,6 @@ namespace AutoBattler.EditorTools
         private static void AddIfMissing<T>(GameObject root) where T:Component
         { if(root.GetComponent<T>()==null) root.AddComponent<T>(); }
 
-        public static void BuildForVerification()
-        {
-            Connect(); Connect();
-            CheckPrefabs();
-            MilestoneSetup.BuildLocal();
-            AddressableAssetSettingsDefaultObject.Settings.ActivePlayModeDataBuilderIndex=2;
-            MilestonePlayChecks.Start();
-        }
-        public static void CheckPrefabs()
-        {
-            foreach(var entry in ProjectSetupSettings.Current.Units)
-            {
-                var prefab=entry.UnitPrefab;
-                if(PrefabUtility.GetCorrespondingObjectFromSource(prefab)!=entry.SourcePrefab)
-                    throw new InvalidOperationException($"원본 상속 확인 실패: {entry.VisualId}");
-                if(prefab.GetComponent<Unit>()==null || prefab.GetComponent<UnitHealth>()==null
-                    || prefab.GetComponent<UnitStats>()==null || prefab.GetComponent<UnitEffects>()==null
-                    || prefab.GetComponent<UnitMana>()==null || prefab.GetComponent<UnitSkill>()==null || prefab.GetComponent<UnitSkillView>()==null
-                    || prefab.GetComponent<UnitCombat>()==null || prefab.GetComponent<UnitMove>()==null
-                    || prefab.GetComponent<UnitView>()==null || prefab.GetComponent<Collider2D>()==null
-                    || prefab.GetComponent<UnitFacingView>()==null
-                    || prefab.GetComponent<UnitFacingView>().SpriteRenderers.Count==0
-                    || prefab.GetComponentsInChildren<UnitHealthBar>(true).Length!=1)
-                    throw new InvalidOperationException($"모듈 연결 확인 실패: {entry.VisualId}");
-                RuntimeAnimatorController controller=prefab.GetComponent<Animator>().runtimeAnimatorController;
-                while(controller is AnimatorOverrideController overrides) controller=overrides.runtimeAnimatorController;
-                var parameters=((UnityEditor.Animations.AnimatorController)controller).parameters
-                    .Where(parameter=>parameter.type==AnimatorControllerParameterType.Trigger).Select(parameter=>parameter.nameHash).ToArray();
-                if(new[] {UnitAnimatorParameters.Idle,UnitAnimatorParameters.Run,UnitAnimatorParameters.AttackSlash,
-                    UnitAnimatorParameters.AttackShoot,UnitAnimatorParameters.AttackMagic}.Any(hash=>!parameters.Contains(hash)))
-                    throw new InvalidOperationException($"Animator 파라미터 연결 필요: {entry.VisualId}");
-            }
-            Debug.Log("CHARACTER_PREFABS_PASS variants-modules-animator-hashes-healthbars");
-        }
     }
 }
 #endif

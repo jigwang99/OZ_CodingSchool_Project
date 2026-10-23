@@ -38,6 +38,7 @@ namespace AutoBattler.EditorTools
             var flow=UnityEngine.Object.FindFirstObjectByType<BattleFlowController>();
             var run=drag.GetComponent<RunController>(); if(run==null) run=drag.gameObject.AddComponent<RunController>();
             run.ConfigureScene(catalog,flow,drag,grid,bench);
+            RunManagerSetup.Configure(run);
             var hud=BattleHUDSetup.Connect(scene,run);
             if(grid.GetComponent<BoardOutlineView>()==null) grid.gameObject.AddComponent<BoardOutlineView>();
             drag.SetPlayerLevel(1); EditorUtility.SetDirty(drag);

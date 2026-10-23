@@ -124,3 +124,10 @@ InitTestScene*.unity*
 
 # 스냅샷 가져오기 중 임시 파일 제외
 /Assets/_Data/Snapshots/*.pending*
+
+# 로컬 기능 검사 스크립트와 폴더 메타 제외
+/Assets/_Scripts/Editor/Checks/
+/Assets/_Scripts/Editor/Checks.meta
+
+# 기능별 로컬 Markdown 문서 제외
+/Docs/**/*.md
