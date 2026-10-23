@@ -85,11 +85,11 @@ namespace AutoBattler.Battle.Units
         {
             if(!IsInitialized) return;
             float attackSpeed=Mathf.Max(.01f,Calculate(StatType.AttackSpeed,1f));
-            Current=new UnitStat(Base.UnitType,Mathf.Max(1,Mathf.FloorToInt(Calculate(StatType.MaxHp,Base.MaxHp))),
+            Current=new UnitStat(Mathf.Max(1,Mathf.FloorToInt(Calculate(StatType.MaxHp,Base.MaxHp))),
                 Mathf.Max(0,Mathf.FloorToInt(Calculate(StatType.AttackDamage,Base.AttackDamage))),
                 Mathf.Max(0,Mathf.FloorToInt(Calculate(StatType.Defense,Base.Defense))),
                 Mathf.Max(0f,Calculate(StatType.MoveSpeed,Base.MoveSpeed)),Base.AttackRange,
-                Mathf.Max(.01f,Base.AttackCooldown/attackSpeed),Base.Icon);
+                Mathf.Max(.01f,Base.AttackCooldown/attackSpeed));
             CritChance=Mathf.Clamp01(Calculate(StatType.CritChance,baseCritChance));
             CritMultiplier=Mathf.Max(1f,Calculate(StatType.CritMultiplier,baseCritMultiplier));
             SkillPower=Mathf.Max(0f,Calculate(StatType.SkillPower,1f));

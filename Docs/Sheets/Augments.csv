@@ -1,9 +1,0 @@
-augment_id,name,description,effect,stat,operation,value,duration
-5001,Iron Vitality,All allies gain 15% maximum HP.,StatModifier,MaxHp,Percent,0.15,0
-5002,Combat Training,All allies gain 15% attack damage.,StatModifier,AttackDamage,Percent,0.15,0
-5003,Swift Hands,All allies gain 15% attack speed.,StatModifier,AttackSpeed,Percent,0.15,0
-5004,Arcane Research,All allies gain 20% skill damage healing and shield power.,StatModifier,SkillPower,Percent,0.2,0
-5005,Early Protection,At battle start all allies gain a 10% max HP shield for 5 seconds.,StartingShield,MaxHp,Flat,0.1,5
-5006,Mercenary Contract,Immediately gain 8 gold once.,ImmediateGold,MaxHp,Flat,8,0
-5007,Spoils Collector,Gain 2 extra gold whenever you win a battle.,VictoryGold,MaxHp,Flat,2,0
-5008,Charged Mana,All allies start battle with 20 extra MP up to 100.,StartingMana,MaxHp,Flat,20,0

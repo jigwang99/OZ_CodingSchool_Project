@@ -34,7 +34,7 @@ namespace AutoBattler.EditorTools
             // 실제 표시하는 한글 글리프를 미리 준비하여 빌드와 에디터에서 동일하게 표시.
             string characters=string.Concat(Directory.GetFiles("Assets/_Scripts","*.cs",SearchOption.AllDirectories)
                 .Where(path=>!path.Contains("Editor")).Select(File.ReadAllText));
-            characters=new string(characters.Where(character=>character>='가' && character<='힣' || character>=' ' && character<='~').Distinct().ToArray());
+            characters=new string(characters.Where(character=>character>='가' && character<='힣' || character>=' ' && character<='~' || character=='★').Distinct().ToArray());
             font.TryAddCharacters(characters,out string missing);
             if(!string.IsNullOrEmpty(missing)) throw new System.InvalidOperationException("전투 한글 폰트에 필요한 글리프 누락: "+missing);
             EditorUtility.SetDirty(font);

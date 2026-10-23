@@ -68,9 +68,6 @@ namespace AutoBattler.Presentation.Units
             transform.position = position;
         }
 
-        // 기존 전장 전용 호출도 유지.
-        public void SnapToCell(HexGridLayout layout) => SnapToLocation(layout, null);
-
         private void OnDisable()
         {
             if (health != null)

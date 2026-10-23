@@ -71,7 +71,6 @@ namespace AutoBattler.EditorTools
                     facing.ConfigureRenderers(root.GetComponentsInChildren<SpriteRenderer>(true));
                 if(root.GetComponent<Collider2D>()==null) root.AddComponent<BoxCollider2D>();
                 root.layer=LayerMask.NameToLayer("AllyUnit");
-                root.GetComponent<Unit>().ConfigureEditorDefaults();
                 if(root.GetComponentInChildren<UnitHealthBar>(true)==null)
                     PrefabUtility.InstantiatePrefab(healthBar,root.transform);
                 entry.SetUnitPrefab(PrefabUtility.SaveAsPrefabAsset(root,path));

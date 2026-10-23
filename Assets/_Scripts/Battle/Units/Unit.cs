@@ -1,4 +1,5 @@
 using AutoBattler.Battle.Flow;
+using AutoBattler.Battle.AI.States;
 using AutoBattler.Battle.Grid;
 using AutoBattler.Battle.Placement;
 using AutoBattler.Data.Units;
@@ -16,9 +17,6 @@ namespace AutoBattler.Battle.Units
     [RequireComponent(typeof(UnitMana),typeof(UnitSkill))]
     public sealed class Unit : MonoBehaviour
     {
-        // 이전 프리팹의 테스트용 연결만 유지. 도전에서는 Configure로 덮어씀.
-        [SerializeField] private UnitData unitData;
-        [SerializeField] private UnitType unitType;
         [SerializeField] private BattleFlowController battleFlow;
         [SerializeField] private HexGridLayout gridLayout;
         [SerializeField] private BenchLayout benchLayout;
@@ -39,6 +37,7 @@ namespace AutoBattler.Battle.Units
         public UnitHealth Health { get; private set; }
         public UnitMove Move { get; private set; }
         public UnitCombat Combat { get; private set; }
+        public UnitStateController Actions { get; private set; }
         public HexGridLayout GridLayout=>gridLayout;
         public BattleFlowController BattleFlow=>battleFlow;
         public bool IsOnBoard=>Team==UnitTeam.Enemy || (View!=null && View.State!=null && View.State.Location.Kind==UnitLocationKind.Board);
@@ -54,12 +53,11 @@ namespace AutoBattler.Battle.Units
             Mana=GetComponent<UnitMana>(); Skill=GetComponent<UnitSkill>();
             Health.BindUnit(this);
             Skill.BindUnit(this);
-            if(unitData!=null && unitData.TryGetStat(unitType,out UnitStat stats))
-            { StatModifiers.Initialize(stats); Health.Initialize(Stats.MaxHp,Stats.Defense); }
         }
         public void Configure(UnitDefinition definition,int star,int instanceId,UnitTeam team,
             DataRepository data,BattleFlowController flow,HexGridLayout grid,BenchLayout bench,HexCoord? enemyPosition=null,int bossProfile=0)
         {
+            ClearActions();
             Skill.ResetForRound(); SpawnVersion++;
             Effects.Clear();
             Definition=definition; Star=star; InstanceId=instanceId; Team=team;
@@ -68,7 +66,7 @@ namespace AutoBattler.Battle.Units
             ProjectileSpeed=data.Rule(EconomyRule.ProjectileSpeed);
             float multiplier=star==2?data.Rule(EconomyRule.StarMultiplier):1f;
             float bossHp=bossProfile==3?2.5f:bossProfile>0?2f:1f;
-            var baseStats=new UnitStat(UnitType.Character2,Mathf.FloorToInt(definition.Hp*multiplier*bossHp),
+            var baseStats=new UnitStat(Mathf.FloorToInt(definition.Hp*multiplier*bossHp),
                 Mathf.FloorToInt(definition.Attack*multiplier*(bossProfile>0?1.2f:1f)),definition.Armor,
                 1f,definition.Range,definition.Interval);
             StatModifiers.Initialize(baseStats,definition.CritChance,definition.CritMultiplier);
@@ -81,15 +79,26 @@ namespace AutoBattler.Battle.Units
             gameObject.layer=layer<0?0:layer;
             gameObject.name=$"{team}_{definition.Name}_{star}Star_{instanceId}";
         }
-        public void BeginBattle() { Skill.ResetForRound(); Move.Stop(); Effects.Clear(); combatCell=enemyCell ?? View?.State?.Cell; Health.RestoreFullHealth(); Mana.ResetForRound(); Combat.ResetForRound(); }
+        public void BeginBattle() { ClearActions(); Skill.ResetForRound(); Move.Stop(); Effects.Clear(); combatCell=enemyCell ?? View?.State?.Cell; Health.RestoreFullHealth(); Mana.ResetForRound(); Combat.ResetForRound(); }
         public void RestorePreparation()
         {
+            ClearActions();
             Skill.ResetForRound(); Move.Stop(); Effects.Clear(); combatCell=null; Health.RestoreFullHealth(); Mana.ResetForRound(); Combat.ResetForRound();
             if(Team==UnitTeam.Ally && View!=null) View.SnapToLocation(gridLayout,benchLayout);
         }
         internal void SetCombatCell(HexCoord cell)=>combatCell=cell;
+        private void Update()=>Actions?.Update();
+        private void FixedUpdate()=>Actions?.FixedUpdate();
+        internal void BindActions(UnitStateController controller) { ClearActions(); Actions=controller; }
+        internal void UnbindActions(UnitStateController controller)
+        { if(ReferenceEquals(Actions,controller)) Actions=null; }
+        private void ClearActions()
+        {
+            var current=Actions; Actions=null; current?.Dispose();
+        }
         private void OnDisable()
         {
+            ClearActions();
             SpawnVersion++;
             if(Skill!=null) Skill.ResetForRound();
             if(Mana!=null) Mana.Clear();
@@ -97,8 +106,5 @@ namespace AutoBattler.Battle.Units
             if(Effects!=null) Effects.Clear();
             if(StatModifiers!=null) StatModifiers.ClearModifiers();
         }
-#if UNITY_EDITOR
-        public void ConfigureEditorDefaults() => unitData=null;
-#endif
     }
 }

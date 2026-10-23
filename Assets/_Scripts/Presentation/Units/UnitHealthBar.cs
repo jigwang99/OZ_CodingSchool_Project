@@ -2,17 +2,19 @@ using AutoBattler.Battle.Units;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace AutoBattler.Presentation.Units
 {
-    /// <summary>부모 유닛의 체력과 생존 상태를 표시하는 공통 월드 UI.</summary>
+    /// <summary>부모 유닛의 성급·체력·보호막과 생존 상태를 표시하는 공통 월드 UI.</summary>
     [DisallowMultipleComponent]
     public sealed class UnitHealthBar : MonoBehaviour
     {
         [SerializeField] private Canvas healthCanvas;
         [SerializeField] private Image fillImage;
-        [SerializeField] private TextMeshProUGUI healthText;
+        [FormerlySerializedAs("healthText")]
+        [SerializeField] private TextMeshProUGUI starText;
         [SerializeField] private HealthBarFill segments;
         [SerializeField] private Color allyColor = new Color(0.2f, 0.9f, 0.35f);
         [SerializeField] private Color enemyColor = new Color(1f, 0.35f, 0.35f);
@@ -23,11 +25,11 @@ namespace AutoBattler.Presentation.Units
 
         public Canvas HealthCanvas => healthCanvas;
         public Image FillImage => fillImage;
-        public TextMeshProUGUI HealthText => healthText;
+        public TextMeshProUGUI StarText => starText;
         public HealthBarFill Segments=>segments;
 #if UNITY_EDITOR
         public void ConfigureReferences(Canvas canvas, Image fill, TextMeshProUGUI label)
-        { healthCanvas=canvas; fillImage=fill; healthText=label; }
+        { healthCanvas=canvas; fillImage=fill; starText=label; }
         public void ConfigureSegments(HealthBarFill view)=>segments=view;
 #endif
 
@@ -68,8 +70,7 @@ namespace AutoBattler.Presentation.Units
         {
             bool initialized=boundHealth!=null && boundHealth.IsInitialized;
             int shield=boundEffects?.Shield ?? 0;
-            healthText.text=initialized ? $"{boundHealth.CurrentHp}/{boundHealth.MaxHp}" : "--";
-            if(initialized && shield>0) healthText.text+=$" <color=#B8B8B8>+{shield}</color>";
+            starText.text=initialized && owner!=null ? new string('★',owner.Star) : string.Empty;
             segments.SetValues(initialized ? boundHealth.CurrentHp : 0,initialized ? boundHealth.MaxHp : 1,shield,animate);
         }
 

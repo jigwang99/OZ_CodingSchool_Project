@@ -120,7 +120,8 @@ namespace AutoBattler.EditorTools
                 background.color=new Color(.05f,.05f,.05f,.9f);
                 var fill=Rect(rect,"Fill",new Vector2(-50f,0f),new Vector2(100f,8f)).gameObject.AddComponent<Image>();
                 fill.rectTransform.pivot=new Vector2(0f,.5f);
-                var label=Label(rect,"HealthText",new Vector2(0f,18f),new Vector2(140f,20f),18f,"--");
+                var label=Label(rect,"StarText",new Vector2(0f,18f),new Vector2(140f,20f),18f,"★");
+                label.color=new Color(1f,.82f,.2f,1f);
                 prototype.AddComponent<UnitHealthBar>().ConfigureReferences(canvas,fill,label);
                 ShieldBarSetup.ConfigureUnitBar(prototype.GetComponent<UnitHealthBar>());
                 CreateManaBar(rect);

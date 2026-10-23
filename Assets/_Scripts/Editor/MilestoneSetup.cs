@@ -31,7 +31,6 @@ namespace AutoBattler.EditorTools
             EditorUtility.SetDirty(settings);
             var scene=EditorSceneManager.OpenScene(setup.ScenePath);
             foreach(var unit in UnityEngine.Object.FindObjectsByType<Unit>(FindObjectsSortMode.None)) UnityEngine.Object.DestroyImmediate(unit.gameObject);
-            foreach(var oldUi in UnityEngine.Object.FindObjectsByType<BattlePhaseUI>(FindObjectsSortMode.None)) UnityEngine.Object.DestroyImmediate(oldUi.gameObject);
             var grid=UnityEngine.Object.FindFirstObjectByType<HexGridLayout>();
             var bench=UnityEngine.Object.FindFirstObjectByType<BenchLayout>();
             var drag=UnityEngine.Object.FindFirstObjectByType<UnitDragController>();

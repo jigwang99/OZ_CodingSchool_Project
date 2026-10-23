@@ -54,11 +54,6 @@ namespace AutoBattler.Battle.Units
         public bool IsInAttackRange(UnitCombat target)=>target!=null && target!=this && target.unit.Team!=unit.Team
             && unit.CurrentCell.HasValue && target.unit.CurrentCell.HasValue
             && unit.CurrentCell.Value.DistanceTo(target.unit.CurrentCell.Value)<=unit.Stats.AttackRange;
-        public bool TryAttack(UnitCombat target)
-        {
-            if(!CanAttack || target==null || !target.CanFight || !IsInAttackRange(target)) return false;
-            AttackAsync(target,unit.BattleFlow.GetCancellationTokenOnDestroy()).Forget(); return true;
-        }
         public async UniTask AttackAsync(UnitCombat target,CancellationToken token)
         {
             if(!CanAttack || target==null || !target.CanFight || !IsInAttackRange(target)) return;

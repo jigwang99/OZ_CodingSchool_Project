@@ -1,9 +1,0 @@
-trait_id,name,category,group_id,required_count,effect,value,secondary_value,duration,threshold
-4001,Human,Origin,1,2,ShieldAtStart,0.15,0,5,0
-4002,Elf,Origin,2,2,StartingMana,20,0,0,0
-4003,Undead,Origin,3,2,HealOnKill,0.15,0,0,0
-4004,Orc,Origin,4,2,LowHealthAttack,0.25,0,0,0.5
-4101,Swordsman,Class,1,2,BasicAttackPower,0.15,0,0,0
-4102,Mage,Class,2,2,SkillPower,0.2,0,0,0
-4103,Archer,Class,3,2,AttackSpeed,0.2,0,0,0
-4104,Assassin,Class,4,2,Critical,0.2,0.3,0,0

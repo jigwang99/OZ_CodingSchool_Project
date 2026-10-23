@@ -17,8 +17,8 @@ namespace AutoBattler.EditorTools.Sheets
 {
     public sealed class GoogleSheetImporterWindow : EditorWindow
     {
-        private const string InitialId="1BTGlKR7D8g1PKnhi-0NfWXK7bCJyaFRTLd2hGSlI6mo";
-        private string spreadsheet=InitialId, apiKey="", bearerToken="", report="CSV 초기 데이터: Docs/Sheets";
+        private const string InitialId="1pAdSSEjA9HgQyd1mMIRMfTsvwTgsuVyrAJ_nR6BhfvI";
+        private string spreadsheet=InitialId, apiKey="", bearerToken="", report="Google Sheets에서 전체 표를 가져와 실행용 스냅샷에 적용.";
         private bool busy;
         private CancellationTokenSource operation;
         private Vector2 scroll;
@@ -45,11 +45,6 @@ namespace AutoBattler.EditorTools.Sheets
             using(new EditorGUI.DisabledScope(busy))
             {
                 if(GUILayout.Button("Google Sheets에서 가져오기")) ImportAsync().Forget();
-                if(GUILayout.Button("CSV 폴더에서 가져오기"))
-                {
-                    string folder=EditorUtility.OpenFolderPanel("Manifest와 데이터 CSV가 있는 폴더",Path.GetFullPath("Docs/Sheets"),"");
-                    if(!string.IsNullOrEmpty(folder)) ImportLocal(folder);
-                }
             }
             if(busy && GUILayout.Button("취소")) operation.Cancel();
             scroll=EditorGUILayout.BeginScrollView(scroll); EditorGUILayout.TextArea(report,GUILayout.ExpandHeight(true)); EditorGUILayout.EndScrollView();
@@ -111,17 +106,6 @@ namespace AutoBattler.EditorTools.Sheets
                 if(request.result!=UnityWebRequest.Result.Success) throw new IOException($"HTTP {request.responseCode}: 가져오기 실패.");
                 return request.downloadHandler.text;
             }
-        }
-        private void ImportLocal(string folder)
-        {
-            try
-            {
-                var tables=new Dictionary<string,CsvTable>();
-                var manifest=new CsvTable("Manifest",File.ReadAllText(Path.Combine(folder,"Manifest.csv")));
-                foreach(string tab in SnapshotImporter.TabsForSchema(manifest.Int(1,"schema_version"))) tables.Add(tab,new CsvTable(tab,File.ReadAllText(Path.Combine(folder,tab+".csv"))));
-                Apply(tables);
-            }
-            catch(Exception exception) { report="적용 안 됨. 기존 스냅샷 유지.\n"+exception.Message; }
         }
         private void Apply(Dictionary<string,CsvTable> tables)
         {
