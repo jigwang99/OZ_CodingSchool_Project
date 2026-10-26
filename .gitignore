@@ -131,3 +131,7 @@ InitTestScene*.unity*
 
 # 기능별 로컬 Markdown 문서 제외
 /Docs/**/*.md
+
+# Leohpaz 원본 에셋과 폴더 메타 파일 제외
+/Assets/Leohpaz/
+/Assets/Leohpaz.meta
