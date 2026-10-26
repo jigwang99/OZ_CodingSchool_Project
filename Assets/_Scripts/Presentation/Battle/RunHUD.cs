@@ -1,5 +1,7 @@
 using AutoBattler.Battle.Flow;
 using AutoBattler.Battle.Units;
+using AutoBattler.Battle.Placement;
+using AutoBattler.Presentation.Units;
 using AutoBattler.Data.Snapshot;
 using AutoBattler.Run;
 using Cysharp.Threading.Tasks;
@@ -13,7 +15,7 @@ namespace AutoBattler.Presentation.Battle
 {
     /// <summary>BattleHUD 프리팹의 표시 갱신과 플레이 명령 연결.</summary>
     [DisallowMultipleComponent]
-    public sealed class RunHUD : MonoBehaviour
+    public sealed class RunHUD : MonoBehaviour,IUnitDropTarget
     {
         [Header("진행 제어")]
         [SerializeField] private RunController run;
@@ -38,7 +40,8 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private TextMeshProUGUI refreshLabel;
         [SerializeField] private Button buyExperienceButton;
         [SerializeField] private TextMeshProUGUI buyExperienceLabel;
-        [SerializeField] private Button sellButton;
+        [SerializeField] private GameObject shopContent;
+        [SerializeField] private UnitSellZone sellZone;
         [SerializeField] private TextMeshProUGUI selectedUnitText;
         [SerializeField] private SynergyPanel synergyPanel;
         [SerializeField] private AugmentSelectionPanel augmentPanel;
@@ -49,6 +52,7 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private Button startBattleButton;
         [SerializeField] private ResultPanel resultPanel;
         [SerializeField] private Button retryLoadButton;
+        [SerializeField] private Button loadTitleButton;
         [SerializeField, Min(0f)] private float fadeDuration = 0.2f;
 
         private bool isBound;
@@ -70,10 +74,12 @@ namespace AutoBattler.Presentation.Battle
         public IReadOnlyList<ShopItem> ShopItems => System.Array.AsReadOnly(shopItems);
         public Button RefreshButton => refreshButton;
         public Button BuyExperienceButton => buyExperienceButton;
-        public Button SellButton => sellButton;
+        public GameObject ShopContent=>shopContent;
+        public UnitSellZone SellZone=>sellZone;
         public TextMeshProUGUI SelectedUnitText => selectedUnitText;
         public Button StartBattleButton => startBattleButton;
         public Button RetryLoadButton => retryLoadButton;
+        public Button LoadTitleButton=>loadTitleButton;
         public ResultPanel ResultPanel => resultPanel;
         public SynergyPanel SynergyPanel => synergyPanel;
         public AugmentSelectionPanel AugmentPanel=>augmentPanel;
@@ -90,12 +96,13 @@ namespace AutoBattler.Presentation.Battle
         }
         public void ConfigurePreparation(CanvasGroup panel, RectTransform container, ShopItem[] items,
             Button refresh, TextMeshProUGUI refreshText, Button buyExperience, TextMeshProUGUI xpText,
-            Button sell, TextMeshProUGUI selected)
+            TextMeshProUGUI selected)
         {
             preparationPanel=panel; shopContainer=container; shopItems=items;
             refreshButton=refresh; refreshLabel=refreshText; buyExperienceButton=buyExperience;
-            buyExperienceLabel=xpText; sellButton=sell; selectedUnitText=selected;
+            buyExperienceLabel=xpText; selectedUnitText=selected;
         }
+        public void ConfigureSellDrag(GameObject content,UnitSellZone zone) { shopContent=content; sellZone=zone; }
         public void ConfigureActions(Button start, Button retry, ResultPanel result)
         { startBattleButton=start; retryLoadButton=retry; resultPanel=result; }
         public void ConfigureShopContainer(RectTransform container) => shopContainer=container;
@@ -107,6 +114,7 @@ namespace AutoBattler.Presentation.Battle
         public void ConfigureUnitInfo(UnitInfoPanel panel) => unitInfo = panel;
         public void ConfigureNavigation(GameNavigationSettings settings)=>navigation=settings;
         public void ConfigureSettingsRoot(CanvasGroup group)=>interactionRoot=group;
+        public void ConfigureLoadTitle(Button button)=>loadTitleButton=button;
 #endif
 
         public void ConfigureScene(RunController controller)
@@ -141,11 +149,16 @@ namespace AutoBattler.Presentation.Battle
             startBattleButton.onClick.AddListener(StartBattle);
             refreshButton.onClick.AddListener(RefreshShop);
             buyExperienceButton.onClick.AddListener(BuyExperience);
-            sellButton.onClick.AddListener(SellSelected);
+            run.Drag.DragStarted+=ShowSellDrag;
+            run.Drag.DragMoved+=UpdateSellDrag;
+            run.Drag.DragEnded+=HideSellDrag;
+            run.Drag.BindDropTarget(this);
+            HideSellDrag();
             resultPanel.ContinueRequested += NextRound;
             resultPanel.RetryRequested += RetryRun;
             resultPanel.TitleRequested += ReturnToTitle;
             retryLoadButton.onClick.AddListener(RetryLoad);
+            loadTitleButton.onClick.AddListener(ReturnFromLoadError);
             run.DisplayChanged += Refresh;
             if(augmentPanel!=null) { augmentPanel.Selected+=SelectAugment; augmentPanel.ToggleRequested+=ToggleAugments; }
             isBound = true;
@@ -157,9 +170,32 @@ namespace AutoBattler.Presentation.Battle
         private void BuyShopItem(int slotIndex) => run.Buy(slotIndex);
         private void RefreshShop() => run.RefreshShop();
         private void BuyExperience() => run.BuyXp();
-        private void SellSelected() => run.SellSelected();
+        private void ShowSellDrag(UnitView view)
+        {
+            var unit=view.GetComponent<Unit>();
+            if(unit==null || unit.Definition==null || view.State==null) return;
+            shopContent.SetActive(false);
+            sellZone.Show(BattleText.UnitName(unit.Definition),unit.Star,run.State.SalePrice(view.State.InstanceId),CanPrepare());
+        }
+        private void UpdateSellDrag(Vector2 pointer)=>sellZone.SetPointer(pointer);
+        private void HideSellDrag()
+        { sellZone.Hide(); shopContent.SetActive(true); }
+        bool IUnitDropTarget.Contains(Vector2 screenPosition)=>sellZone.Contains(screenPosition);
+        bool IUnitDropTarget.TryDrop(UnitView view)
+        {
+            var unit=view!=null ? view.GetComponent<Unit>() : null;
+            return CanPrepare() && unit!=null && unit.Team==UnitTeam.Ally && view.State!=null
+                && run.SellUnit(view.State.InstanceId);
+        }
         private void NextRound() => run.Continue();
         private void RetryLoad() => run.RetryLoad();
+        private void ReturnFromLoadError()=>ReturnFromLoadErrorAsync().Forget();
+        private async UniTask ReturnFromLoadErrorAsync()
+        {
+            if(run.IsReady || run.IsLoading || GameNavigation.IsTransitioning) return;
+            try { await GameNavigation.ReturnToTitleAsync(navigation,run); }
+            catch(System.Exception exception) { Debug.LogException(exception); }
+        }
         private void RetryRun()=>NavigateAsync(false).Forget();
         private void ReturnToTitle()=>NavigateAsync(true).Forget();
         private async Cysharp.Threading.Tasks.UniTask NavigateAsync(bool title)
@@ -198,7 +234,6 @@ namespace AutoBattler.Presentation.Battle
                 ? selected.GetComponent<Unit>() : null;
             selectedUnitText.text = unit != null && unit.Definition != null
                 ? BattleText.UnitName(unit.Definition) : "기물 선택";
-            sellButton.interactable = CanPrepare() && unit != null;
             if (unitInfo != null)
             {
                 var inspected = run.IsReady && run.Flow.CanInspectUnits ? run.Drag.InspectedUnit : null;
@@ -241,6 +276,7 @@ namespace AutoBattler.Presentation.Battle
             startBattleButton.interactable = prepare && run.State.Board.DeployedCount > 0;
             startBattleButton.gameObject.SetActive(ready);
             retryLoadButton.gameObject.SetActive(!ready && !run.IsLoading);
+            loadTitleButton.gameObject.SetActive(!ready && !run.IsLoading);
             preparationPanel.interactable = prepare;
             RefreshSelection();
 
@@ -294,11 +330,19 @@ namespace AutoBattler.Presentation.Battle
             startBattleButton.onClick.RemoveListener(StartBattle);
             refreshButton.onClick.RemoveListener(RefreshShop);
             buyExperienceButton.onClick.RemoveListener(BuyExperience);
-            sellButton.onClick.RemoveListener(SellSelected);
+            if(run!=null)
+            {
+                run.Drag.UnbindDropTarget(this);
+                run.Drag.DragStarted-=ShowSellDrag;
+                run.Drag.DragMoved-=UpdateSellDrag;
+                run.Drag.DragEnded-=HideSellDrag;
+            }
+            HideSellDrag();
             resultPanel.ContinueRequested -= NextRound;
             resultPanel.RetryRequested -= RetryRun;
             resultPanel.TitleRequested -= ReturnToTitle;
             retryLoadButton.onClick.RemoveListener(RetryLoad);
+            loadTitleButton.onClick.RemoveListener(ReturnFromLoadError);
             preparationPanel.DOKill();
             resultPanel.StopAnimation();
             isBound = false;

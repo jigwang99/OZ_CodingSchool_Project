@@ -27,6 +27,7 @@ namespace AutoBattler.Run
         public int Round { get; private set; }=1; public int WinStreak { get; private set; }
         public bool IsOver { get; private set; } public bool WonRun { get; private set; }
         public bool CanPrepare { get; set; }=true;
+        public bool IsSettled=>settledRound==Round;
         public string LastError { get; private set; }
         public string LastResult { get; private set; }
         public IReadOnlyList<OwnedUnit> Units => owned.AsReadOnly();
@@ -35,12 +36,11 @@ namespace AutoBattler.Run
         private readonly List<OwnedUnit> owned=new List<OwnedUnit>();
         private readonly Dictionary<int,int> stock=new Dictionary<int,int>();
         private readonly int[] shop=new int[5];
-        private readonly Random random;
+        private readonly RunRandom random;
         private int nextId=1, settledRound;
         public RunState(DataRepository data,int seed)
+            :this(data,new RunRandom(seed),new AugmentState(data.Augments,seed))
         {
-            Data=data; random=new Random(seed); Placement=new PlacementService(Board);
-            Augments=new AugmentState(data.Augments,seed);
             Gold=data.IntRule(EconomyRule.StartGold); Lives=data.IntRule(EconomyRule.StartLives);
             foreach(var unit in data.Units.Values) stock.Add(unit.Id,data.PoolCopies(unit.Cost));
             int starter=Draw(new int[]{100,0,0,0,0});
@@ -49,6 +49,90 @@ namespace AutoBattler.Run
             Placement.TryRegisterUnit(initial.Placement,UnitLocation.OnBench(0)); owned.Add(initial);
             Reroll();
             Augments.EnterRound(Round,Data.Rounds[Round].OffersAugment);
+        }
+        private RunState(DataRepository data,RunRandom random,AugmentState augments)
+        { Data=data; this.random=random; Augments=augments; Placement=new PlacementService(Board); }
+
+        public RunSaveData Capture(int stageId,bool augmentWindowOpen)
+        {
+            if(!CanPrepare && !IsSettled) throw new InvalidOperationException("전투 중에는 전투 직전 저장 상태를 유지합니다.");
+            if(owned.Any(unit=>!Board.HasValidLocation(unit.Placement) || !Placement.IsValidLocation(unit.Placement.Location)))
+                throw new InvalidOperationException("배치가 해제된 유닛은 저장할 수 없습니다.");
+            return new RunSaveData
+            {
+                dataVersion=Data.Version, stageId=stageId, savedAtUtc=DateTime.UtcNow.ToString("O"),
+                phase=CanPrepare?RunSavePhase.Preparation:RunSavePhase.Result,
+                round=Round,gold=Gold,lives=Lives,level=Level,xp=Xp,winStreak=WinStreak,nextInstanceId=nextId,
+                isOver=IsOver,wonRun=WonRun,lastResult=LastResult,augmentWindowOpen=augmentWindowOpen,
+                randomSeed=random.Seed,randomDrawCount=random.DrawCount,shop=(int[])shop.Clone(),
+                stock=stock.OrderBy(pair=>pair.Key).Select(pair=>new SavedStock {definitionId=pair.Key,available=pair.Value}).ToArray(),
+                units=owned.Select(unit=>
+                {
+                    unit.Placement.Location.Cell.ToOffset(out int col,out int row);
+                    return new SavedUnit {definitionId=unit.DefinitionId,instanceId=unit.Placement.InstanceId,star=unit.Star,
+                        location=unit.Placement.Location.Kind,col=col,row=row,benchSlot=unit.Placement.Location.BenchSlot};
+                }).ToArray(),
+                augments=Augments.Capture()
+            };
+        }
+
+        public static RunState Restore(DataRepository data,RunSaveData saved)
+        {
+            if(saved==null || saved.saveVersion!=1 || saved.gridLayoutVersion!=1 || saved.dataVersion!=data.Version
+                || !data.Rounds.ContainsKey(saved.round) || saved.level<1 || saved.level>10
+                || saved.gold<0 || saved.lives<0 || saved.lives>data.IntRule(EconomyRule.StartLives)
+                || saved.xp<0 || saved.level==10 && saved.xp!=0
+                || saved.level<10 && saved.xp>=data.RequiredXp(saved.level)
+                || saved.winStreak<0 || saved.winStreak>saved.round
+                || saved.phase!=RunSavePhase.Preparation && saved.phase!=RunSavePhase.Result
+                || saved.phase==RunSavePhase.Preparation && saved.isOver
+                || saved.phase==RunSavePhase.Result && saved.isOver!=(saved.lives==0 || saved.round==data.Rounds.Count)
+                || saved.wonRun && (!saved.isOver || saved.round!=data.Rounds.Count)
+                || !saved.isOver && saved.lives==0
+                || saved.shop==null || saved.shop.Length!=5 || saved.stock==null || saved.units==null || saved.augments==null
+                || saved.units.Length>saved.level+PlacementService.BenchCapacity || saved.nextInstanceId<=0)
+                throw new ArgumentException("저장 형식 또는 게임 데이터 버전이 맞지 않습니다.");
+            var state=new RunState(data,new RunRandom(saved.randomSeed,saved.randomDrawCount),AugmentState.Restore(data.Augments,saved.augments))
+            {
+                Round=saved.round,Gold=saved.gold,Lives=saved.lives,Level=saved.level,Xp=saved.xp,
+                WinStreak=saved.winStreak,CanPrepare=saved.phase==RunSavePhase.Preparation,
+                IsOver=saved.isOver,WonRun=saved.wonRun,LastResult=saved.lastResult,
+                nextId=saved.nextInstanceId,settledRound=saved.phase==RunSavePhase.Result?saved.round:saved.round-1
+            };
+            state.Placement.SetPlayerLevel(state.Level);
+            foreach(var entry in saved.stock)
+            {
+                if(entry==null || !data.Units.ContainsKey(entry.definitionId) || entry.available<0
+                    || state.stock.ContainsKey(entry.definitionId)) throw new ArgumentException("저장된 기물 재고가 올바르지 않습니다.");
+                state.stock.Add(entry.definitionId,entry.available);
+            }
+            if(state.stock.Count!=data.Units.Count || saved.shop.Any(id=>id!=0 && !data.Units.ContainsKey(id)))
+                throw new ArgumentException("저장된 상점 정보가 올바르지 않습니다.");
+            Array.Copy(saved.shop,state.shop,5);
+            foreach(var entry in saved.units)
+            {
+                if(entry==null || !data.Units.ContainsKey(entry.definitionId) || entry.instanceId<=0 || entry.instanceId>=state.nextId
+                    || state.owned.Any(unit=>unit.Placement.InstanceId==entry.instanceId) || entry.star!=1 && entry.star!=2
+                    || entry.location!=UnitLocationKind.Board && entry.location!=UnitLocationKind.Bench)
+                    throw new ArgumentException("저장된 유닛 정보가 올바르지 않습니다.");
+                var unit=new OwnedUnit(entry.definitionId,entry.instanceId) { Star=entry.star };
+                var location=entry.location==UnitLocationKind.Board ? UnitLocation.OnBoard(HexCoord.FromOffset(entry.col,entry.row)) : UnitLocation.OnBench(entry.benchSlot);
+                if(!state.Placement.TryRegisterUnit(unit.Placement,location)) throw new ArgumentException("저장된 유닛 배치가 올바르지 않습니다.");
+                state.owned.Add(unit);
+            }
+            foreach(var definition in data.Units.Values)
+                if(state.stock[definition.Id]+state.shop.Count(id=>id==definition.Id)
+                    +state.owned.Where(unit=>unit.DefinitionId==definition.Id).Sum(unit=>unit.Star==2?3:1)!=data.PoolCopies(definition.Cost))
+                    throw new ArgumentException("기물 재고와 상점 예약·보유 수가 일치하지 않습니다.");
+            var completed=saved.augments.completedRounds;
+            if(completed.Any(round=>!data.Rounds.ContainsKey(round) || !data.Rounds[round].OffersAugment || round>state.Round)
+                || data.Rounds.Values.Any(round=>round.Id<state.Round && round.OffersAugment && !completed.Contains(round.Id))
+                || state.Augments.OfferedRound<0 || state.Augments.OfferedRound>state.Round
+                || state.Augments.HasPending && (!state.CanPrepare || state.Augments.OfferedRound!=state.Round || !data.Rounds[state.Round].OffersAugment || completed.Contains(state.Round))
+                || data.Rounds[state.Round].OffersAugment && !completed.Contains(state.Round) && !state.Augments.HasPending
+                || saved.augments.randomSeed!=(saved.randomSeed^0x41A96B))
+                throw new ArgumentException("저장된 증강 진행 이력이 일치하지 않습니다.");
+            return state;
         }
         public int Stock(int definitionId)=>stock[definitionId];
         private bool Ready()=>CanPrepare && !IsOver && !Augments.HasPending;
@@ -100,10 +184,17 @@ namespace AutoBattler.Run
             if(!Ready()) return Fail("준비 단계에서 판매할 수 있습니다.");
             var unit=owned.FirstOrDefault(x=>x.Placement.InstanceId==instanceId);
             if(unit==null) return Fail("판매할 기물을 선택해 주세요.");
-            int copies=unit.Star==2?3:1, cost=Data.Units[unit.DefinitionId].Cost;
+            int copies=unit.Star==2?3:1, price=SalePrice(instanceId);
             if(!Board.TryUnregister(unit.Placement)) return Fail("기물의 배치 정보를 찾을 수 없습니다.");
-            owned.Remove(unit); stock[unit.DefinitionId]+=copies; Gold+=unit.Star==2 ? cost*3-1:cost;
+            owned.Remove(unit); stock[unit.DefinitionId]+=copies; Gold+=price;
             Notify(); return true;
+        }
+        public int SalePrice(int instanceId)
+        {
+            var unit=owned.FirstOrDefault(value=>value.Placement.InstanceId==instanceId);
+            if(unit==null) return 0;
+            int cost=Data.Units[unit.DefinitionId].Cost;
+            return unit.Star==2 ? cost*3-1 : cost;
         }
         public bool TryBuyXp()
         {

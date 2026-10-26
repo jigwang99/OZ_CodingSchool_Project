@@ -108,10 +108,10 @@ namespace AutoBattler.EditorTools
                 ShopItemSetup.ConfigureSlots(shopContainer, hud);
                 var refresh = Button(preparation, "RefreshButton", "새로고침", new Vector2(650f, 32f), new Vector2(190f, 54f));
                 var experience = Button(preparation, "BuyExperienceButton", "경험치 구매", new Vector2(855f, 32f), new Vector2(180f, 54f));
-                var sell = Button(preparation, "SellButton", "판매", new Vector2(650f, -32f), new Vector2(190f, 54f));
                 var selected = Label(preparation, "SelectedUnitText", new Vector2(855f, -32f), new Vector2(180f, 60f), 19f, "기물 선택");
                 hud.ConfigurePreparation(preparationGroup, shopContainer, hud.ShopItems.ToArray(), refresh, refresh.GetComponentInChildren<TextMeshProUGUI>(),
-                    experience, experience.GetComponentInChildren<TextMeshProUGUI>(), sell, selected);
+                    experience, experience.GetComponentInChildren<TextMeshProUGUI>(), selected);
+                SellDragSetup.Configure(hud);
                 hud.ConfigureActions(start, retry, null);
                 ReusableUISetup.ConfigureResultPanel(rootRect, hud);
                 SynergyUISetup.ConfigurePanel(hud);

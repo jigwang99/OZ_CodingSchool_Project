@@ -425,6 +425,7 @@ MonoBehaviour:
   unitLayer:
     serializedVersion: 2
     m_Bits: 256
+  dragThreshold: 8
 --- !u!4 &744301153
 Transform:
   m_ObjectHideFlags: 0
@@ -709,6 +710,7 @@ MonoBehaviour:
   drag: {fileID: 744301152}
   grid: {fileID: 1970585794}
   bench: {fileID: 890770001}
+  stage: {fileID: 11400000, guid: 654c4bc2f32190b41a4b2292cdc456de, type: 2}
   seed: 20261012
   unitPoolSize: 5
   assets: {fileID: 2037228923}

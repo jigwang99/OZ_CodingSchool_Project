@@ -20,6 +20,8 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private Button stageButton;
         [SerializeField] private Button startButton;
         [SerializeField] private Button backButton;
+        [SerializeField] private Button continueButton;
+        private AutoBattler.Managers.SaveManager saves;
         [SerializeField] private TextMeshProUGUI stageNameText;
         [SerializeField] private TextMeshProUGUI stageDescriptionText;
         [SerializeField] private TextMeshProUGUI statusText;
@@ -39,7 +41,9 @@ namespace AutoBattler.Presentation.Battle
         public TextMeshProUGUI StageNameText=>stageNameText;
         public TextMeshProUGUI StatusText=>statusText;
         public GameSettingsView GameSettings=>gameSettings;
+        public Button ContinueButton=>continueButton;
 #if UNITY_EDITOR
+        public void ConfigureContinue(Button button)=>continueButton=button;
         public void ConfigureSettingsRoot(CanvasGroup group)=>interactionRoot=group;
         public void Configure(GameNavigationSettings navigation,CanvasGroup title,CanvasGroup stages,
             Button open,Button quit,Button choose,Button start,Button back,TextMeshProUGUI stageName,
@@ -53,6 +57,9 @@ namespace AutoBattler.Presentation.Battle
         private void OnEnable()
         {
             if(!Application.isPlaying) return;
+            saves=AutoBattler.Managers.SaveManager.instance; saves.Refresh();
+            saves.Changed+=RefreshContinue;
+            continueButton.onClick.AddListener(Resume);
             gameSettings=AutoBattler.Managers.GameManager.instance.Settings;
             if(gameSettings!=null) gameSettings.BindContext(interactionRoot,null);
             openStagesButton.onClick.AddListener(OpenStages);
@@ -60,7 +67,27 @@ namespace AutoBattler.Presentation.Battle
             stageButton.onClick.AddListener(SelectStage);
             startButton.onClick.AddListener(StartSelected);
             backButton.onClick.AddListener(Back);
-            selection=null; SetBusy(false); Show(titlePanel,stagePanel); statusText.text="";
+            selection=null; SetBusy(false); Show(titlePanel,stagePanel); statusText.text=saves.LastError??"";
+            RefreshContinue();
+        }
+        private void RefreshContinue()
+        {
+            continueButton.gameObject.SetActive(saves.HasSavedRun && saves.SavedStageId==settings.DefaultStage.Id);
+            continueButton.interactable=!busy;
+        }
+        private void Resume()=>ResumeAsync().Forget();
+        private async UniTask ResumeAsync()
+        {
+            if(busy || !saves.HasSavedRun || GameNavigation.IsTransitioning) return;
+            SetBusy(true); statusText.text="";
+            try
+            {
+                if(!await GameNavigation.ResumeStageAsync(settings) && this!=null)
+                    statusText.text="이어하기를 시작할 수 없습니다. 새 도전을 시작해 주세요.";
+            }
+            catch(Exception exception)
+            { Debug.LogException(exception); if(this!=null) statusText.text="이어하기를 불러오지 못했습니다."; }
+            finally { if(this!=null) SetBusy(false); }
         }
         private void OpenStages()
         {
@@ -104,6 +131,7 @@ namespace AutoBattler.Presentation.Battle
             busy=value; loadingOverlay.SetActive(value);
             titlePanel.interactable=!value; stagePanel.interactable=!value;
             startButton.interactable=!value && selection!=null;
+            if(continueButton!=null) continueButton.interactable=!value;
         }
         private static void Show(CanvasGroup show,CanvasGroup hide)
         {
@@ -118,6 +146,8 @@ namespace AutoBattler.Presentation.Battle
         }
         private void OnDisable()
         {
+            if(saves!=null) saves.Changed-=RefreshContinue;
+            if(continueButton!=null) continueButton.onClick.RemoveListener(Resume);
             if(gameSettings!=null) gameSettings.UnbindContext(interactionRoot);
             if(openStagesButton!=null) openStagesButton.onClick.RemoveListener(OpenStages);
             if(quitButton!=null) quitButton.onClick.RemoveListener(Quit);

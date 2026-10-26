@@ -20,10 +20,11 @@ namespace AutoBattler.Managers
         public void Initialize(BattleFlowController phases,UnitDragController input,Action<string> message)
         { flow=phases; drag=input; publish=message; }
         public void Bind(RunState current)=>state=current;
-        public void EnterPreparation()
+        public void EnterPreparation(bool windowOpen=true)
         {
             if(state==null) return;
-            if(state.Augments.HasPending) flow.TryBeginAugmentSelection();
+            if(state.Augments.HasPending)
+            { flow.TryBeginAugmentSelection(); flow.SetAugmentWindowOpen(windowOpen); }
             drag.enabled=flow.CanPlaceUnits;
         }
         public bool ToggleWindow()

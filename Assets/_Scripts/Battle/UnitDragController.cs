@@ -21,6 +21,7 @@ namespace AutoBattler.Battle.Grid
 
         [Header("드래그 가능한 아군 기물 레이어")]
         [SerializeField] private LayerMask unitLayer;
+        [SerializeField,Min(0f)] private float dragThreshold=8f;
 
         private BoardState boardState = new BoardState();
         private PlacementService placementService;
@@ -28,6 +29,10 @@ namespace AutoBattler.Battle.Grid
         private UnitView draggedUnit;
         private Vector3 originalPosition;
         private Vector3 dragOffset;
+        private Vector2 pressPosition;
+        private UnitState dragState;
+        private bool isDragging;
+        private IUnitDropTarget dropTarget;
         private Unit inspectedUnit;
         private int inspectedSpawnVersion;
         private int inspectedInstanceId;
@@ -65,6 +70,13 @@ namespace AutoBattler.Battle.Grid
             && inspectedUnit.SpawnVersion == inspectedSpawnVersion
             && inspectedUnit.InstanceId == inspectedInstanceId ? inspectedUnit : null;
         public event System.Action PlacementChanged;
+        public event System.Action<UnitView> DragStarted;
+        public event System.Action<Vector2> DragMoved;
+        public event System.Action DragEnded;
+        public UnitView DraggedUnit=>isDragging ? draggedUnit : null;
+        public void BindDropTarget(IUnitDropTarget target)=>dropTarget=target;
+        public void UnbindDropTarget(IUnitDropTarget target)
+        { if(ReferenceEquals(dropTarget,target)) { CancelDrag(); dropTarget=null; } }
         public void ClearSelection() { CancelDrag(); SelectedUnit = null; inspectedUnit = null; }
         public void BindBoard(BoardState board, PlacementService service)
         {
@@ -155,14 +167,15 @@ namespace AutoBattler.Battle.Grid
             }
             if (draggedUnit == null)
                 return;
-            if (!draggedUnit.isActiveAndEnabled || !boardState.IsRegistered(draggedUnit.State))
+            if (!draggedUnit.isActiveAndEnabled || !ReferenceEquals(draggedUnit.State,dragState)
+                || !boardState.IsRegistered(draggedUnit.State))
             {
                 CancelDrag();
                 return;
             }
 
             UpdateDrag(mouseWorldPosition);
-            if (Mouse.current.leftButton.wasReleasedThisFrame)
+            if (draggedUnit!=null && Mouse.current.leftButton.wasReleasedThisFrame)
                 EndDrag();
         }
 
@@ -201,13 +214,23 @@ namespace AutoBattler.Battle.Grid
             SelectedUnit = draggedUnit;
             originalPosition = draggedUnit.transform.position;
             dragOffset = originalPosition - mouseWorldPosition;
+            pressPosition=Mouse.current.position.ReadValue(); dragState=draggedUnit.State;
         }
 
         private void UpdateDrag(Vector3 mouseWorldPosition)
         {
+            Vector2 screenPosition=Mouse.current.position.ReadValue();
+            if(!isDragging)
+            {
+                if((screenPosition-pressPosition).sqrMagnitude<dragThreshold*dragThreshold) return;
+                isDragging=true; DragStarted?.Invoke(draggedUnit);
+                if(draggedUnit==null) return;
+            }
             // 드래그 중에는 논리 좌표와 점유를 바꾸지 않음.
             draggedUnit.transform.position = mouseWorldPosition + dragOffset;
             ClearHighlights();
+            DragMoved?.Invoke(screenPosition);
+            if(dropTarget!=null && dropTarget.Contains(screenPosition)) return;
             if (!TryGetDestination(draggedUnit.transform.position, out UnitLocation destination)
                 || !placementService.CanMoveUnit(draggedUnit.State, destination)) return;
             if (destination.Kind == UnitLocationKind.Board)
@@ -230,6 +253,17 @@ namespace AutoBattler.Battle.Grid
 
         private void EndDrag()
         {
+            if(!isDragging) { CancelDrag(); return; }
+            var target=dropTarget;
+            if(target!=null && target.Contains(Mouse.current.position.ReadValue()))
+            {
+                var unit=draggedUnit;
+                unit.transform.position=originalPosition;
+                // 판매 콜백에서 풀로 반환되기 전에 드래그 참조와 강조 해제.
+                ClearDrag();
+                target.TryDrop(unit);
+                Physics2D.SyncTransforms(); return;
+            }
             PlacementResult result = TryGetDestination(draggedUnit.transform.position, out UnitLocation destination)
                 ? placementService.TryMoveUnit(draggedUnit.State, destination) : new PlacementResult(false);
             if (result.Success)
@@ -281,8 +315,11 @@ namespace AutoBattler.Battle.Grid
 
         private void ClearDrag()
         {
+            bool ended=isDragging;
+            isDragging=false; dragState=null;
             draggedUnit = null;
             ClearHighlights();
+            if(ended) DragEnded?.Invoke();
         }
 
         private void ClearHighlights()

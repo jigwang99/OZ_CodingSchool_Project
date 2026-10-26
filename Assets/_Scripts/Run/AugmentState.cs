@@ -9,7 +9,7 @@ namespace AutoBattler.Run
     public sealed class AugmentState
     {
         private readonly IReadOnlyDictionary<int,AugmentDefinition> definitions;
-        private readonly Random random;
+        private readonly RunRandom random;
         private readonly List<int> selected=new List<int>();
         private readonly HashSet<int> completed=new HashSet<int>();
         private int[] offers=Array.Empty<int>();
@@ -18,7 +18,30 @@ namespace AutoBattler.Run
         public bool HasPending=>offers.Length>0;
         public int OfferedRound { get; private set; }
         public AugmentState(IReadOnlyDictionary<int,AugmentDefinition> definitions,int seed)
-        { this.definitions=definitions; random=new Random(seed^0x41A96B); }
+            :this(definitions,new RunRandom(seed^0x41A96B)) { }
+        private AugmentState(IReadOnlyDictionary<int,AugmentDefinition> definitions,RunRandom random)
+        { this.definitions=definitions; this.random=random; }
+        public SavedAugments Capture()=>new SavedAugments
+        {
+            randomSeed=random.Seed, randomDrawCount=random.DrawCount, offeredRound=OfferedRound,
+            selected=selected.ToArray(), completedRounds=completed.OrderBy(round=>round).ToArray(), offers=(int[])offers.Clone()
+        };
+        public static AugmentState Restore(IReadOnlyDictionary<int,AugmentDefinition> definitions,SavedAugments saved)
+        {
+            if(saved==null || saved.selected==null || saved.completedRounds==null || saved.offers==null
+                || saved.selected.Distinct().Count()!=saved.selected.Length
+                || saved.completedRounds.Distinct().Count()!=saved.completedRounds.Length
+                || saved.selected.Length!=saved.completedRounds.Length
+                || saved.selected.Any(id=>!definitions.ContainsKey(id))
+                || saved.offers.Length!=0 && saved.offers.Length!=3
+                || saved.offers.Distinct().Count()!=saved.offers.Length
+                || saved.offers.Any(id=>!definitions.ContainsKey(id) || saved.selected.Contains(id)))
+                throw new ArgumentException("저장된 증강 정보가 올바르지 않습니다.");
+            var state=new AugmentState(definitions,new RunRandom(saved.randomSeed,saved.randomDrawCount));
+            state.selected.AddRange(saved.selected); state.completed.UnionWith(saved.completedRounds);
+            state.offers=(int[])saved.offers.Clone(); state.OfferedRound=saved.offeredRound;
+            return state;
+        }
         public void EnterRound(int round,bool enabled)
         {
             if(!enabled || completed.Contains(round) || HasPending || definitions.Count==0) return;

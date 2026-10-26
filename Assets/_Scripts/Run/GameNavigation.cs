@@ -10,25 +10,34 @@ namespace AutoBattler.Run
     {
         public static bool IsTransitioning { get; private set; }
         public static StageDefinition SelectedStage { get; private set; }
+        public static bool ResumeRequested { get; private set; }
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void Reset() { IsTransitioning=false; SelectedStage=null; }
+        private static void Reset() { IsTransitioning=false; SelectedStage=null; ResumeRequested=false; }
         public static UniTask<bool> StartStageAsync(GameNavigationSettings settings,StageDefinition stage,RunController run=null)
         {
             if(settings==null || !settings.Contains(stage)) return UniTask.FromResult(false);
-            return LoadAsync(stage.SceneBuildIndex,stage,run);
+            return LoadAsync(stage.SceneBuildIndex,stage,run,false);
+        }
+        public static UniTask<bool> ResumeStageAsync(GameNavigationSettings settings)
+        {
+            var saves=AutoBattler.Managers.SaveManager.instance;
+            if(settings==null || !saves.HasSavedRun || saves.SavedStageId!=settings.DefaultStage.Id) return UniTask.FromResult(false);
+            return LoadAsync(settings.DefaultStage.SceneBuildIndex,settings.DefaultStage,null,true);
         }
         public static UniTask<bool> RetryAsync(GameNavigationSettings settings,RunController run)
             =>StartStageAsync(settings,SelectedStage!=null ? SelectedStage : settings!=null ? settings.DefaultStage : null,run);
         public static UniTask<bool> ReturnToTitleAsync(GameNavigationSettings settings,RunController run)
-            =>settings==null ? UniTask.FromResult(false) : LoadAsync(settings.TitleSceneBuildIndex,null,run);
-        private static async UniTask<bool> LoadAsync(int buildIndex,StageDefinition stage,RunController run)
+            =>settings==null ? UniTask.FromResult(false) : LoadAsync(settings.TitleSceneBuildIndex,null,run,false);
+        private static async UniTask<bool> LoadAsync(int buildIndex,StageDefinition stage,RunController run,bool resume)
         {
             if(IsTransitioning || buildIndex<0 || !Application.CanStreamedLevelBeLoaded(buildIndex)) return false;
             IsTransitioning=true;
+            bool previousResume=ResumeRequested;
             try
             {
                 Time.timeScale=1f;
                 if(run!=null) await run.ShutdownAsync();
+                ResumeRequested=resume;
                 var operation=SceneManager.LoadSceneAsync(buildIndex,LoadSceneMode.Single);
                 if(operation==null) throw new InvalidOperationException("장면 로드 요청 실패.");
                 SelectedStage=stage;
@@ -36,6 +45,7 @@ namespace AutoBattler.Run
                 await operation.ToUniTask();
                 return true;
             }
+            catch { ResumeRequested=previousResume; throw; }
             finally { IsTransitioning=false; }
         }
     }

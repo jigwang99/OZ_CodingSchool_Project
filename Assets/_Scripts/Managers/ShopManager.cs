@@ -23,7 +23,13 @@ namespace AutoBattler.Managers
         public bool RefreshShop()=>Execute(()=>state.TryRefresh());
         public bool BuyXp()=>Execute(()=>state.TryBuyXp());
         public bool SellSelected()
-        { int id=drag.SelectedUnit?.State?.InstanceId ?? 0; return Execute(()=>state.TrySell(id)); }
+        { int id=drag.SelectedUnit?.State?.InstanceId ?? 0; return Sell(id); }
+        public bool Sell(int instanceId)
+        {
+            bool success=Execute(()=>state.TrySell(instanceId));
+            if(success) drag.ClearSelection();
+            return success;
+        }
         private bool Execute(Func<bool> command)
         {
             if(!CanTrade) return false;

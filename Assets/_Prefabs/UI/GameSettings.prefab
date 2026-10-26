@@ -1133,6 +1133,7 @@ GameObject:
   - component: {fileID: 6402174408616579884}
   - component: {fileID: 7312866062706173347}
   - component: {fileID: 5001454176297221857}
+  - component: {fileID: 1478223611842395912}
   m_Layer: 5
   m_Name: GameSettings
   m_TagString: Untagged
@@ -1256,6 +1257,19 @@ MonoBehaviour:
   isDontDestroy: 0
   defaultFrameRate: 60
   settings: {fileID: 7312866062706173347}
+--- !u!114 &1478223611842395912
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4657505913818615720}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1022f0b418a61447af45b592d8fe682, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Managers.SaveManager
+  isDontDestroy: 0
 --- !u!1 &4690151397890691660
 GameObject:
   m_ObjectHideFlags: 0

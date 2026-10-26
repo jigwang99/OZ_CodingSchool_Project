@@ -22,6 +22,8 @@ namespace AutoBattler.Battle.Flow
 
         /// <summary>결과 처리가 끝난 뒤 다음 준비 단계로 전환.</summary>
         public bool TryBeginPreparation() => TryChangePhase(BattlePhase.Result, BattlePhase.Preparation);
+        /// <summary>정산을 다시 실행하지 않고 저장된 결과 화면 복원.</summary>
+        public bool TryRestoreResult()=>TryChangePhase(BattlePhase.Preparation,BattlePhase.Result);
         public bool TryBeginAugmentSelection()=>TryChangePhase(BattlePhase.Preparation,BattlePhase.AugmentSelection);
         public bool TryFinishAugmentSelection()=>TryChangePhase(BattlePhase.AugmentSelection,BattlePhase.Preparation);
         public bool SetAugmentWindowOpen(bool open)
