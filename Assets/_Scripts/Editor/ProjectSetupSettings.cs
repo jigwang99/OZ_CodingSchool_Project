@@ -34,6 +34,9 @@ namespace AutoBattler.EditorTools
         [SerializeField] private AssetCatalog catalog;
         [SerializeField] private AutoBattler.Presentation.Units.BattleVisualSettings battleVisuals;
         [SerializeField] private AddressableAssetGroup battleVisualGroup;
+        [SerializeField] private AddressableAssetGroup soundGroup;
+        public AddressableAssetGroup SoundGroup => soundGroup;
+        public void SetSoundGroup(AddressableAssetGroup group) => soundGroup = group;
         public AutoBattler.Presentation.Units.BattleVisualSettings BattleVisuals=>battleVisuals;
         public AddressableAssetGroup BattleVisualGroup=>battleVisualGroup;
         public void SetBattleVisuals(AutoBattler.Presentation.Units.BattleVisualSettings settings,AddressableAssetGroup group)

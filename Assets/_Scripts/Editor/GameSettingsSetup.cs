@@ -58,7 +58,8 @@ namespace AutoBattler.EditorTools
             var setup=ProjectSetupSettings.Current;
             if(setup.GameSettings!=null)
             {
-                if(setup.GameSettings.FrameRateDropdown!=null) return setup.GameSettings.gameObject;
+                if(setup.GameSettings.FrameRateDropdown!=null)
+                { SoundSetup.EnsureSettings(); return setup.GameSettings.gameObject; }
                 var contents=PrefabUtility.LoadPrefabContents(setup.GameSettingsPath);
                 try
                 {
@@ -72,7 +73,9 @@ namespace AutoBattler.EditorTools
                         .Where(label=>label.transform.parent==panel && label.name=="CurrentFrameRate").ToArray())
                         Object.DestroyImmediate(label.gameObject);
                     view.Configure(view.Modal,view.OpenButton,view.CloseButton,view.QuitButton,CreateFrameRateDropdown(panel));
-                    return PrefabUtility.SaveAsPrefabAsset(contents,setup.GameSettingsPath);
+                    PrefabUtility.SaveAsPrefabAsset(contents,setup.GameSettingsPath);
+                    SoundSetup.EnsureSettings();
+                    return AssetDatabase.LoadAssetAtPath<GameObject>(setup.GameSettingsPath);
                 }
                 finally { PrefabUtility.UnloadPrefabContents(contents); }
             }
@@ -109,7 +112,8 @@ namespace AutoBattler.EditorTools
                 root.AddComponent<GameManager>().ConfigureSettings(view);
                 var prefab=PrefabUtility.SaveAsPrefabAsset(root,setup.GameSettingsPath);
                 setup.SetGameSettings(prefab.GetComponent<GameSettingsView>()); EditorUtility.SetDirty(setup);
-                return prefab;
+                SoundSetup.EnsureSettings();
+                return AssetDatabase.LoadAssetAtPath<GameObject>(setup.GameSettingsPath);
             }
             finally { Object.DestroyImmediate(root); }
         }

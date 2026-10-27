@@ -1,0 +1,195 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 288457cd25e540f4b9a06b170709b6b8, type: 3}
+  m_Name: SoundCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Audio.SoundCatalog
+  effects:
+  - id: 0
+    clip:
+      m_AssetGUID: 35cf7766e9e2aa542811e896fde57989
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+    volume: 0.15
+    interval: 0.14
+    priority: 40
+  - id: 1
+    clip:
+      m_AssetGUID: 1ed8fb76fc64e4e46847348138782234
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+    volume: 0.5
+    interval: 0.15
+    priority: 35
+  - id: 2
+    clip:
+      m_AssetGUID: abdbbfd33a46f4549987385f85c536b5
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+    volume: 0.55
+    interval: 0.06
+    priority: 45
+  - id: 3
+    clip:
+      m_AssetGUID: ba39bf8baf6d13046889b2d64822381a
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+    volume: 0.45
+    interval: 0.1
+    priority: 50
+  - id: 4
+    clip:
+      m_AssetGUID: 490bfbc72255342408984f60044487de
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+    volume: 0.4
+    interval: 0.08
+    priority: 60
+  - id: 5
+    clip:
+      m_AssetGUID: b0e62ed71b1538648b719821f4f63b4c
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+    volume: 0.55
+    interval: 0.2
+    priority: 30
+  - id: 6
+    clip:
+      m_AssetGUID: 21c4a490b24ba2045bc815f7626a40ef
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+    volume: 0.55
+    interval: 0.3
+    priority: 25
+  - id: 7
+    clip:
+      m_AssetGUID: d654174ef194bd7479bf4b8d8f753318
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+    volume: 0.6
+    interval: 0.3
+    priority: 20
+  - id: 8
+    clip:
+      m_AssetGUID: c458b6714dab015479d507b21fd2cead
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+    volume: 0.5
+    interval: 0.3
+    priority: 20
+  - id: 9
+    clip:
+      m_AssetGUID: 7c47b20bb9874304a809dc5580d403ba
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+    volume: 0.28
+    interval: 0.07
+    priority: 200
+  - id: 10
+    clip:
+      m_AssetGUID: 2b21ef916f6943c439b71a7c74568878
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+    volume: 0.25
+    interval: 0.09
+    priority: 200
+  - id: 11
+    clip:
+      m_AssetGUID: 566d2ea6240b489479a6e9fd608c2621
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+    volume: 0.25
+    interval: 0.14
+    priority: 180
+  - id: 12
+    clip:
+      m_AssetGUID: cfce0cea076109f478783201b2a9f57f
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+    volume: 0.45
+    interval: 0.16
+    priority: 140
+  - id: 13
+    clip:
+      m_AssetGUID: b7b5a6156961bac44a67504d42ce6fcf
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+    volume: 0.3
+    interval: 0.12
+    priority: 170
+  - id: 14
+    clip:
+      m_AssetGUID: 88b1cbe3caa3fee4b8b103b5edd7aba9
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+    volume: 0.4
+    interval: 0.12
+    priority: 150
+  - id: 15
+    clip:
+      m_AssetGUID: 323e15cfe809e114ab92c9f4b25e8bc2
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+    volume: 0.35
+    interval: 0.12
+    priority: 150
+  - id: 16
+    clip:
+      m_AssetGUID: a652877b012108e41871f867ada9f176
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+    volume: 0.4
+    interval: 0.18
+    priority: 130
+  - id: 17
+    clip:
+      m_AssetGUID: b7f8695cf65a4f24eb37544298821146
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+    volume: 0.4
+    interval: 0.16
+    priority: 140

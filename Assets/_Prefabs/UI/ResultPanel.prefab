@@ -561,6 +561,7 @@ GameObject:
   - component: {fileID: 8153229613583365906}
   - component: {fileID: 3804007401802904690}
   - component: {fileID: 1312155228756754185}
+  - component: {fileID: 3890549906633155483}
   m_Layer: 5
   m_Name: TitleButton
   m_TagString: Untagged
@@ -669,7 +670,32 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 3804007401802904690}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 3890549906633155483}
+        m_TargetAssemblyTypeName: AutoBattler.Presentation.Battle.ButtonSound, Assembly-CSharp
+        m_MethodName: PlayClick
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName:
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument:
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &3890549906633155483
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1956608250663875616}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01b0c00cddc65004994d7b67f308b549, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Presentation.Battle.ButtonSound
+  button: {fileID: 1312155228756754185}
 --- !u!1 &2051682135092983121
 GameObject:
   m_ObjectHideFlags: 0
@@ -819,6 +845,7 @@ GameObject:
   - component: {fileID: 5069140419689141377}
   - component: {fileID: 3318556241726808724}
   - component: {fileID: 5493306618771140889}
+  - component: {fileID: 8012293176394507711}
   m_Layer: 5
   m_Name: NextRoundButton
   m_TagString: Untagged
@@ -927,7 +954,32 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 3318556241726808724}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 8012293176394507711}
+        m_TargetAssemblyTypeName: AutoBattler.Presentation.Battle.ButtonSound, Assembly-CSharp
+        m_MethodName: PlayClick
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName:
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument:
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &8012293176394507711
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5328713796617597682}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01b0c00cddc65004994d7b67f308b549, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Presentation.Battle.ButtonSound
+  button: {fileID: 5493306618771140889}
 --- !u!1 &5599664453920427146
 GameObject:
   m_ObjectHideFlags: 0
@@ -1055,6 +1107,7 @@ GameObject:
   - component: {fileID: 8106985456680158629}
   - component: {fileID: 5055563318716553467}
   - component: {fileID: 8756667962344312165}
+  - component: {fileID: 8892416867159429738}
   m_Layer: 5
   m_Name: RetryButton
   m_TagString: Untagged
@@ -1163,7 +1216,32 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 5055563318716553467}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 8892416867159429738}
+        m_TargetAssemblyTypeName: AutoBattler.Presentation.Battle.ButtonSound, Assembly-CSharp
+        m_MethodName: PlayClick
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName:
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument:
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &8892416867159429738
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6769773519178468311}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01b0c00cddc65004994d7b67f308b549, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Presentation.Battle.ButtonSound
+  button: {fileID: 8756667962344312165}
 --- !u!1 &7960930423853296318
 GameObject:
   m_ObjectHideFlags: 0

@@ -8,12 +8,13 @@ using UnityEngine.UI;
 
 namespace AutoBattler.Presentation.Battle
 {
-    /// <summary>프레임 제한·게임 종료 설정과 배경 입력 차단.</summary>
+    /// <summary>프레임 제한·효과음·게임 종료 설정과 배경 입력 차단.</summary>
     [DisallowMultipleComponent]
     public sealed class GameSettingsView : MonoBehaviour
     {
         public const string Heading = "설정";
         public const string FrameRateHeading = "프레임 제한";
+        public const string EffectVolumeHeading = "효과음";
         public const string QuitLabel = "게임 종료";
         public const string CloseLabel = "닫기";
 
@@ -23,6 +24,9 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private Button closeButton;
         [SerializeField] private Button quitButton;
         [SerializeField] private TMP_Dropdown frameRateDropdown;
+        [SerializeField] private Slider effectVolumeSlider;
+        [SerializeField] private TextMeshProUGUI effectVolumeLabel;
+        private SoundManager sound;
         private static readonly GameFrameRate[] FrameRates =
             { GameFrameRate.Fps30, GameFrameRate.Fps60, GameFrameRate.Fps144 };
         private RunController run;
@@ -39,8 +43,12 @@ namespace AutoBattler.Presentation.Battle
         public Button CloseButton => closeButton;
         public Button QuitButton => quitButton;
         public TMP_Dropdown FrameRateDropdown => frameRateDropdown;
+        public Slider EffectVolumeSlider => effectVolumeSlider;
+        public TextMeshProUGUI EffectVolumeLabel => effectVolumeLabel;
 
 #if UNITY_EDITOR
+        public void ConfigureSound(Slider slider, TextMeshProUGUI label)
+        { effectVolumeSlider=slider; effectVolumeLabel=label; }
         public void Configure(CanvasGroup overlay, Button open, Button close, Button quit, TMP_Dropdown dropdown)
         {
             modal=overlay; openButton=open; closeButton=close; quitButton=quit;
@@ -65,6 +73,10 @@ namespace AutoBattler.Presentation.Battle
             // 씬 재진입으로 생긴 중복 프리팹은 기존 설정 UI에 연결하지 않음.
             if(manager.Settings!=this) { gameObject.SetActive(false); return; }
             manager.FrameRateChanged+=RefreshFrameRate;
+            sound=SoundManager.instance;
+            sound.VolumeChanged+=RefreshEffectVolume;
+            effectVolumeSlider.onValueChanged.AddListener(SelectEffectVolume);
+            RefreshEffectVolume(sound.EffectVolume);
             openButton.onClick.AddListener(Open);
             closeButton.onClick.AddListener(Close);
             quitButton.onClick.AddListener(Quit);
@@ -119,6 +131,13 @@ namespace AutoBattler.Presentation.Battle
             previousSelection=null;
         }
 
+        private void SelectEffectVolume(float value) => sound.SetEffectVolume(value);
+        private void RefreshEffectVolume(float value)
+        {
+            effectVolumeSlider.SetValueWithoutNotify(value);
+            effectVolumeLabel.text=$"{Mathf.RoundToInt(value*100f)}%";
+        }
+
         private void SelectFrameRate(int index)
         {
             if(index<0 || index>=FrameRates.Length) return;
@@ -136,6 +155,8 @@ namespace AutoBattler.Presentation.Battle
         {
             Close();
             if (manager!=null) manager.FrameRateChanged-=RefreshFrameRate;
+            if (sound!=null) sound.VolumeChanged-=RefreshEffectVolume;
+            if (effectVolumeSlider!=null) effectVolumeSlider.onValueChanged.RemoveListener(SelectEffectVolume);
             if (openButton!=null) openButton.onClick.RemoveListener(Open);
             if (closeButton!=null) closeButton.onClick.RemoveListener(Close);
             if (quitButton!=null) quitButton.onClick.RemoveListener(Quit);

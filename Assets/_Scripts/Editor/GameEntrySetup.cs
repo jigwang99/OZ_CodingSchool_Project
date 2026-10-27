@@ -77,6 +77,7 @@ namespace AutoBattler.EditorTools
             GameSettingsSetup.Connect();
             SaveSetup.Connect();
             SellDragSetup.Connect();
+            SoundSetup.Connect();
         }
         public static void ConfigureBuildScenes()
         {

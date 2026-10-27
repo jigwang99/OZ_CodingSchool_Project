@@ -1,4 +1,5 @@
 using System;
+using AutoBattler.Audio;
 using System.Threading;
 using AutoBattler.Assets;
 using AutoBattler.Battle.Flow;
@@ -116,7 +117,7 @@ namespace AutoBattler.Run
         }
         private void Report(string message) { Message=saveFailed?saves.LastError:message; DisplayChanged?.Invoke(); }
         private void OnPlacementChanged()
-        { if(IsReady) { synergies.Refresh(); TrySaveProgress(); } DisplayChanged?.Invoke(); }
+        { if(IsReady) { synergies.Refresh(); TrySaveProgress(); SoundManager.PlayEffect(SoundId.Place); } DisplayChanged?.Invoke(); }
         private void OnStateChanged()
         {
             drag.SetPlayerLevel(State.Level);

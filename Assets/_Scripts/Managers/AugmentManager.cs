@@ -1,4 +1,5 @@
 using System;
+using AutoBattler.Audio;
 using System.Collections.Generic;
 using AutoBattler.Battle.Flow;
 using AutoBattler.Battle.Grid;
@@ -40,7 +41,7 @@ namespace AutoBattler.Managers
         {
             if(state==null || flow.CurrentPhase!=BattlePhase.AugmentSelection || !flow.IsAugmentWindowOpen) return false;
             if(!state.TrySelectAugment(id)) return false;
-            flow.TryFinishAugmentSelection(); drag.enabled=true; publish("준비"); return true;
+            flow.TryFinishAugmentSelection(); drag.enabled=true; publish("준비"); SoundManager.PlayEffect(SoundId.Augment); return true;
         }
         public void ApplyBattleStart(IEnumerable<Unit> units)
         { if(state!=null) AugmentApplicator.ApplyBattleStart(units,state.Augments.Selected); }

@@ -15,6 +15,7 @@ MonoBehaviour:
   catalog: {fileID: 11400000, guid: b97c5fc1f1e22944d91361f6888439f2, type: 2}
   battleVisuals: {fileID: 11400000, guid: f6d543aa2f7e115429c4fa6849845736, type: 2}
   battleVisualGroup: {fileID: 11400000, guid: f3fcee2c36de50b49bfe79ab34c7505a, type: 2}
+  soundGroup: {fileID: 11400000, guid: f5946dd6c8561c74f893da99505924a3, type: 2}
   snapshot: {fileID: 4900000, guid: ac6202fb8e4ec1c49b788d9a47226591, type: 3}
   battleScene: {fileID: 102900000, guid: b60de5195cf03044781824f20feae9eb, type: 3}
   titleScene: {fileID: 102900000, guid: 8436f69d462a10e41b7291c4393583c2, type: 3}
