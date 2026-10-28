@@ -4,33 +4,18 @@ using UnityEngine;
 
 namespace AutoBattler.Presentation.Battle
 {
-    /// <summary>PIXEM 샘플 외형에 종류·팀을 표시하는 임시 표현 어댑터.</summary>
+    /// <summary>프리팹에 배치한 이름표의 유닛 이름·팀 색상 표시.</summary>
     public sealed class UnitIdentityView : MonoBehaviour
     {
-        [SerializeField] private TMP_FontAsset koreanFont;
-        private TextMeshProUGUI label;
-#if UNITY_EDITOR
-        public void ConfigureFont(TMP_FontAsset font) => koreanFont = font;
-#endif
+        [SerializeField] private TextMeshProUGUI label;
+        [SerializeField] private UnitHealth health;
+        public TextMeshProUGUI Label=>label;
+        public UnitHealth Health=>health;
         public void Apply(Unit unit)
         {
-            if(label==null)
-            {
-                var canvasObj=new GameObject("IdentityCanvas",typeof(RectTransform),typeof(Canvas));
-                canvasObj.transform.SetParent(transform,false); canvasObj.transform.localPosition=new Vector3(0f,-.08f,0f);
-                canvasObj.transform.localScale=Vector3.one*.01f;
-                var canvas=canvasObj.GetComponent<Canvas>(); canvas.renderMode=RenderMode.WorldSpace; canvas.sortingOrder=60;
-                var obj=new GameObject("Identity",typeof(RectTransform),typeof(TextMeshProUGUI)); obj.transform.SetParent(canvasObj.transform,false);
-                label=obj.GetComponent<TextMeshProUGUI>(); label.fontSize=16f; label.alignment=TextAlignmentOptions.Center;
-                if(koreanFont!=null) label.font=koreanFont;
-                label.rectTransform.sizeDelta=new Vector2(250f,24f); label.raycastTarget=false;
-            }
             label.text=BattleText.UnitName(unit.Definition);
             label.color=unit.Team==UnitTeam.Ally?new Color(.6f,1f,1f):new Color(1f,.65f,.65f);
         }
-        private void LateUpdate()
-        {
-            if(label!=null) label.enabled=GetComponent<UnitHealth>().IsAlive;
-        }
+        private void LateUpdate()=>label.enabled=health.IsAlive;
     }
 }

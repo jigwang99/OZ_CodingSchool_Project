@@ -56,7 +56,7 @@ namespace AutoBattler.EditorTools.Sheets
         }
         private static List<List<string>> Parse(string text)
         {
-            var rows=new List<List<string>>(); var row=new List<string>(); var field=new StringBuilder();
+            List<List<string>> rows=new List<List<string>>(); List<string> row=new List<string>(); StringBuilder field=new StringBuilder();
             bool quoted=false,closed=false;
             for(int i=0;i<text.Length;i++)
             {

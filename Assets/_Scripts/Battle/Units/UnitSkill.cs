@@ -57,7 +57,7 @@ namespace AutoBattler.Battle.Units
             boundHealth=null; boundEffects=null;
         }
         public void Initialize(DataRepository repository,int skillId)
-        { ResetForRound(); data=repository; Definition=repository.Skills.TryGetValue(skillId,out var skill)?skill:null; BindUnit(unit); }
+        { ResetForRound(); data=repository; Definition=repository.Skills.TryGetValue(skillId,out SkillDefinition skill)?skill:null; BindUnit(unit); }
         private void BindFlow(BattleFlowController flow)
         {
             if(boundFlow!=null) boundFlow.PhaseChanged-=OnPhaseChanged;
@@ -68,7 +68,7 @@ namespace AutoBattler.Battle.Units
         {
             context=null;
             if(!CanCast) return false;
-            var target=SkillTargetSelector.Select(unit,Definition,participants,preferred);
+            Unit target=SkillTargetSelector.Select(unit,Definition,participants,preferred);
             if(target==null) return false;
             context=new SkillCastContext(unit,Definition,new SkillTarget(target),participants); return true;
         }
@@ -77,7 +77,7 @@ namespace AutoBattler.Battle.Units
             if(!CanCast || context==null || context.Caster!=unit || context.Definition!=Definition || !context.Target.IsValid
                 || !SkillTargetSelector.IsEligible(unit,Definition,context.Target.Unit)
                 || token.IsCancellationRequested || !unit.Mana.TrySpend(Definition.ManaCost,out int spent)) return;
-            var op=new CastOperation {Spent=spent,Cancellation=CancellationTokenSource.CreateLinkedTokenSource(token,this.GetCancellationTokenOnDestroy())};
+            CastOperation op=new CastOperation {Spent=spent,Cancellation=CancellationTokenSource.CreateLinkedTokenSource(token,this.GetCancellationTokenOnDestroy())};
             current=op;
             try
             {
@@ -87,7 +87,7 @@ namespace AutoBattler.Battle.Units
                 if(!unit.IsInCombat || !unit.Health.IsAlive) return;
                 if(!context.Target.IsValid || !SkillTargetSelector.IsEligible(unit,Definition,context.Target.Unit))
                 {
-                    var replacement=SkillTargetSelector.Select(unit,Definition,context.Participants);
+                    Unit replacement=SkillTargetSelector.Select(unit,Definition,context.Participants);
                     if(replacement==null) { op.Reason=SkillCancelReason.NoTarget; return; }
                     context.Target=new SkillTarget(replacement);
                 }

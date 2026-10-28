@@ -11,9 +11,5 @@ namespace AutoBattler.Run
         public int TitleSceneBuildIndex=>titleSceneBuildIndex;
         public StageDefinition DefaultStage=>defaultStage;
         public bool Contains(StageDefinition stage)=>stage!=null && stage==defaultStage;
-#if UNITY_EDITOR
-        public void Configure(int titleIndex,StageDefinition stage)
-        { titleSceneBuildIndex=titleIndex; defaultStage=stage; }
-#endif
     }
 }

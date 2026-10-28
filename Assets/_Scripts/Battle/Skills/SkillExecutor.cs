@@ -16,24 +16,24 @@ namespace AutoBattler.Battle.Skills
     {
         public static async UniTask ExecuteAsync(SkillCastContext context,DataRepository data,CancellationToken token)
         {
-            var skill=context.Definition; var caster=context.Caster;
-            var center=context.Center;
+            SkillDefinition skill=context.Definition; Unit caster=context.Caster;
+            Grid.HexCoord center=context.Center;
             // 발동 시 수치 고정. 투사체 비행 중 시전자 상태 변경과 풀 재사용의 영향 방지.
             double fixedScale=caster.Star==2?data.Rule(EconomyRule.StarMultiplier):1d;
             double raw=skill.BaseDamage*(float)fixedScale+caster.Stats.AttackDamage*skill.AttackRatio;
             float damage=(float)Math.Max(0,Math.Min(float.MaxValue,raw));
             float power=caster.StatModifiers.SkillPower;
             float potency=1f;
-            data.Effects.TryGetValue(skill.EffectId,out var effect);
+            data.Effects.TryGetValue(skill.EffectId,out EffectDefinition effect);
             if(effect!=null && (effect.Kind==EffectKind.Heal || effect.Kind==EffectKind.Shield)) potency=power*(float)fixedScale;
-            var source=new ModifierSource(ModifierSourceKind.Skill,skill.Id,caster.InstanceId);
-            var damageContext=DamageContext.Skill(caster,skill.Id);
-            var team=caster.Team;
+            ModifierSource source=new ModifierSource(ModifierSourceKind.Skill,skill.Id,caster.InstanceId);
+            DamageContext damageContext=DamageContext.Skill(caster,skill.Id);
+            UnitTeam team=caster.Team;
             if(skill.Delivery==SkillDelivery.Projectile)
             {
                 // 생존 대상 위치 추적. 사망·반환 후에는 마지막 위치를 유지하며 비행 시간 진행.
                 float traveled=0f;
-                var from=caster.CurrentCell.Value;
+                Grid.HexCoord from=caster.CurrentCell.Value;
                 do
                 {
                     token.ThrowIfCancellationRequested();
@@ -50,7 +50,7 @@ namespace AutoBattler.Battle.Skills
                     .OrderBy(unit=>unit.InstanceId).Select(unit=>new SkillTarget(unit)).ToArray();
             else targets=new[]{context.Target};
             caster.Skill.NotifyEffectApplied(context);
-            foreach(var target in targets)
+            foreach(SkillTarget target in targets)
             {
                 if(!target.IsValid) continue;
                 if(damage>0) target.Unit.Health.TakeDamage(damageContext,damage,power,skill.ArmorIgnore);

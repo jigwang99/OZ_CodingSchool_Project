@@ -45,11 +45,11 @@ namespace AutoBattler.Managers
             try
             {
                 if(stageId<=0 || state==null || string.IsNullOrEmpty(state.Data.Version)) throw new ArgumentException("저장할 도전 정보 없음.");
-                var saved=state.Capture(stageId,augmentWindowOpen);
+                RunSaveData saved=state.Capture(stageId,augmentWindowOpen);
                 string json=JsonUtility.ToJson(saved,true);
                 Directory.CreateDirectory(directory);
                 // 같은 폴더에 완성된 파일을 쓴 뒤 교체하여 기존 정상 파일 보호.
-                using(var stream=new FileStream(temporary,FileMode.Create,FileAccess.Write,FileShare.None))
+                using(FileStream stream=new FileStream(temporary,FileMode.Create,FileAccess.Write,FileShare.None))
                 {
                     byte[] bytes=new UTF8Encoding(false).GetBytes(json);
                     stream.Write(bytes,0,bytes.Length); stream.Flush(true);
@@ -71,7 +71,7 @@ namespace AutoBattler.Managers
             state=null; augmentWindowOpen=true;
             try
             {
-                var saved=ReadFile(); ReadHeader(saved);
+                RunSaveData saved=ReadFile(); ReadHeader(saved);
                 if(!HasSavedRun || saved.stageId!=stageId) throw new ArgumentException("이어할 수 없는 스테이지.");
                 state=RunState.Restore(data,saved); augmentWindowOpen=saved.augmentWindowOpen;
                 LastError=null; return true;
@@ -86,7 +86,7 @@ namespace AutoBattler.Managers
 
         private RunSaveData ReadFile()
         {
-            var file=new FileInfo(SavePath);
+            FileInfo file=new FileInfo(SavePath);
             if(!file.Exists || file.Length==0 || file.Length>4*1024*1024) throw new IOException("저장 파일 크기 오류.");
             return JsonUtility.FromJson<RunSaveData>(File.ReadAllText(SavePath,Encoding.UTF8));
         }

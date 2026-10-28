@@ -23,7 +23,7 @@ namespace AutoBattler.Battle.Skills
         {
             if(skill.TargetRule==SkillTargetRule.Self) return IsEligible(caster,skill,caster)?caster:null;
             if(skill.TargetRule==SkillTargetRule.CurrentEnemy && IsEligible(caster,skill,preferred)) return preferred;
-            var candidates=participants.Where(target=>IsEligible(caster,skill,target));
+            IEnumerable<Unit> candidates=participants.Where(target=>IsEligible(caster,skill,target));
             if(skill.TargetRule==SkillTargetRule.LowestHealthAlly)
                 return candidates.OrderBy(target=>(double)target.Health.CurrentHp/target.Health.MaxHp).ThenBy(target=>target.InstanceId).FirstOrDefault();
             return candidates.OrderBy(target=>caster.CurrentCell.Value.DistanceTo(target.CurrentCell.Value))

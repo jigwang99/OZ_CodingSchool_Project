@@ -42,18 +42,6 @@ namespace AutoBattler.Presentation.Battle
         public TextMeshProUGUI StatusText=>statusText;
         public GameSettingsView GameSettings=>gameSettings;
         public Button ContinueButton=>continueButton;
-#if UNITY_EDITOR
-        public void ConfigureContinue(Button button)=>continueButton=button;
-        public void ConfigureSettingsRoot(CanvasGroup group)=>interactionRoot=group;
-        public void Configure(GameNavigationSettings navigation,CanvasGroup title,CanvasGroup stages,
-            Button open,Button quit,Button choose,Button start,Button back,TextMeshProUGUI stageName,
-            TextMeshProUGUI description,TextMeshProUGUI status,GameObject loading)
-        {
-            settings=navigation; titlePanel=title; stagePanel=stages; openStagesButton=open; quitButton=quit;
-            stageButton=choose; startButton=start; backButton=back; stageNameText=stageName;
-            stageDescriptionText=description; statusText=status; loadingOverlay=loading;
-        }
-#endif
         private void OnEnable()
         {
             if(!Application.isPlaying) return;

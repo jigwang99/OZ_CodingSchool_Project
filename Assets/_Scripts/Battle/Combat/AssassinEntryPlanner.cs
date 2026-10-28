@@ -22,22 +22,22 @@ namespace AutoBattler.Battle.Combat
 
         public static bool TryChooseLanding(Unit assassin,Unit target,CombatBoard board,out HexCoord destination)
         {
-            var grid=assassin.GridLayout;
-            var from=assassin.CurrentCell.Value;
-            var targetCell=target.CurrentCell.Value;
-            var rear=EnemyRearDirection(assassin.Team);
-            var candidates=new List<HexCoord>();
+            HexGridLayout grid=assassin.GridLayout;
+            HexCoord from=assassin.CurrentCell.Value;
+            HexCoord targetCell=target.CurrentCell.Value;
+            Vector3 rear=EnemyRearDirection(assassin.Team);
+            List<HexCoord> candidates=new List<HexCoord>();
             for(int col=0;col<HexGridLayout.Columns;col++)
                 for(int row=0;row<HexGridLayout.Rows;row++)
                 {
-                    var cell=HexCoord.FromOffset(col,row);
+                    HexCoord cell=HexCoord.FromOffset(col,row);
                     // 자기 칸은 이동할 빈칸이 없을 때의 최종 대기 위치로 유지.
                     if(cell!=from && board.IsFree(cell,assassin.InstanceId)) candidates.Add(cell);
                 }
-            var ordered=candidates.OrderBy(cell=>cell.DistanceTo(targetCell))
+            IOrderedEnumerable<HexCoord> ordered=candidates.OrderBy(cell=>cell.DistanceTo(targetCell))
                 .ThenByDescending(cell=>Vector3.Dot(grid.CellToWorld(cell)-grid.CellToWorld(targetCell),rear))
                 .ThenBy(cell=>cell.Q).ThenBy(cell=>OffsetRow(cell));
-            foreach(var cell in ordered) { destination=cell; return true; }
+            foreach(HexCoord cell in ordered) { destination=cell; return true; }
             destination=from; return false;
         }
 

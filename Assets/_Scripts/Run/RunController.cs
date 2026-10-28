@@ -7,6 +7,7 @@ using AutoBattler.Battle.Grid;
 using AutoBattler.Battle.Traits;
 using AutoBattler.Managers;
 using AutoBattler.Presentation.Units;
+using AutoBattler.Presentation.Battle;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
@@ -22,6 +23,7 @@ namespace AutoBattler.Run
         [SerializeField] private HexGridLayout grid;
         [SerializeField] private BenchLayout bench;
         [SerializeField] private StageDefinition stage;
+        [SerializeField] private BattleBackgroundView backgroundView;
         [SerializeField] private int seed=20261012;
         [SerializeField,Min(0)] private int unitPoolSize=1;
         [Header("기능별 매니저")]
@@ -31,6 +33,8 @@ namespace AutoBattler.Run
         [SerializeField] private ShopManager shop;
         [SerializeField] private AugmentManager augments;
         [SerializeField] private SynergyManager synergies;
+        [SerializeField] private EquipmentManager equipment;
+        public EquipmentManager Equipment=>equipment;
         public AssetManager Assets=>assets;
         public UnitManager Units=>units;
         public BattleManager Battle=>battle;
@@ -52,12 +56,14 @@ namespace AutoBattler.Run
         public BattleVisualService Visuals=>assets!=null ? assets.Visuals : null;
         public float RemainingSeconds=>battle!=null ? battle.RemainingSeconds : 0f;
         public Sprite UnitIcon(int iconId)=>catalog.Icon(iconId);
+        public Sprite ItemIcon(int iconId)=>assets.ItemIcon(iconId);
         public string Message { get; private set; }="불러오는 중...";
         public event Action DisplayChanged;
         private CancellationTokenSource lifetime;
         private SaveManager saves;
         private bool saveFailed;
         public StageDefinition Stage=>stage;
+        public BattleBackgroundView BackgroundView=>backgroundView;
         private int StageId=>GameNavigation.SelectedStage!=null ? GameNavigation.SelectedStage.Id : stage.Id;
         private UniTaskCompletionSource shutdownCompletion;
         private void Awake()
@@ -66,6 +72,8 @@ namespace AutoBattler.Run
             lifetime=CancellationTokenSource.CreateLinkedTokenSource(this.GetCancellationTokenOnDestroy());
             assets.Initialize(catalog,flow,grid,unitPoolSize);
             units.Initialize(assets.Units,catalog,flow,drag,grid,bench);
+            units.ConfigureItemIcons(ItemIcon);
+            equipment.Initialize(flow,Report);
             shop.Initialize(flow,drag,Report);
             augments.Initialize(flow,drag,Report);
             synergies.Initialize(units,flow);
@@ -73,13 +81,6 @@ namespace AutoBattler.Run
             drag.enabled=false; drag.PlacementChanged+=OnPlacementChanged;
         }
         private void Start()=>BootAsync().Forget();
-        public void ConfigureScene(AssetCatalog assetsCatalog,BattleFlowController phase,UnitDragController input,HexGridLayout layout,BenchLayout seats)
-        { catalog=assetsCatalog; flow=phase; drag=input; grid=layout; bench=seats; }
-#if UNITY_EDITOR
-        public void ConfigureStage(StageDefinition definition)=>stage=definition;
-        public void ConfigureManagers(AssetManager content,UnitManager roster,BattleManager combat,ShopManager store,AugmentManager choices,SynergyManager traits)
-        { assets=content; units=roster; battle=combat; shop=store; augments=choices; synergies=traits; }
-#endif
         public void RetryLoad() { if(!IsShuttingDown && !IsLoading && !IsReady) BootAsync().Forget(); }
         private async UniTask BootAsync()
         {
@@ -88,15 +89,17 @@ namespace AutoBattler.Run
             try
             {
                 await assets.LoadAsync(lifetime.Token); lifetime.Token.ThrowIfCancellationRequested();
+                await assets.LoadBackgroundAsync(GameNavigation.SelectedStage!=null?GameNavigation.SelectedStage:stage,lifetime.Token);
+                if(backgroundView!=null) backgroundView.Show(assets.StageBackground);
                 bool augmentOpen=true;
                 if(GameNavigation.ResumeRequested)
                 {
-                    if(!saves.TryLoad(assets.Data,StageId,out var restored,out augmentOpen))
+                    if(!saves.TryLoad(assets.Data,StageId,out RunState restored,out augmentOpen))
                     { Report(saves.LastError); return; }
                     State=restored;
                 }
-                else State=new RunState(assets.Data,seed);
-                units.Bind(State); shop.Bind(State); augments.Bind(State); synergies.Bind(State); battle.Bind(State);
+                else State=new RunState(assets.Data,seed,StageId);
+                equipment.Bind(State); units.Bind(State); shop.Bind(State); augments.Bind(State); synergies.Bind(State); battle.Bind(State);
                 drag.BindBoard(State.Board,State.Placement); State.Changed+=OnStateChanged; IsReady=true;
                 units.SyncAllies(); units.CreateEnemies(); synergies.Refresh();
                 if(State.CanPrepare) augments.EnterPreparation(augmentOpen);
@@ -127,16 +130,18 @@ namespace AutoBattler.Run
         }
         // 기존 HUD·씬의 공개 명령 유지. 실제 동작은 기능별 매니저에서 처리.
         private bool SaveAfter(bool changed) { if(changed) TrySaveProgress(); return changed; }
-        public bool Buy(int slot)=>IsReady && SaveAfter(shop.Buy(slot));
-        public bool RefreshShop()=>IsReady && SaveAfter(shop.RefreshShop());
-        public bool BuyXp()=>IsReady && SaveAfter(shop.BuyXp());
-        public bool SellSelected()=>IsReady && SaveAfter(shop.SellSelected());
-        public bool SellUnit(int instanceId)=>IsReady && SaveAfter(shop.Sell(instanceId));
+        public bool Buy(int slot)=>IsReady && !equipment.IsInventoryOpen && SaveAfter(shop.Buy(slot));
+        public bool RefreshShop()=>IsReady && !equipment.IsInventoryOpen && SaveAfter(shop.RefreshShop());
+        public bool BuyXp()=>IsReady && !equipment.IsInventoryOpen && SaveAfter(shop.BuyXp());
+        public bool SellSelected()=>IsReady && !equipment.IsInventoryOpen && SaveAfter(shop.SellSelected());
+        public bool SellUnit(int instanceId)=>IsReady && !equipment.IsInventoryOpen && SaveAfter(shop.Sell(instanceId));
         public bool ToggleAugmentWindow()=>IsReady && SaveAfter(augments.ToggleWindow());
         public bool SelectAugment(int id)=>IsReady && SaveAfter(augments.Select(id));
+        public bool EquipItem(int itemId,int unitId)=>IsReady && SaveAfter(equipment.Equip(itemId,unitId));
+        public bool UnequipItem(int itemId)=>IsReady && SaveAfter(equipment.Unequip(itemId));
         public bool StartBattle()
         {
-            if(!IsReady) return false;
+            if(!IsReady || equipment.IsInventoryOpen) return false;
             if(State.CanPrepare && !State.Augments.HasPending && State.Board.DeployedCount>0 && !TrySaveProgress()) return false;
             return battle.StartBattle();
         }
@@ -165,7 +170,8 @@ namespace AutoBattler.Run
             try
             {
                 if(saveProgress) TrySaveProgress();
-                IsReady=false; lifetime?.Cancel();
+                IsReady=false; DisplayChanged?.Invoke(); lifetime?.Cancel();
+                if(equipment!=null) equipment.Bind(null);
                 if(State!=null) State.Changed-=OnStateChanged;
                 if(drag!=null) { drag.PlacementChanged-=OnPlacementChanged; drag.ClearSelection(); drag.enabled=false; }
                 if(shop!=null) shop.Bind(null);
@@ -173,6 +179,7 @@ namespace AutoBattler.Run
                 if(battle!=null) await battle.StopAsync();
                 if(synergies!=null) { synergies.EndBattle(); synergies.Bind(null); }
                 if(units!=null) units.Clear();
+                if(backgroundView!=null) backgroundView.Show(null);
                 if(assets!=null) await assets.ShutdownAsync();
                 lifetime?.Dispose(); completion.TrySetResult();
             }

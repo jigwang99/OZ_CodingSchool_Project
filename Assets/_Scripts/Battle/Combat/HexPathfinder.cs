@@ -46,22 +46,22 @@ namespace AutoBattler.Battle.Combat
         }
         public static List<HexCoord> Find(CombatBoard board,int id,HexCoord start,HexCoord target,int range)
         {
-            var goals=new HashSet<HexCoord>();
+            HashSet<HexCoord> goals=new HashSet<HexCoord>();
             for(int col=0;col<8;col++) for(int row=0;row<7;row++)
             {
                 HexCoord cell=HexCoord.FromOffset(col,row);
                 if(cell!=target && cell.DistanceTo(target)<=range && board.IsFree(cell,id)) goals.Add(cell);
             }
             if(goals.Count==0) return null;
-            var open=new MinHeap(); var scores=new Dictionary<HexCoord,int>();
-            var previous=new Dictionary<HexCoord,HexCoord>(); var closed=new HashSet<HexCoord>();
+            MinHeap open=new MinHeap(); Dictionary<HexCoord, int> scores=new Dictionary<HexCoord,int>();
+            Dictionary<HexCoord, HexCoord> previous=new Dictionary<HexCoord,HexCoord>(); HashSet<HexCoord> closed=new HashSet<HexCoord>();
             scores[start]=0; open.Push(new Node(start,0,Heuristic(start,target,range)));
             while(open.Count>0)
             {
                 Node node=open.Pop(); if(!closed.Add(node.Cell)) continue;
                 if(goals.Contains(node.Cell))
                 {
-                    var path=new List<HexCoord>(); HexCoord current=node.Cell;
+                    List<HexCoord> path=new List<HexCoord>(); HexCoord current=node.Cell;
                     while(current!=start) { path.Add(current); current=previous[current]; }
                     path.Reverse(); return path;
                 }

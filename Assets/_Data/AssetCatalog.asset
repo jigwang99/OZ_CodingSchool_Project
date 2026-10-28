@@ -14,66 +14,109 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Assets.AssetCatalog
   snapshot:
     m_AssetGUID: ac6202fb8e4ec1c49b788d9a47226591
-    m_SubObjectName: 
-    m_SubObjectType: 
-    m_SubObjectGUID: 
+    m_SubObjectName:
+    m_SubObjectType:
+    m_SubObjectGUID:
     m_EditorAssetChanged: 0
   visuals:
   - id: 1
     prefab:
       m_AssetGUID: 0d284b187b0649fe85cf1122b1265be8
-      m_SubObjectName: 
-      m_SubObjectType: 
-      m_SubObjectGUID: 
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
       m_EditorAssetChanged: 0
   - id: 2
     prefab:
       m_AssetGUID: 2257c3a94f3894e409f3e4a5964d35d4
-      m_SubObjectName: 
-      m_SubObjectType: 
-      m_SubObjectGUID: 
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
       m_EditorAssetChanged: 0
   - id: 3
     prefab:
       m_AssetGUID: 222a56cfaa3bc664f9a9b044948c1756
-      m_SubObjectName: 
-      m_SubObjectType: 
-      m_SubObjectGUID: 
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
       m_EditorAssetChanged: 0
   - id: 4
     prefab:
       m_AssetGUID: cd581fb5918cff6408977e308552aaa1
-      m_SubObjectName: 
-      m_SubObjectType: 
-      m_SubObjectGUID: 
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
       m_EditorAssetChanged: 0
   - id: 5
     prefab:
       m_AssetGUID: a44073807669e2b4289edeb6f08ccf40
-      m_SubObjectName: 
-      m_SubObjectType: 
-      m_SubObjectGUID: 
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
       m_EditorAssetChanged: 0
   - id: 6
     prefab:
       m_AssetGUID: 836c766561f67f14d95368073c4fda23
-      m_SubObjectName: 
-      m_SubObjectType: 
-      m_SubObjectGUID: 
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
       m_EditorAssetChanged: 0
   - id: 7
     prefab:
       m_AssetGUID: 7633ebcea3b9ddb43ac357d549f3e530
-      m_SubObjectName: 
-      m_SubObjectType: 
-      m_SubObjectGUID: 
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
       m_EditorAssetChanged: 0
   - id: 8
     prefab:
       m_AssetGUID: 45f1b072a5127b5469473c05d3e35d5a
-      m_SubObjectName: 
-      m_SubObjectType: 
-      m_SubObjectGUID: 
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+  itemIcons:
+  - id: 33
+    sprite:
+      m_AssetGUID: 0017858006d224e73ac97bfa41fbec2f
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+  - id: 35
+    sprite:
+      m_AssetGUID: 6a3e125cc163448aba89bf81a3921cda
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+  - id: 43
+    sprite:
+      m_AssetGUID: 346f1071f21804c1d813459f9ab1cd87
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+  - id: 41
+    sprite:
+      m_AssetGUID: e3633761255324372929c98ffb8b72ee
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+  - id: 37
+    sprite:
+      m_AssetGUID: eb0d677e0620743858cecd2e2b892b6c
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+  - id: 48
+    sprite:
+      m_AssetGUID: e2413ab71ff76446b81c94dd48d1a03c
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
       m_EditorAssetChanged: 0
   battleVisuals: {fileID: 11400000, guid: f6d543aa2f7e115429c4fa6849845736, type: 2}
   icons:

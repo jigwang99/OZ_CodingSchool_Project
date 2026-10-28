@@ -31,7 +31,7 @@ namespace AutoBattler.Battle.Traits
         }
         public int Count(TraitCategory category,int groupId)
         {
-            foreach(var status in Statuses)
+            foreach(TraitStatus status in Statuses)
                 if(status.Definition.Category==category && status.Definition.GroupId==groupId) return status.Count;
             return 0;
         }
@@ -41,7 +41,7 @@ namespace AutoBattler.Battle.Traits
     {
         public static TraitSnapshot Count(IEnumerable<UnitDefinition> deployed,IEnumerable<TraitDefinition> definitions)
         {
-            var kinds=deployed.Where(unit=>unit!=null).GroupBy(unit=>unit.Id).Select(group=>group.First()).ToArray();
+            UnitDefinition[] kinds=deployed.Where(unit=>unit!=null).GroupBy(unit=>unit.Id).Select(group=>group.First()).ToArray();
             return new TraitSnapshot(definitions.OrderBy(definition=>definition.Id)
                 .Select(definition=>new TraitStatus(definition,kinds.Count(definition.Matches))).ToArray());
         }

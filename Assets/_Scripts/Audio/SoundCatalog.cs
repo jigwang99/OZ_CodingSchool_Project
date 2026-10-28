@@ -37,7 +37,7 @@ namespace AutoBattler.Audio
         public IReadOnlyList<SoundEntry> Effects => Array.AsReadOnly(effects);
         public bool TryGet(SoundId id, out SoundEntry found)
         {
-            foreach (var entry in effects)
+            foreach (SoundEntry entry in effects)
                 if (entry != null && entry.Id == id) { found = entry; return true; }
             found = null; return false;
         }

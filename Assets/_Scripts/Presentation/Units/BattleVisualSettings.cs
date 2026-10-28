@@ -43,11 +43,6 @@ namespace AutoBattler.Presentation.Units
         public Sprite Mana=>mana;
         public Sprite Shield=>shield;
         public SkillVisualEntry Skill(int id)
-        { foreach(var entry in skills) if(entry.skillId==id) return entry; return null; }
-#if UNITY_EDITOR
-        public void Configure(BattleVisualEntry[] entries,SkillVisualEntry[] presentations,Sprite arrowSprite,Sprite orb,
-            Sprite stunSprite,Sprite hp,Sprite mp,Sprite shieldSprite)
-        { effects=entries; skills=presentations; arrow=arrowSprite; magicOrb=orb; stun=stunSprite; health=hp; mana=mp; shield=shieldSprite; }
-#endif
+        { foreach(SkillVisualEntry entry in skills) if(entry.skillId==id) return entry; return null; }
     }
 }

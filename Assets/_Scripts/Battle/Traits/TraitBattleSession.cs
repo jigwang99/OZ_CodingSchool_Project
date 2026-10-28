@@ -26,14 +26,14 @@ namespace AutoBattler.Battle.Traits
             if(started || disposed) return;
             started=true;
             // 상시 능력치·시작 마나를 먼저 확정한 뒤 시작 보호막 등 적용.
-            foreach(var binding in bindings) binding.ApplyPersistent();
-            foreach(var binding in bindings) binding.ApplyStart();
+            foreach(Binding binding in bindings) binding.ApplyPersistent();
+            foreach(Binding binding in bindings) binding.ApplyStart();
         }
         public void Dispose()
         {
             if(disposed) return;
             disposed=true;
-            foreach(var binding in bindings) binding.Dispose();
+            foreach(Binding binding in bindings) binding.Dispose();
         }
 
         private sealed class Binding : IDisposable
@@ -50,7 +50,7 @@ namespace AutoBattler.Battle.Traits
             {
                 if(!CanApply) return;
                 unit.Health.HealthChanged+=OnHealthChanged; unit.Combat.Killed+=OnKilled; bound=true;
-                foreach(var trait in traits)
+                foreach(TraitDefinition trait in traits)
                 {
                     switch(trait.Effect)
                     {
@@ -73,14 +73,14 @@ namespace AutoBattler.Battle.Traits
             {
                 if(!CanApply) return;
                 unit.Mana.ResetForRound();
-                foreach(var trait in traits)
+                foreach(TraitDefinition trait in traits)
                     if(trait.Effect==TraitEffect.ShieldAtStart)
                         unit.Effects.Apply(new EffectDefinition(trait.Id,EffectKind.Shield,Mathf.FloorToInt(unit.Health.MaxHp*trait.Value),trait.Duration),trait.Source);
             }
             private void OnHealthChanged(int hp,int maxHp)
             {
                 if(!bound || !reference.IsCurrent) return;
-                foreach(var trait in traits)
+                foreach(TraitDefinition trait in traits)
                 {
                     if(trait.Effect!=TraitEffect.LowHealthAttack) continue;
                     bool active=CanApply && hp<=(double)maxHp*trait.Threshold;
@@ -92,7 +92,7 @@ namespace AutoBattler.Battle.Traits
             private void OnKilled(KillEvent info)
             {
                 if(!bound || !CanApply || !info.IsCredited || info.Killer.Unit!=unit) return;
-                foreach(var trait in traits)
+                foreach(TraitDefinition trait in traits)
                     if(trait.Effect==TraitEffect.HealOnKill)
                         unit.Health.Heal(Mathf.FloorToInt(unit.Health.MaxHp*trait.Value));
             }
@@ -102,7 +102,7 @@ namespace AutoBattler.Battle.Traits
                 { unit.Health.HealthChanged-=OnHealthChanged; unit.Combat.Killed-=OnKilled; }
                 bound=false;
                 if(!reference.IsCurrent) return;
-                foreach(var trait in traits)
+                foreach(TraitDefinition trait in traits)
                 {
                     unit.Effects.RemoveSource(trait.Source);
                     unit.StatModifiers.RemoveSource(trait.Source);

@@ -8,6 +8,7 @@ using AutoBattler.Data.Skills;
 using AutoBattler.Data.Units;
 using AutoBattler.Data.Traits;
 using AutoBattler.Data.Augments;
+using AutoBattler.Data.Items;
 using AutoBattler.Battle.Units;
 using UnityEditor;
 using UnityEngine;
@@ -21,17 +22,18 @@ namespace AutoBattler.EditorTools.Sheets
         public static readonly string[] BaseTabs={"Manifest","Units","Rounds","RoundUnits","Levels","ShopRates","PoolCounts","Economy"};
         public static readonly string[] SkillTabs=BaseTabs.Concat(new[]{"Skills","Effects"}).ToArray();
         public static readonly string[] TraitTabs=SkillTabs.Concat(new[]{"Traits"}).ToArray();
-        public static readonly string[] Tabs=TraitTabs.Concat(new[]{"Augments"}).ToArray();
-        public static string[] TabsForSchema(int schema)=>schema==1?BaseTabs:schema==2?SkillTabs:schema==3?TraitTabs:schema==4?Tabs:throw new FormatException("지원하지 않는 스키마.");
+        public static readonly string[] AugmentTabs=TraitTabs.Concat(new[]{"Augments"}).ToArray();
+        public static readonly string[] Tabs=AugmentTabs.Concat(new[]{"Items","ItemStats"}).ToArray();
+        public static string[] TabsForSchema(int schema)=>schema==1?BaseTabs:schema==2?SkillTabs:schema==3?TraitTabs:schema==4?AugmentTabs:schema==5?Tabs:throw new FormatException("지원하지 않는 스키마.");
         public static GameSnapshot Build(Dictionary<string,CsvTable> tables)
         {
             foreach(string tab in BaseTabs) if(!tables.ContainsKey(tab)) throw new FormatException(tab+": 표 없음.");
-            var manifest=tables["Manifest"];
+            CsvTable manifest=tables["Manifest"];
             if(manifest.Rows.Count!=2) throw manifest.Error(1,"schema_version","단일 Manifest 행 필요.");
             int schema=manifest.Int(1,"schema_version");
-            if(manifest.Rows.Count!=2 || schema<1 || schema>4) throw manifest.Error(1,"schema_version","스키마 1~4의 단일 Manifest 행 필요.");
+            if(manifest.Rows.Count!=2 || schema<1 || schema>5) throw manifest.Error(1,"schema_version","스키마 1~5의 단일 Manifest 행 필요.");
             foreach(string tab in TabsForSchema(schema)) if(!tables.ContainsKey(tab)) throw new FormatException(tab+": 표 없음.");
-            var data=new GameSnapshot {schemaVersion=schema,dataVersion=manifest.Get(1,"data_version")};
+            GameSnapshot data=new GameSnapshot {schemaVersion=schema,dataVersion=manifest.Get(1,"data_version")};
             if(string.IsNullOrWhiteSpace(data.dataVersion)) throw manifest.Error(1,"data_version","버전 필요.");
             data.units=Read(tables["Units"],(t,r)=>new UnitRow {
                 unitId=t.Int(r,"unit_id"),name=t.Get(r,"name"),cost=t.Int(r,"cost"),originId=t.Int(r,"origin_id"),classId=t.Int(r,"class_id"),
@@ -61,11 +63,28 @@ namespace AutoBattler.EditorTools.Sheets
                 augmentId=t.Int(r,"augment_id"),name=t.Get(r,"name"),description=t.Get(r,"description"),
                 effect=ReadEnum<AugmentEffect>(t,r,"effect"),stat=ReadEnum<StatType>(t,r,"stat"),
                 operation=ReadEnum<ModifierOperation>(t,r,"operation"),value=t.Float(r,"value"),duration=t.Float(r,"duration") });
+            data.items=schema<5?Array.Empty<ItemRow>():Read(tables["Items"],(t,r)=>new ItemRow {
+                itemId=t.Int(r,"item_id"),name=t.Get(r,"name"),description=t.Get(r,"description"),
+                iconId=t.Int(r,"icon_id"),dropWeight=t.Int(r,"drop_weight") });
+            data.itemStats=schema<5?Array.Empty<ItemStatRow>():Read(tables["ItemStats"],(t,r)=>new ItemStatRow {
+                entryId=t.Int(r,"entry_id"),itemId=t.Int(r,"item_id"),stat=ReadEnum<StatType>(t,r,"stat"),
+                operation=ReadEnum<ModifierOperation>(t,r,"operation"),value=t.Float(r,"value") });
+            if(schema>=5)
+            {
+                CheckIds(data.items,x=>x.itemId,tables["Items"]);
+                CheckIds(data.itemStats,x=>x.entryId,tables["ItemStats"]);
+                long dropWeight=data.items.Sum(item=>(long)item.dropWeight);
+                if(data.items.Length==0 || dropWeight<=0 || dropWeight>int.MaxValue)
+                    throw new FormatException("Items: 전투 승리 보상용 아이템과 양수 추첨 가중치 필요.");
+                foreach(ItemRow item in data.items)
+                    if(!data.itemStats.Any(modifier=>modifier.itemId==item.itemId))
+                        throw new FormatException($"ItemStats: item_id={item.itemId}의 능력치 필요.");
+            }
             if(schema>=4)
             {
-                var t=tables["Augments"]; CheckIds(data.augments,x=>x.augmentId,t);
+                CsvTable t=tables["Augments"]; CheckIds(data.augments,x=>x.augmentId,t);
                 if(data.augments.Length!=8) throw new FormatException("Augments: 공통 강화 8종 필요.");
-                foreach(var augment in data.augments)
+                foreach(AugmentRow augment in data.augments)
                 {
                     int r=FindRow(t,"augment_id",augment.augmentId);
                     if(string.IsNullOrWhiteSpace(augment.name) || string.IsNullOrWhiteSpace(augment.description) || augment.value<=0 || augment.duration<0
@@ -77,9 +96,9 @@ namespace AutoBattler.EditorTools.Sheets
             }
             if(schema>=3)
             {
-                var t=tables["Traits"]; CheckIds(data.traits,x=>x.traitId,t);
-                var stages=new HashSet<(TraitCategory,int,int)>();
-                foreach(var trait in data.traits)
+                CsvTable t=tables["Traits"]; CheckIds(data.traits,x=>x.traitId,t);
+                HashSet<(TraitCategory, int, int)> stages=new HashSet<(TraitCategory,int,int)>();
+                foreach(TraitRow trait in data.traits)
                 {
                     int r=FindRow(t,"trait_id",trait.traitId);
                     if(string.IsNullOrWhiteSpace(trait.name) || trait.groupId<1 || trait.groupId>4 || trait.requiredCount<1 || trait.requiredCount>10
@@ -95,17 +114,17 @@ namespace AutoBattler.EditorTools.Sheets
             if(schema>=2)
             {
                 CheckIds(data.skills,x=>x.skillId,tables["Skills"]); CheckIds(data.effects,x=>x.effectId,tables["Effects"]);
-                foreach(var skill in data.skills)
+                foreach(SkillRow skill in data.skills)
                 {
-                    var t=tables["Skills"]; int r=FindRow(t,"skill_id",skill.skillId);
+                    CsvTable t=tables["Skills"]; int r=FindRow(t,"skill_id",skill.skillId);
                     if(skill.manaCost<1 || skill.manaCost>100 || skill.castRange<0 || skill.castRange>14 || skill.windup<0 || skill.cooldown<0
                         || skill.radius<0 || skill.radius>14 || skill.baseDamage<0 || skill.attackRatio<0 || skill.armorIgnore<0 || skill.armorIgnore>1
                         || (skill.delivery==SkillDelivery.Projectile && skill.projectileSpeed<=0)) throw t.Error(r,"skill_id","시전 수치 범위 오류.");
                     if(skill.effectId!=0 && !data.effects.Any(x=>x.effectId==skill.effectId)) throw t.Error(r,"effect_id","없는 효과 참조.");
                 }
-                foreach(var effect in data.effects)
+                foreach(EffectRow effect in data.effects)
                 {
-                    var t=tables["Effects"]; int r=FindRow(t,"effect_id",effect.effectId);
+                    CsvTable t=tables["Effects"]; int r=FindRow(t,"effect_id",effect.effectId);
                     if(effect.value<0 || (effect.kind==EffectKind.Slow && effect.value>1)
                         || (effect.kind!=EffectKind.Heal && effect.duration==0)) throw t.Error(r,"value/duration","효과 수치 범위 오류.");
                 }
@@ -114,9 +133,9 @@ namespace AutoBattler.EditorTools.Sheets
             CheckIds(data.roundUnits,x=>x.entryId,tables["RoundUnits"]); CheckIds(data.levels,x=>x.level,tables["Levels"]);
             CheckIds(data.shopRates,x=>x.level,tables["ShopRates"]); CheckIds(data.poolCounts,x=>x.cost,tables["PoolCounts"]);
             CheckIds(data.economy,x=>x.ruleId,tables["Economy"]);
-            foreach(var unit in data.units)
+            foreach(UnitRow unit in data.units)
             {
-                int r=FindRow(tables["Units"],"unit_id",unit.unitId); var t=tables["Units"];
+                int r=FindRow(tables["Units"],"unit_id",unit.unitId); CsvTable t=tables["Units"];
                 if(unit.cost<1 || unit.cost>5) throw t.Error(r,"cost","1~5 범위.");
                 if(unit.hp<1 || unit.attack<1 || unit.armor<0 || unit.attackInterval<=0 || unit.attackRange<1 || unit.attackRange>14) throw t.Error(r,"hp/attack/armor/attack_interval/attack_range","전투 수치 범위 오류.");
                 if(unit.combatRole<0 || unit.combatRole>3 || unit.originId<1 || unit.originId>4 || unit.classId<1 || unit.classId>4) throw t.Error(r,"combat_role/origin_id/class_id","정의 범위 오류.");
@@ -127,12 +146,12 @@ namespace AutoBattler.EditorTools.Sheets
             }
             if(!data.units.Any(x=>x.cost==1)) throw new FormatException("Units: 시작용 1코스트 필요.");
             if(data.rounds.Length==0 || data.rounds.OrderBy(x=>x.roundId).Select((x,i)=>x.roundId!=i+1).Any(x=>x)) throw new FormatException("Rounds round_id: 1부터 연속된 라운드 필요.");
-            foreach(var round in data.rounds)
+            foreach(RoundRow round in data.rounds)
                 if(round.rewardGold<0 || !data.roundUnits.Any(x=>x.roundId==round.roundId)) throw tables["Rounds"].Error(FindRow(tables["Rounds"],"round_id",round.roundId),"reward_gold/round_id","음수 보상 또는 적 구성 없음.");
-            var positions=new HashSet<string>();
-            foreach(var enemy in data.roundUnits)
+            HashSet<string> positions=new HashSet<string>();
+            foreach(RoundUnitRow enemy in data.roundUnits)
             {
-                var t=tables["RoundUnits"]; int r=FindRow(t,"entry_id",enemy.entryId);
+                CsvTable t=tables["RoundUnits"]; int r=FindRow(t,"entry_id",enemy.entryId);
                 if(!data.rounds.Any(x=>x.roundId==enemy.roundId) || !data.units.Any(x=>x.unitId==enemy.unitId)) throw t.Error(r,"round_id/unit_id","없는 ID 참조.");
                 if(enemy.star<1 || enemy.star>2 || enemy.col<4 || enemy.col>=8 || enemy.row<0 || enemy.row>=7 || enemy.bossProfileId<0 || enemy.bossProfileId>3) throw t.Error(r,"star/col/row/boss_profile_id","성급·적 영역·보스 샘플 범위 오류.");
                 if(!positions.Add($"{enemy.roundId}:{enemy.col}:{enemy.row}")) throw t.Error(r,"col/row","같은 라운드의 좌표 중복.");
@@ -140,23 +159,23 @@ namespace AutoBattler.EditorTools.Sheets
             if(data.levels.Length!=10 || data.shopRates.Length!=10) throw new FormatException("Levels/ShopRates: 레벨 1~10 각각 필요.");
             for(int level=1;level<=10;level++)
             {
-                var l=data.levels.FirstOrDefault(x=>x.level==level); var rate=data.shopRates.FirstOrDefault(x=>x.level==level);
+                LevelRow l=data.levels.FirstOrDefault(x=>x.level==level); ShopRateRow rate=data.shopRates.FirstOrDefault(x=>x.level==level);
                 if(l==null || rate==null || l.deploymentLimit!=level || (level<10?l.requiredXp<=0:l.requiredXp!=0)) throw new FormatException($"Levels/ShopRates level={level}: 누락 또는 경험치·인원 범위 오류.");
                 if(rate.weights.Any(x=>x<0) || rate.weights.Sum()!=100) throw tables["ShopRates"].Error(FindRow(tables["ShopRates"],"level",level),"cost_1~5","확률 합계 100 필요.");
             }
             if(data.poolCounts.Length!=5 || Enumerable.Range(1,5).Any(c=>!data.poolCounts.Any(x=>x.cost==c && x.copiesPerUnit>0))) throw new FormatException("PoolCounts: 코스트 1~5의 양수 재고 필요.");
             if(data.economy.Length!=13 || Enumerable.Range(1,13).Any(id=>!data.economy.Any(x=>x.ruleId==id && x.value>0))) throw new FormatException("Economy: 규칙 ID 1~13의 양수 값 필요.");
             if(data.economy.Any(x=>x.ruleId<=9 && x.value!=(int)x.value)) throw new FormatException("Economy: ID 1~9는 정수 필요.");
-            var repository=new DataRepository(data);
+            DataRepository repository=new DataRepository(data);
             return data;
         }
         private static T[] Read<T>(CsvTable table,Func<CsvTable,int,T> reader)
         {
-            var result=new List<T>(); for(int r=1;r<table.Rows.Count;r++) if(!table.IsEmpty(r)) result.Add(reader(table,r)); return result.ToArray();
+            List<T> result=new List<T>(); for(int r=1;r<table.Rows.Count;r++) if(!table.IsEmpty(r)) result.Add(reader(table,r)); return result.ToArray();
         }
         private static T ReadEnum<T>(CsvTable table,int row,string column) where T:struct,Enum
         {
-            if(!Enum.TryParse<T>(table.Get(row,column),true,out var result) || !Enum.IsDefined(typeof(T),result))
+            if(!Enum.TryParse<T>(table.Get(row,column),true,out T result) || !Enum.IsDefined(typeof(T),result))
                 throw table.Error(row,column,"등록된 Enum 이름 필요.");
             return result;
         }
@@ -167,12 +186,14 @@ namespace AutoBattler.EditorTools.Sheets
         }
         private static void CheckIds<T>(T[] rows,Func<T,int> id,CsvTable table)
         {
-            var ids=new HashSet<int>(); int row=1;
-            foreach(var item in rows) { while(table.IsEmpty(row)) row++; int value=id(item);
+            HashSet<int> ids=new HashSet<int>(); int row=1;
+            foreach(T item in rows) { while(table.IsEmpty(row)) row++; int value=id(item);
                 if(value<=0 || !ids.Add(value)) throw table.Error(row,table.Rows[0][0],"양수 고유 ID 필요."); row++; }
         }
         public static void Apply(GameSnapshot snapshot)
         {
+            if(File.Exists(OutputPath) && JsonUtility.FromJson<GameSnapshot>(File.ReadAllText(OutputPath)).schemaVersion>=5 && snapshot.schemaVersion<5)
+                throw new FormatException("아이템 표가 없는 이전 스키마는 적용할 수 없습니다. Manifest schema_version=5, Items, ItemStats 표를 추가하세요.");
             string directory=Path.GetDirectoryName(OutputPath); Directory.CreateDirectory(directory);
             string temporary=OutputPath+".pending";
             try

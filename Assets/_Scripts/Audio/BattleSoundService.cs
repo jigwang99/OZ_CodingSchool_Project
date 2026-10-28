@@ -13,8 +13,8 @@ namespace AutoBattler.Audio
     {
         private readonly List<Binding> bindings = new List<Binding>();
         public void Begin(IEnumerable<Unit> units)
-        { End(); foreach (var unit in units) bindings.Add(new Binding(unit)); }
-        public void End() { foreach (var binding in bindings) binding.Dispose(); bindings.Clear(); }
+        { End(); foreach (Unit unit in units) bindings.Add(new Binding(unit)); }
+        public void End() { foreach (Binding binding in bindings) binding.Dispose(); bindings.Clear(); }
 
         private sealed class Binding : IDisposable
         {

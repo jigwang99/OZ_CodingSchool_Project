@@ -28,15 +28,11 @@ namespace AutoBattler.Presentation.Battle
         public TextMeshProUGUI TooltipText=>tooltipText;
         public TextMeshProUGUI CountText=>countText;
         public CanvasGroup Tooltip=>tooltip;
-#if UNITY_EDITOR
-        public void Configure(Image area,Image[] badges,TextMeshProUGUI[] labels,TextMeshProUGUI count,CanvasGroup popup,TextMeshProUGUI description)
-        { hoverArea=area; slots=badges; slotTexts=labels; countText=count; tooltip=popup; tooltipText=description; }
-#endif
         public void Show(RunController run)=>Show(run.IsReady?run.State.Augments.Selected:Array.Empty<AugmentDefinition>(),
             run.IsReady && !run.Flow.IsAugmentWindowOpen);
         public void Show(IEnumerable<AugmentDefinition> selected,bool allowHover)
         {
-            var definitions=selected.ToArray(); SelectedCount=definitions.Length;
+            AugmentDefinition[] definitions=selected.ToArray(); SelectedCount=definitions.Length;
             countText.text=$"증강 {SelectedCount}/3";
             for(int i=0;i<slots.Length;i++)
             {
@@ -45,7 +41,7 @@ namespace AutoBattler.Presentation.Battle
                 slotTexts[i].text=owned?(i+1).ToString():"-";
                 slotTexts[i].color=owned?new Color(1f,.84f,.39f):new Color(.4f,.47f,.53f);
             }
-            var text=new StringBuilder();
+            StringBuilder text=new StringBuilder();
             if(definitions.Length==0) text.Append("선택한 증강이 없습니다.");
             for(int i=0;i<definitions.Length;i++)
             {

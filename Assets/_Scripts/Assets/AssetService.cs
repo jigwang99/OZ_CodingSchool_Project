@@ -60,12 +60,12 @@ namespace AutoBattler.Assets
             if(entry.Released) return;
             entry.Released=true;
             if(entry.Handle.IsValid()) Addressables.Release(entry.Handle);
-            if(entries.TryGetValue(entry.Key,out var stored) && ReferenceEquals(stored,entry)) entries.Remove(entry.Key);
+            if(entries.TryGetValue(entry.Key,out Entry stored) && ReferenceEquals(stored,entry)) entries.Remove(entry.Key);
         }
         public void Dispose()
         {
             if(disposed) return; disposed=true;
-            foreach(var entry in new List<Entry>(entries.Values)) Release(entry);
+            foreach(Entry entry in new List<Entry>(entries.Values)) Release(entry);
         }
     }
 }

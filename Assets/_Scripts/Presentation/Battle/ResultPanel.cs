@@ -32,14 +32,9 @@ namespace AutoBattler.Presentation.Battle
         public Button NextRoundButton => nextRoundButton;
         public Button RetryButton => retryButton;
         public Button TitleButton => titleButton;
-#if UNITY_EDITOR
-        public void ConfigureReferences(CanvasGroup group, TextMeshProUGUI title,
-            TextMeshProUGUI result, TextMeshProUGUI endMessage, Button next)
-        { canvasGroup=group; titleText=title; resultText=result; endMessageText=endMessage; nextRoundButton=next; }
-        public void ConfigureNavigation(Button retry,Button title)
-        { retryButton=retry; titleButton=title; }
-#endif
 
+        public void ShowItemReward(string name)
+        { if(CanContinue) { endMessageText.text=$"아이템 획득: {name}"; endMessageText.gameObject.SetActive(true); } }
         public void Show(string title, string result, bool canContinue, bool animate = true)
         {
             bool wasVisible = gameObject.activeSelf;
@@ -49,6 +44,7 @@ namespace AutoBattler.Presentation.Battle
             CanContinue = canContinue;
             nextRoundButton.interactable = canContinue;
             nextRoundButton.gameObject.SetActive(canContinue);
+            endMessageText.text=canContinue?"":"다시 도전하거나 타이틀로 돌아갈 수 있습니다.";
             endMessageText.gameObject.SetActive(!canContinue);
             if(retryButton!=null) retryButton.gameObject.SetActive(!canContinue);
             if(titleButton!=null) titleButton.gameObject.SetActive(!canContinue);

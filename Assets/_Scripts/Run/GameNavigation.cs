@@ -20,7 +20,7 @@ namespace AutoBattler.Run
         }
         public static UniTask<bool> ResumeStageAsync(GameNavigationSettings settings)
         {
-            var saves=AutoBattler.Managers.SaveManager.instance;
+            Managers.SaveManager saves=AutoBattler.Managers.SaveManager.instance;
             if(settings==null || !saves.HasSavedRun || saves.SavedStageId!=settings.DefaultStage.Id) return UniTask.FromResult(false);
             return LoadAsync(settings.DefaultStage.SceneBuildIndex,settings.DefaultStage,null,true);
         }
@@ -38,7 +38,7 @@ namespace AutoBattler.Run
                 Time.timeScale=1f;
                 if(run!=null) await run.ShutdownAsync();
                 ResumeRequested=resume;
-                var operation=SceneManager.LoadSceneAsync(buildIndex,LoadSceneMode.Single);
+                AsyncOperation operation=SceneManager.LoadSceneAsync(buildIndex,LoadSceneMode.Single);
                 if(operation==null) throw new InvalidOperationException("장면 로드 요청 실패.");
                 SelectedStage=stage;
                 // 출발 장면이 사라져도 전환 완료와 잠금 해제까지 유지.

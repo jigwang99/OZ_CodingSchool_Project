@@ -1,1134 +1,1229 @@
 {
-  "schemaVersion": 4,
-  "dataVersion": "2026-10-23-google-canonical",
-  "units": [
-    {
-      "unitId": 1001,
-      "cost": 1,
-      "originId": 1,
-      "classId": 1,
-      "hp": 160,
-      "attack": 22,
-      "armor": 25,
-      "attackRange": 1,
-      "combatRole": 0,
-      "skillId": 2001,
-      "visualId": 1,
-      "iconId": 1,
-      "name": "Shield",
-      "attackType": "Melee",
-      "attackInterval": 1.2000000476837158,
-      "critChance": 0.10000000149011612,
-      "critMultiplier": 1.5
-    },
-    {
-      "unitId": 1002,
-      "cost": 1,
-      "originId": 2,
-      "classId": 3,
-      "hp": 95,
-      "attack": 30,
-      "armor": 5,
-      "attackRange": 3,
-      "combatRole": 2,
-      "skillId": 2002,
-      "visualId": 2,
-      "iconId": 2,
-      "name": "Scout",
-      "attackType": "Ranged",
-      "attackInterval": 1,
-      "critChance": 0.10000000149011612,
-      "critMultiplier": 1.5
-    },
-    {
-      "unitId": 1003,
-      "cost": 2,
-      "originId": 2,
-      "classId": 2,
-      "hp": 125,
-      "attack": 27,
-      "armor": 8,
-      "attackRange": 3,
-      "combatRole": 3,
-      "skillId": 2003,
-      "visualId": 3,
-      "iconId": 3,
-      "name": "Healer",
-      "attackType": "Ranged",
-      "attackInterval": 1.100000023841858,
-      "critChance": 0.10000000149011612,
-      "critMultiplier": 1.5
-    },
-    {
-      "unitId": 1004,
-      "cost": 2,
-      "originId": 4,
-      "classId": 3,
-      "hp": 130,
-      "attack": 37,
-      "armor": 10,
-      "attackRange": 3,
-      "combatRole": 2,
-      "skillId": 2004,
-      "visualId": 4,
-      "iconId": 4,
-      "name": "Crossbow",
-      "attackType": "Ranged",
-      "attackInterval": 1.25,
-      "critChance": 0.10000000149011612,
-      "critMultiplier": 1.5
-    },
-    {
-      "unitId": 1005,
-      "cost": 3,
-      "originId": 3,
-      "classId": 1,
-      "hp": 230,
-      "attack": 45,
-      "armor": 20,
-      "attackRange": 1,
-      "combatRole": 1,
-      "skillId": 2005,
-      "visualId": 5,
-      "iconId": 5,
-      "name": "Warrior",
-      "attackType": "Melee",
-      "attackInterval": 1.149999976158142,
-      "critChance": 0.10000000149011612,
-      "critMultiplier": 1.5
-    },
-    {
-      "unitId": 1006,
-      "cost": 3,
-      "originId": 3,
-      "classId": 4,
-      "hp": 155,
-      "attack": 53,
-      "armor": 8,
-      "attackRange": 1,
-      "combatRole": 2,
-      "skillId": 2006,
-      "visualId": 6,
-      "iconId": 6,
-      "name": "Shadow",
-      "attackType": "Melee",
-      "attackInterval": 0.8999999761581421,
-      "critChance": 0.10000000149011612,
-      "critMultiplier": 1.5
-    },
-    {
-      "unitId": 1007,
-      "cost": 4,
-      "originId": 1,
-      "classId": 2,
-      "hp": 170,
-      "attack": 65,
-      "armor": 10,
-      "attackRange": 3,
-      "combatRole": 2,
-      "skillId": 2007,
-      "visualId": 7,
-      "iconId": 7,
-      "name": "Pyromancer",
-      "attackType": "Ranged",
-      "attackInterval": 1.2999999523162842,
-      "critChance": 0.10000000149011612,
-      "critMultiplier": 1.5
-    },
-    {
-      "unitId": 1008,
-      "cost": 5,
-      "originId": 4,
-      "classId": 4,
-      "hp": 300,
-      "attack": 70,
-      "armor": 22,
-      "attackRange": 1,
-      "combatRole": 1,
-      "skillId": 2008,
-      "visualId": 8,
-      "iconId": 8,
-      "name": "Tracker",
-      "attackType": "Melee",
-      "attackInterval": 1,
-      "critChance": 0.10000000149011612,
-      "critMultiplier": 1.5
-    }
-  ],
-  "rounds": [
-    {
-      "roundId": 1,
-      "rewardGold": 3,
-      "isBoss": false,
-      "offersAugment": false
-    },
-    {
-      "roundId": 2,
-      "rewardGold": 3,
-      "isBoss": false,
-      "offersAugment": true
-    },
-    {
-      "roundId": 3,
-      "rewardGold": 4,
-      "isBoss": false,
-      "offersAugment": false
-    },
-    {
-      "roundId": 4,
-      "rewardGold": 4,
-      "isBoss": true,
-      "offersAugment": false
-    },
-    {
-      "roundId": 5,
-      "rewardGold": 5,
-      "isBoss": false,
-      "offersAugment": true
-    },
-    {
-      "roundId": 6,
-      "rewardGold": 5,
-      "isBoss": false,
-      "offersAugment": false
-    },
-    {
-      "roundId": 7,
-      "rewardGold": 5,
-      "isBoss": false,
-      "offersAugment": false
-    },
-    {
-      "roundId": 8,
-      "rewardGold": 5,
-      "isBoss": true,
-      "offersAugment": false
-    },
-    {
-      "roundId": 9,
-      "rewardGold": 6,
-      "isBoss": false,
-      "offersAugment": true
-    },
-    {
-      "roundId": 10,
-      "rewardGold": 6,
-      "isBoss": false,
-      "offersAugment": false
-    },
-    {
-      "roundId": 11,
-      "rewardGold": 6,
-      "isBoss": false,
-      "offersAugment": false
-    },
-    {
-      "roundId": 12,
-      "rewardGold": 6,
-      "isBoss": true,
-      "offersAugment": false
-    }
-  ],
-  "roundUnits": [
-    {
-      "entryId": 101,
-      "roundId": 1,
-      "unitId": 1001,
-      "star": 1,
-      "col": 6,
-      "row": 3,
-      "bossProfileId": 0
-    },
-    {
-      "entryId": 201,
-      "roundId": 2,
-      "unitId": 1001,
-      "star": 1,
-      "col": 6,
-      "row": 3,
-      "bossProfileId": 0
-    },
-    {
-      "entryId": 202,
-      "roundId": 2,
-      "unitId": 1002,
-      "star": 1,
-      "col": 7,
-      "row": 4,
-      "bossProfileId": 0
-    },
-    {
-      "entryId": 301,
-      "roundId": 3,
-      "unitId": 1001,
-      "star": 1,
-      "col": 6,
-      "row": 3,
-      "bossProfileId": 0
-    },
-    {
-      "entryId": 302,
-      "roundId": 3,
-      "unitId": 1001,
-      "star": 1,
-      "col": 7,
-      "row": 4,
-      "bossProfileId": 0
-    },
-    {
-      "entryId": 303,
-      "roundId": 3,
-      "unitId": 1002,
-      "star": 1,
-      "col": 7,
-      "row": 2,
-      "bossProfileId": 0
-    },
-    {
-      "entryId": 401,
-      "roundId": 4,
-      "unitId": 1001,
-      "star": 1,
-      "col": 6,
-      "row": 3,
-      "bossProfileId": 1
-    },
-    {
-      "entryId": 402,
-      "roundId": 4,
-      "unitId": 1003,
-      "star": 1,
-      "col": 7,
-      "row": 4,
-      "bossProfileId": 0
-    },
-    {
-      "entryId": 501,
-      "roundId": 5,
-      "unitId": 1005,
-      "star": 1,
-      "col": 6,
-      "row": 3,
-      "bossProfileId": 0
-    },
-    {
-      "entryId": 502,
-      "roundId": 5,
-      "unitId": 1002,
-      "star": 1,
-      "col": 7,
-      "row": 4,
-      "bossProfileId": 0
-    },
-    {
-      "entryId": 503,
-      "roundId": 5,
-      "unitId": 1002,
-      "star": 1,
-      "col": 7,
-      "row": 2,
-      "bossProfileId": 0
-    },
-    {
-      "entryId": 601,
-      "roundId": 6,
-      "unitId": 1001,
-      "star": 1,
-      "col": 6,
-      "row": 3,
-      "bossProfileId": 0
-    },
-    {
-      "entryId": 602,
-      "roundId": 6,
-      "unitId": 1005,
-      "star": 1,
-      "col": 7,
-      "row": 4,
-      "bossProfileId": 0
-    },
-    {
-      "entryId": 603,
-      "roundId": 6,
-      "unitId": 1004,
-      "star": 1,
-      "col": 7,
-      "row": 2,
-      "bossProfileId": 0
-    },
-    {
-      "entryId": 701,
-      "roundId": 7,
-      "unitId": 1001,
-      "star": 1,
-      "col": 6,
-      "row": 3,
-      "bossProfileId": 0
-    },
-    {
-      "entryId": 702,
-      "roundId": 7,
-      "unitId": 1003,
-      "star": 1,
-      "col": 7,
-      "row": 4,
-      "bossProfileId": 0
-    },
-    {
-      "entryId": 703,
-      "roundId": 7,
-      "unitId": 1002,
-      "star": 1,
-      "col": 7,
-      "row": 2,
-      "bossProfileId": 0
-    },
-    {
-      "entryId": 704,
-      "roundId": 7,
-      "unitId": 1004,
-      "star": 1,
-      "col": 6,
-      "row": 5,
-      "bossProfileId": 0
-    },
-    {
-      "entryId": 801,
-      "roundId": 8,
-      "unitId": 1005,
-      "star": 1,
-      "col": 6,
-      "row": 3,
-      "bossProfileId": 2
-    },
-    {
-      "entryId": 802,
-      "roundId": 8,
-      "unitId": 1006,
-      "star": 1,
-      "col": 7,
-      "row": 4,
-      "bossProfileId": 0
-    },
-    {
-      "entryId": 803,
-      "roundId": 8,
-      "unitId": 1002,
-      "star": 1,
-      "col": 7,
-      "row": 2,
-      "bossProfileId": 0
-    },
-    {
-      "entryId": 901,
-      "roundId": 9,
-      "unitId": 1001,
-      "star": 2,
-      "col": 6,
-      "row": 3,
-      "bossProfileId": 0
-    },
-    {
-      "entryId": 902,
-      "roundId": 9,
-      "unitId": 1004,
-      "star": 1,
-      "col": 7,
-      "row": 4,
-      "bossProfileId": 0
-    },
-    {
-      "entryId": 903,
-      "roundId": 9,
-      "unitId": 1007,
-      "star": 1,
-      "col": 7,
-      "row": 2,
-      "bossProfileId": 0
-    },
-    {
-      "entryId": 1001,
-      "roundId": 10,
-      "unitId": 1005,
-      "star": 2,
-      "col": 6,
-      "row": 3,
-      "bossProfileId": 0
-    },
-    {
-      "entryId": 1002,
-      "roundId": 10,
-      "unitId": 1006,
-      "star": 1,
-      "col": 7,
-      "row": 4,
-      "bossProfileId": 0
-    },
-    {
-      "entryId": 1003,
-      "roundId": 10,
-      "unitId": 1008,
-      "star": 1,
-      "col": 7,
-      "row": 2,
-      "bossProfileId": 0
-    },
-    {
-      "entryId": 1101,
-      "roundId": 11,
-      "unitId": 1001,
-      "star": 2,
-      "col": 6,
-      "row": 3,
-      "bossProfileId": 0
-    },
-    {
-      "entryId": 1102,
-      "roundId": 11,
-      "unitId": 1007,
-      "star": 1,
-      "col": 7,
-      "row": 4,
-      "bossProfileId": 0
-    },
-    {
-      "entryId": 1103,
-      "roundId": 11,
-      "unitId": 1003,
-      "star": 1,
-      "col": 7,
-      "row": 2,
-      "bossProfileId": 0
-    },
-    {
-      "entryId": 1104,
-      "roundId": 11,
-      "unitId": 1002,
-      "star": 1,
-      "col": 6,
-      "row": 5,
-      "bossProfileId": 0
-    },
-    {
-      "entryId": 1201,
-      "roundId": 12,
-      "unitId": 1008,
-      "star": 1,
-      "col": 6,
-      "row": 3,
-      "bossProfileId": 3
-    },
-    {
-      "entryId": 1202,
-      "roundId": 12,
-      "unitId": 1001,
-      "star": 2,
-      "col": 7,
-      "row": 4,
-      "bossProfileId": 0
-    },
-    {
-      "entryId": 1203,
-      "roundId": 12,
-      "unitId": 1007,
-      "star": 1,
-      "col": 7,
-      "row": 2,
-      "bossProfileId": 0
-    },
-    {
-      "entryId": 1204,
-      "roundId": 12,
-      "unitId": 1003,
-      "star": 1,
-      "col": 6,
-      "row": 5,
-      "bossProfileId": 0
-    }
-  ],
-  "levels": [
-    {
-      "level": 1,
-      "requiredXp": 2,
-      "deploymentLimit": 1
-    },
-    {
-      "level": 2,
-      "requiredXp": 4,
-      "deploymentLimit": 2
-    },
-    {
-      "level": 3,
-      "requiredXp": 6,
-      "deploymentLimit": 3
-    },
-    {
-      "level": 4,
-      "requiredXp": 10,
-      "deploymentLimit": 4
-    },
-    {
-      "level": 5,
-      "requiredXp": 16,
-      "deploymentLimit": 5
-    },
-    {
-      "level": 6,
-      "requiredXp": 24,
-      "deploymentLimit": 6
-    },
-    {
-      "level": 7,
-      "requiredXp": 36,
-      "deploymentLimit": 7
-    },
-    {
-      "level": 8,
-      "requiredXp": 48,
-      "deploymentLimit": 8
-    },
-    {
-      "level": 9,
-      "requiredXp": 64,
-      "deploymentLimit": 9
-    },
-    {
-      "level": 10,
-      "requiredXp": 0,
-      "deploymentLimit": 10
-    }
-  ],
-  "shopRates": [
-    {
-      "level": 1,
-      "weights": [
-        100,
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "level": 2,
-      "weights": [
-        100,
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "level": 3,
-      "weights": [
-        75,
-        25,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "level": 4,
-      "weights": [
-        55,
-        30,
-        15,
-        0,
-        0
-      ]
-    },
-    {
-      "level": 5,
-      "weights": [
-        45,
-        33,
-        20,
-        2,
-        0
-      ]
-    },
-    {
-      "level": 6,
-      "weights": [
-        30,
-        40,
-        25,
-        5,
-        0
-      ]
-    },
-    {
-      "level": 7,
-      "weights": [
-        16,
-        30,
-        43,
-        10,
-        1
-      ]
-    },
-    {
-      "level": 8,
-      "weights": [
-        15,
-        20,
-        32,
-        30,
-        3
-      ]
-    },
-    {
-      "level": 9,
-      "weights": [
-        10,
-        17,
-        25,
-        33,
-        15
-      ]
-    },
-    {
-      "level": 10,
-      "weights": [
-        5,
-        10,
-        20,
-        40,
-        25
-      ]
-    }
-  ],
-  "poolCounts": [
-    {
-      "cost": 1,
-      "copiesPerUnit": 30
-    },
-    {
-      "cost": 2,
-      "copiesPerUnit": 25
-    },
-    {
-      "cost": 3,
-      "copiesPerUnit": 18
-    },
-    {
-      "cost": 4,
-      "copiesPerUnit": 10
-    },
-    {
-      "cost": 5,
-      "copiesPerUnit": 9
-    }
-  ],
-  "economy": [
-    {
-      "ruleId": 1,
-      "value": 4
-    },
-    {
-      "ruleId": 2,
-      "value": 3
-    },
-    {
-      "ruleId": 3,
-      "value": 2
-    },
-    {
-      "ruleId": 4,
-      "value": 4
-    },
-    {
-      "ruleId": 5,
-      "value": 4
-    },
-    {
-      "ruleId": 6,
-      "value": 2
-    },
-    {
-      "ruleId": 7,
-      "value": 10
-    },
-    {
-      "ruleId": 8,
-      "value": 5
-    },
-    {
-      "ruleId": 9,
-      "value": 60
-    },
-    {
-      "ruleId": 10,
-      "value": 0.30000001192092896
-    },
-    {
-      "ruleId": 11,
-      "value": 0.20000000298023224
-    },
-    {
-      "ruleId": 12,
-      "value": 8
-    },
-    {
-      "ruleId": 13,
-      "value": 1.7999999523162842
-    }
-  ],
-  "skills": [
-    {
-      "skillId": 2001,
-      "manaCost": 100,
-      "castRange": 0,
-      "radius": 0,
-      "effectId": 3001,
-      "name": "보호막",
-      "targetRule": 0,
-      "delivery": 0,
-      "animation": 0,
-      "centerOnCaster": false,
-      "windup": 0.3499999940395355,
-      "cooldown": 0,
-      "baseDamage": 0,
-      "attackRatio": 0,
-      "armorIgnore": 0,
-      "projectileSpeed": 8
-    },
-    {
-      "skillId": 2002,
-      "manaCost": 100,
-      "castRange": 3,
-      "radius": 0,
-      "effectId": 0,
-      "name": "강화 화살",
-      "targetRule": 1,
-      "delivery": 1,
-      "animation": 1,
-      "centerOnCaster": false,
-      "windup": 0.3499999940395355,
-      "cooldown": 0,
-      "baseDamage": 0,
-      "attackRatio": 2,
-      "armorIgnore": 0,
-      "projectileSpeed": 8
-    },
-    {
-      "skillId": 2003,
-      "manaCost": 100,
-      "castRange": 14,
-      "radius": 0,
-      "effectId": 3002,
-      "name": "치유",
-      "targetRule": 2,
-      "delivery": 0,
-      "animation": 2,
-      "centerOnCaster": false,
-      "windup": 0.4000000059604645,
-      "cooldown": 0,
-      "baseDamage": 0,
-      "attackRatio": 0,
-      "armorIgnore": 0,
-      "projectileSpeed": 8
-    },
-    {
-      "skillId": 2004,
-      "manaCost": 100,
-      "castRange": 3,
-      "radius": 0,
-      "effectId": 0,
-      "name": "관통 사격",
-      "targetRule": 1,
-      "delivery": 1,
-      "animation": 1,
-      "centerOnCaster": false,
-      "windup": 0.4000000059604645,
-      "cooldown": 0,
-      "baseDamage": 0,
-      "attackRatio": 1.7999999523162842,
-      "armorIgnore": 0.5,
-      "projectileSpeed": 8
-    },
-    {
-      "skillId": 2005,
-      "manaCost": 100,
-      "castRange": 1,
-      "radius": 1,
-      "effectId": 0,
-      "name": "회전 베기",
-      "targetRule": 1,
-      "delivery": 0,
-      "animation": 0,
-      "centerOnCaster": true,
-      "windup": 0.4000000059604645,
-      "cooldown": 0,
-      "baseDamage": 0,
-      "attackRatio": 1.5,
-      "armorIgnore": 0,
-      "projectileSpeed": 8
-    },
-    {
-      "skillId": 2006,
-      "manaCost": 100,
-      "castRange": 1,
-      "radius": 0,
-      "effectId": 0,
-      "name": "그림자 일격",
-      "targetRule": 1,
-      "delivery": 0,
-      "animation": 0,
-      "centerOnCaster": false,
-      "windup": 0.30000001192092896,
-      "cooldown": 0,
-      "baseDamage": 0,
-      "attackRatio": 2.5,
-      "armorIgnore": 0,
-      "projectileSpeed": 8
-    },
-    {
-      "skillId": 2007,
-      "manaCost": 100,
-      "castRange": 3,
-      "radius": 1,
-      "effectId": 0,
-      "name": "화염 폭발",
-      "targetRule": 1,
-      "delivery": 1,
-      "animation": 2,
-      "centerOnCaster": false,
-      "windup": 0.5,
-      "cooldown": 0,
-      "baseDamage": 30,
-      "attackRatio": 1.2000000476837158,
-      "armorIgnore": 0,
-      "projectileSpeed": 8
-    },
-    {
-      "skillId": 2008,
-      "manaCost": 100,
-      "castRange": 1,
-      "radius": 0,
-      "effectId": 3003,
-      "name": "추적자의 강타",
-      "targetRule": 1,
-      "delivery": 0,
-      "animation": 0,
-      "centerOnCaster": false,
-      "windup": 0.4000000059604645,
-      "cooldown": 0,
-      "baseDamage": 0,
-      "attackRatio": 1.7999999523162842,
-      "armorIgnore": 0,
-      "projectileSpeed": 8
-    }
-  ],
-  "effects": [
-    {
-      "effectId": 3001,
-      "kind": 0,
-      "value": 80,
-      "duration": 5,
-      "stacking": 1,
-      "stat": 1,
-      "operation": 0
-    },
-    {
-      "effectId": 3002,
-      "kind": 1,
-      "value": 90,
-      "duration": 0,
-      "stacking": 1,
-      "stat": 1,
-      "operation": 0
-    },
-    {
-      "effectId": 3003,
-      "kind": 2,
-      "value": 1,
-      "duration": 1.5,
-      "stacking": 1,
-      "stat": 1,
-      "operation": 0
-    }
-  ],
-  "traits": [
-    {
-      "traitId": 4001,
-      "name": "Human",
-      "category": 0,
-      "groupId": 1,
-      "requiredCount": 2,
-      "effect": 0,
-      "value": 0.15,
-      "secondaryValue": 0,
-      "duration": 5,
-      "threshold": 0
-    },
-    {
-      "traitId": 4002,
-      "name": "Elf",
-      "category": 0,
-      "groupId": 2,
-      "requiredCount": 2,
-      "effect": 1,
-      "value": 20,
-      "secondaryValue": 0,
-      "duration": 0,
-      "threshold": 0
-    },
-    {
-      "traitId": 4003,
-      "name": "Undead",
-      "category": 0,
-      "groupId": 3,
-      "requiredCount": 2,
-      "effect": 2,
-      "value": 0.15,
-      "secondaryValue": 0,
-      "duration": 0,
-      "threshold": 0
-    },
-    {
-      "traitId": 4004,
-      "name": "Orc",
-      "category": 0,
-      "groupId": 4,
-      "requiredCount": 2,
-      "effect": 3,
-      "value": 0.25,
-      "secondaryValue": 0,
-      "duration": 0,
-      "threshold": 0.5
-    },
-    {
-      "traitId": 4101,
-      "name": "Swordsman",
-      "category": 1,
-      "groupId": 1,
-      "requiredCount": 2,
-      "effect": 4,
-      "value": 0.15,
-      "secondaryValue": 0,
-      "duration": 0,
-      "threshold": 0
-    },
-    {
-      "traitId": 4102,
-      "name": "Mage",
-      "category": 1,
-      "groupId": 2,
-      "requiredCount": 2,
-      "effect": 5,
-      "value": 0.2,
-      "secondaryValue": 0,
-      "duration": 0,
-      "threshold": 0
-    },
-    {
-      "traitId": 4103,
-      "name": "Archer",
-      "category": 1,
-      "groupId": 3,
-      "requiredCount": 2,
-      "effect": 6,
-      "value": 0.2,
-      "secondaryValue": 0,
-      "duration": 0,
-      "threshold": 0
-    },
-    {
-      "traitId": 4104,
-      "name": "Assassin",
-      "category": 1,
-      "groupId": 4,
-      "requiredCount": 2,
-      "effect": 7,
-      "value": 0.2,
-      "secondaryValue": 0.3,
-      "duration": 0,
-      "threshold": 0
-    }
-  ],
-  "augments": [
-    {
-      "augmentId": 5001,
-      "name": "Iron Vitality",
-      "description": "All allies gain 15% maximum HP.",
-      "effect": 0,
-      "stat": 0,
-      "operation": 1,
-      "value": 0.15,
-      "duration": 0.0
-    },
-    {
-      "augmentId": 5002,
-      "name": "Combat Training",
-      "description": "All allies gain 15% attack damage.",
-      "effect": 0,
-      "stat": 1,
-      "operation": 1,
-      "value": 0.15,
-      "duration": 0.0
-    },
-    {
-      "augmentId": 5003,
-      "name": "Swift Hands",
-      "description": "All allies gain 15% attack speed.",
-      "effect": 0,
-      "stat": 3,
-      "operation": 1,
-      "value": 0.15,
-      "duration": 0.0
-    },
-    {
-      "augmentId": 5004,
-      "name": "Arcane Research",
-      "description": "All allies gain 20% skill damage healing and shield power.",
-      "effect": 0,
-      "stat": 5,
-      "operation": 1,
-      "value": 0.2,
-      "duration": 0.0
-    },
-    {
-      "augmentId": 5005,
-      "name": "Early Protection",
-      "description": "At battle start all allies gain a 10% max HP shield for 5 seconds.",
-      "effect": 1,
-      "stat": 0,
-      "operation": 0,
-      "value": 0.1,
-      "duration": 5.0
-    },
-    {
-      "augmentId": 5006,
-      "name": "Mercenary Contract",
-      "description": "Immediately gain 8 gold once.",
-      "effect": 3,
-      "stat": 0,
-      "operation": 0,
-      "value": 8.0,
-      "duration": 0.0
-    },
-    {
-      "augmentId": 5007,
-      "name": "Spoils Collector",
-      "description": "Gain 2 extra gold whenever you win a battle.",
-      "effect": 4,
-      "stat": 0,
-      "operation": 0,
-      "value": 2.0,
-      "duration": 0.0
-    },
-    {
-      "augmentId": 5008,
-      "name": "Charged Mana",
-      "description": "All allies start battle with 20 extra MP up to 100.",
-      "effect": 2,
-      "stat": 0,
-      "operation": 0,
-      "value": 20.0,
-      "duration": 0.0
-    }
-  ]
+    "schemaVersion": 5,
+    "dataVersion": "2026-10-23-google-canonical",
+    "units": [
+        {
+            "unitId": 1001,
+            "cost": 1,
+            "originId": 1,
+            "classId": 1,
+            "hp": 160,
+            "attack": 22,
+            "armor": 25,
+            "attackRange": 1,
+            "combatRole": 0,
+            "skillId": 2001,
+            "visualId": 1,
+            "iconId": 1,
+            "name": "Shield",
+            "attackType": "Melee",
+            "attackInterval": 1.2000000476837158,
+            "critChance": 0.10000000149011612,
+            "critMultiplier": 1.5
+        },
+        {
+            "unitId": 1002,
+            "cost": 1,
+            "originId": 2,
+            "classId": 3,
+            "hp": 95,
+            "attack": 30,
+            "armor": 5,
+            "attackRange": 3,
+            "combatRole": 2,
+            "skillId": 2002,
+            "visualId": 2,
+            "iconId": 2,
+            "name": "Scout",
+            "attackType": "Ranged",
+            "attackInterval": 1,
+            "critChance": 0.10000000149011612,
+            "critMultiplier": 1.5
+        },
+        {
+            "unitId": 1003,
+            "cost": 2,
+            "originId": 2,
+            "classId": 2,
+            "hp": 125,
+            "attack": 27,
+            "armor": 8,
+            "attackRange": 3,
+            "combatRole": 3,
+            "skillId": 2003,
+            "visualId": 3,
+            "iconId": 3,
+            "name": "Healer",
+            "attackType": "Ranged",
+            "attackInterval": 1.100000023841858,
+            "critChance": 0.10000000149011612,
+            "critMultiplier": 1.5
+        },
+        {
+            "unitId": 1004,
+            "cost": 2,
+            "originId": 4,
+            "classId": 3,
+            "hp": 130,
+            "attack": 37,
+            "armor": 10,
+            "attackRange": 3,
+            "combatRole": 2,
+            "skillId": 2004,
+            "visualId": 4,
+            "iconId": 4,
+            "name": "Crossbow",
+            "attackType": "Ranged",
+            "attackInterval": 1.25,
+            "critChance": 0.10000000149011612,
+            "critMultiplier": 1.5
+        },
+        {
+            "unitId": 1005,
+            "cost": 3,
+            "originId": 3,
+            "classId": 1,
+            "hp": 230,
+            "attack": 45,
+            "armor": 20,
+            "attackRange": 1,
+            "combatRole": 1,
+            "skillId": 2005,
+            "visualId": 5,
+            "iconId": 5,
+            "name": "Warrior",
+            "attackType": "Melee",
+            "attackInterval": 1.149999976158142,
+            "critChance": 0.10000000149011612,
+            "critMultiplier": 1.5
+        },
+        {
+            "unitId": 1006,
+            "cost": 3,
+            "originId": 3,
+            "classId": 4,
+            "hp": 155,
+            "attack": 53,
+            "armor": 8,
+            "attackRange": 1,
+            "combatRole": 2,
+            "skillId": 2006,
+            "visualId": 6,
+            "iconId": 6,
+            "name": "Shadow",
+            "attackType": "Melee",
+            "attackInterval": 0.8999999761581421,
+            "critChance": 0.10000000149011612,
+            "critMultiplier": 1.5
+        },
+        {
+            "unitId": 1007,
+            "cost": 4,
+            "originId": 1,
+            "classId": 2,
+            "hp": 170,
+            "attack": 65,
+            "armor": 10,
+            "attackRange": 3,
+            "combatRole": 2,
+            "skillId": 2007,
+            "visualId": 7,
+            "iconId": 7,
+            "name": "Pyromancer",
+            "attackType": "Ranged",
+            "attackInterval": 1.2999999523162842,
+            "critChance": 0.10000000149011612,
+            "critMultiplier": 1.5
+        },
+        {
+            "unitId": 1008,
+            "cost": 5,
+            "originId": 4,
+            "classId": 4,
+            "hp": 300,
+            "attack": 70,
+            "armor": 22,
+            "attackRange": 1,
+            "combatRole": 1,
+            "skillId": 2008,
+            "visualId": 8,
+            "iconId": 8,
+            "name": "Tracker",
+            "attackType": "Melee",
+            "attackInterval": 1,
+            "critChance": 0.10000000149011612,
+            "critMultiplier": 1.5
+        }
+    ],
+    "rounds": [
+        {
+            "roundId": 1,
+            "rewardGold": 3,
+            "isBoss": false,
+            "offersAugment": false
+        },
+        {
+            "roundId": 2,
+            "rewardGold": 3,
+            "isBoss": false,
+            "offersAugment": true
+        },
+        {
+            "roundId": 3,
+            "rewardGold": 4,
+            "isBoss": false,
+            "offersAugment": false
+        },
+        {
+            "roundId": 4,
+            "rewardGold": 4,
+            "isBoss": true,
+            "offersAugment": false
+        },
+        {
+            "roundId": 5,
+            "rewardGold": 5,
+            "isBoss": false,
+            "offersAugment": true
+        },
+        {
+            "roundId": 6,
+            "rewardGold": 5,
+            "isBoss": false,
+            "offersAugment": false
+        },
+        {
+            "roundId": 7,
+            "rewardGold": 5,
+            "isBoss": false,
+            "offersAugment": false
+        },
+        {
+            "roundId": 8,
+            "rewardGold": 5,
+            "isBoss": true,
+            "offersAugment": false
+        },
+        {
+            "roundId": 9,
+            "rewardGold": 6,
+            "isBoss": false,
+            "offersAugment": true
+        },
+        {
+            "roundId": 10,
+            "rewardGold": 6,
+            "isBoss": false,
+            "offersAugment": false
+        },
+        {
+            "roundId": 11,
+            "rewardGold": 6,
+            "isBoss": false,
+            "offersAugment": false
+        },
+        {
+            "roundId": 12,
+            "rewardGold": 6,
+            "isBoss": true,
+            "offersAugment": false
+        }
+    ],
+    "roundUnits": [
+        {
+            "entryId": 101,
+            "roundId": 1,
+            "unitId": 1001,
+            "star": 1,
+            "col": 6,
+            "row": 3,
+            "bossProfileId": 0
+        },
+        {
+            "entryId": 201,
+            "roundId": 2,
+            "unitId": 1001,
+            "star": 1,
+            "col": 6,
+            "row": 3,
+            "bossProfileId": 0
+        },
+        {
+            "entryId": 202,
+            "roundId": 2,
+            "unitId": 1002,
+            "star": 1,
+            "col": 7,
+            "row": 4,
+            "bossProfileId": 0
+        },
+        {
+            "entryId": 301,
+            "roundId": 3,
+            "unitId": 1001,
+            "star": 1,
+            "col": 6,
+            "row": 3,
+            "bossProfileId": 0
+        },
+        {
+            "entryId": 302,
+            "roundId": 3,
+            "unitId": 1001,
+            "star": 1,
+            "col": 7,
+            "row": 4,
+            "bossProfileId": 0
+        },
+        {
+            "entryId": 303,
+            "roundId": 3,
+            "unitId": 1002,
+            "star": 1,
+            "col": 7,
+            "row": 2,
+            "bossProfileId": 0
+        },
+        {
+            "entryId": 401,
+            "roundId": 4,
+            "unitId": 1001,
+            "star": 1,
+            "col": 6,
+            "row": 3,
+            "bossProfileId": 1
+        },
+        {
+            "entryId": 402,
+            "roundId": 4,
+            "unitId": 1003,
+            "star": 1,
+            "col": 7,
+            "row": 4,
+            "bossProfileId": 0
+        },
+        {
+            "entryId": 501,
+            "roundId": 5,
+            "unitId": 1005,
+            "star": 1,
+            "col": 6,
+            "row": 3,
+            "bossProfileId": 0
+        },
+        {
+            "entryId": 502,
+            "roundId": 5,
+            "unitId": 1002,
+            "star": 1,
+            "col": 7,
+            "row": 4,
+            "bossProfileId": 0
+        },
+        {
+            "entryId": 503,
+            "roundId": 5,
+            "unitId": 1002,
+            "star": 1,
+            "col": 7,
+            "row": 2,
+            "bossProfileId": 0
+        },
+        {
+            "entryId": 601,
+            "roundId": 6,
+            "unitId": 1001,
+            "star": 1,
+            "col": 6,
+            "row": 3,
+            "bossProfileId": 0
+        },
+        {
+            "entryId": 602,
+            "roundId": 6,
+            "unitId": 1005,
+            "star": 1,
+            "col": 7,
+            "row": 4,
+            "bossProfileId": 0
+        },
+        {
+            "entryId": 603,
+            "roundId": 6,
+            "unitId": 1004,
+            "star": 1,
+            "col": 7,
+            "row": 2,
+            "bossProfileId": 0
+        },
+        {
+            "entryId": 701,
+            "roundId": 7,
+            "unitId": 1001,
+            "star": 1,
+            "col": 6,
+            "row": 3,
+            "bossProfileId": 0
+        },
+        {
+            "entryId": 702,
+            "roundId": 7,
+            "unitId": 1003,
+            "star": 1,
+            "col": 7,
+            "row": 4,
+            "bossProfileId": 0
+        },
+        {
+            "entryId": 703,
+            "roundId": 7,
+            "unitId": 1002,
+            "star": 1,
+            "col": 7,
+            "row": 2,
+            "bossProfileId": 0
+        },
+        {
+            "entryId": 704,
+            "roundId": 7,
+            "unitId": 1004,
+            "star": 1,
+            "col": 6,
+            "row": 5,
+            "bossProfileId": 0
+        },
+        {
+            "entryId": 801,
+            "roundId": 8,
+            "unitId": 1005,
+            "star": 1,
+            "col": 6,
+            "row": 3,
+            "bossProfileId": 2
+        },
+        {
+            "entryId": 802,
+            "roundId": 8,
+            "unitId": 1006,
+            "star": 1,
+            "col": 7,
+            "row": 4,
+            "bossProfileId": 0
+        },
+        {
+            "entryId": 803,
+            "roundId": 8,
+            "unitId": 1002,
+            "star": 1,
+            "col": 7,
+            "row": 2,
+            "bossProfileId": 0
+        },
+        {
+            "entryId": 901,
+            "roundId": 9,
+            "unitId": 1001,
+            "star": 2,
+            "col": 6,
+            "row": 3,
+            "bossProfileId": 0
+        },
+        {
+            "entryId": 902,
+            "roundId": 9,
+            "unitId": 1004,
+            "star": 1,
+            "col": 7,
+            "row": 4,
+            "bossProfileId": 0
+        },
+        {
+            "entryId": 903,
+            "roundId": 9,
+            "unitId": 1007,
+            "star": 1,
+            "col": 7,
+            "row": 2,
+            "bossProfileId": 0
+        },
+        {
+            "entryId": 1001,
+            "roundId": 10,
+            "unitId": 1005,
+            "star": 2,
+            "col": 6,
+            "row": 3,
+            "bossProfileId": 0
+        },
+        {
+            "entryId": 1002,
+            "roundId": 10,
+            "unitId": 1006,
+            "star": 1,
+            "col": 7,
+            "row": 4,
+            "bossProfileId": 0
+        },
+        {
+            "entryId": 1003,
+            "roundId": 10,
+            "unitId": 1008,
+            "star": 1,
+            "col": 7,
+            "row": 2,
+            "bossProfileId": 0
+        },
+        {
+            "entryId": 1101,
+            "roundId": 11,
+            "unitId": 1001,
+            "star": 2,
+            "col": 6,
+            "row": 3,
+            "bossProfileId": 0
+        },
+        {
+            "entryId": 1102,
+            "roundId": 11,
+            "unitId": 1007,
+            "star": 1,
+            "col": 7,
+            "row": 4,
+            "bossProfileId": 0
+        },
+        {
+            "entryId": 1103,
+            "roundId": 11,
+            "unitId": 1003,
+            "star": 1,
+            "col": 7,
+            "row": 2,
+            "bossProfileId": 0
+        },
+        {
+            "entryId": 1104,
+            "roundId": 11,
+            "unitId": 1002,
+            "star": 1,
+            "col": 6,
+            "row": 5,
+            "bossProfileId": 0
+        },
+        {
+            "entryId": 1201,
+            "roundId": 12,
+            "unitId": 1008,
+            "star": 1,
+            "col": 6,
+            "row": 3,
+            "bossProfileId": 3
+        },
+        {
+            "entryId": 1202,
+            "roundId": 12,
+            "unitId": 1001,
+            "star": 2,
+            "col": 7,
+            "row": 4,
+            "bossProfileId": 0
+        },
+        {
+            "entryId": 1203,
+            "roundId": 12,
+            "unitId": 1007,
+            "star": 1,
+            "col": 7,
+            "row": 2,
+            "bossProfileId": 0
+        },
+        {
+            "entryId": 1204,
+            "roundId": 12,
+            "unitId": 1003,
+            "star": 1,
+            "col": 6,
+            "row": 5,
+            "bossProfileId": 0
+        }
+    ],
+    "levels": [
+        {
+            "level": 1,
+            "requiredXp": 2,
+            "deploymentLimit": 1
+        },
+        {
+            "level": 2,
+            "requiredXp": 4,
+            "deploymentLimit": 2
+        },
+        {
+            "level": 3,
+            "requiredXp": 6,
+            "deploymentLimit": 3
+        },
+        {
+            "level": 4,
+            "requiredXp": 10,
+            "deploymentLimit": 4
+        },
+        {
+            "level": 5,
+            "requiredXp": 16,
+            "deploymentLimit": 5
+        },
+        {
+            "level": 6,
+            "requiredXp": 24,
+            "deploymentLimit": 6
+        },
+        {
+            "level": 7,
+            "requiredXp": 36,
+            "deploymentLimit": 7
+        },
+        {
+            "level": 8,
+            "requiredXp": 48,
+            "deploymentLimit": 8
+        },
+        {
+            "level": 9,
+            "requiredXp": 64,
+            "deploymentLimit": 9
+        },
+        {
+            "level": 10,
+            "requiredXp": 0,
+            "deploymentLimit": 10
+        }
+    ],
+    "shopRates": [
+        {
+            "level": 1,
+            "weights": [
+                100,
+                0,
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "level": 2,
+            "weights": [
+                100,
+                0,
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "level": 3,
+            "weights": [
+                75,
+                25,
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "level": 4,
+            "weights": [
+                55,
+                30,
+                15,
+                0,
+                0
+            ]
+        },
+        {
+            "level": 5,
+            "weights": [
+                45,
+                33,
+                20,
+                2,
+                0
+            ]
+        },
+        {
+            "level": 6,
+            "weights": [
+                30,
+                40,
+                25,
+                5,
+                0
+            ]
+        },
+        {
+            "level": 7,
+            "weights": [
+                16,
+                30,
+                43,
+                10,
+                1
+            ]
+        },
+        {
+            "level": 8,
+            "weights": [
+                15,
+                20,
+                32,
+                30,
+                3
+            ]
+        },
+        {
+            "level": 9,
+            "weights": [
+                10,
+                17,
+                25,
+                33,
+                15
+            ]
+        },
+        {
+            "level": 10,
+            "weights": [
+                5,
+                10,
+                20,
+                40,
+                25
+            ]
+        }
+    ],
+    "poolCounts": [
+        {
+            "cost": 1,
+            "copiesPerUnit": 30
+        },
+        {
+            "cost": 2,
+            "copiesPerUnit": 25
+        },
+        {
+            "cost": 3,
+            "copiesPerUnit": 18
+        },
+        {
+            "cost": 4,
+            "copiesPerUnit": 10
+        },
+        {
+            "cost": 5,
+            "copiesPerUnit": 9
+        }
+    ],
+    "economy": [
+        {
+            "ruleId": 1,
+            "value": 4
+        },
+        {
+            "ruleId": 2,
+            "value": 3
+        },
+        {
+            "ruleId": 3,
+            "value": 2
+        },
+        {
+            "ruleId": 4,
+            "value": 4
+        },
+        {
+            "ruleId": 5,
+            "value": 4
+        },
+        {
+            "ruleId": 6,
+            "value": 2
+        },
+        {
+            "ruleId": 7,
+            "value": 10
+        },
+        {
+            "ruleId": 8,
+            "value": 5
+        },
+        {
+            "ruleId": 9,
+            "value": 60
+        },
+        {
+            "ruleId": 10,
+            "value": 0.30000001192092896
+        },
+        {
+            "ruleId": 11,
+            "value": 0.20000000298023224
+        },
+        {
+            "ruleId": 12,
+            "value": 8
+        },
+        {
+            "ruleId": 13,
+            "value": 1.7999999523162842
+        }
+    ],
+    "skills": [
+        {
+            "skillId": 2001,
+            "manaCost": 100,
+            "castRange": 0,
+            "radius": 0,
+            "effectId": 3001,
+            "name": "보호막",
+            "targetRule": 0,
+            "delivery": 0,
+            "animation": 0,
+            "centerOnCaster": false,
+            "windup": 0.3499999940395355,
+            "cooldown": 0,
+            "baseDamage": 0,
+            "attackRatio": 0,
+            "armorIgnore": 0,
+            "projectileSpeed": 8
+        },
+        {
+            "skillId": 2002,
+            "manaCost": 100,
+            "castRange": 3,
+            "radius": 0,
+            "effectId": 0,
+            "name": "강화 화살",
+            "targetRule": 1,
+            "delivery": 1,
+            "animation": 1,
+            "centerOnCaster": false,
+            "windup": 0.3499999940395355,
+            "cooldown": 0,
+            "baseDamage": 0,
+            "attackRatio": 2,
+            "armorIgnore": 0,
+            "projectileSpeed": 8
+        },
+        {
+            "skillId": 2003,
+            "manaCost": 100,
+            "castRange": 14,
+            "radius": 0,
+            "effectId": 3002,
+            "name": "치유",
+            "targetRule": 2,
+            "delivery": 0,
+            "animation": 2,
+            "centerOnCaster": false,
+            "windup": 0.4000000059604645,
+            "cooldown": 0,
+            "baseDamage": 0,
+            "attackRatio": 0,
+            "armorIgnore": 0,
+            "projectileSpeed": 8
+        },
+        {
+            "skillId": 2004,
+            "manaCost": 100,
+            "castRange": 3,
+            "radius": 0,
+            "effectId": 0,
+            "name": "관통 사격",
+            "targetRule": 1,
+            "delivery": 1,
+            "animation": 1,
+            "centerOnCaster": false,
+            "windup": 0.4000000059604645,
+            "cooldown": 0,
+            "baseDamage": 0,
+            "attackRatio": 1.7999999523162842,
+            "armorIgnore": 0.5,
+            "projectileSpeed": 8
+        },
+        {
+            "skillId": 2005,
+            "manaCost": 100,
+            "castRange": 1,
+            "radius": 1,
+            "effectId": 0,
+            "name": "회전 베기",
+            "targetRule": 1,
+            "delivery": 0,
+            "animation": 0,
+            "centerOnCaster": true,
+            "windup": 0.4000000059604645,
+            "cooldown": 0,
+            "baseDamage": 0,
+            "attackRatio": 1.5,
+            "armorIgnore": 0,
+            "projectileSpeed": 8
+        },
+        {
+            "skillId": 2006,
+            "manaCost": 100,
+            "castRange": 1,
+            "radius": 0,
+            "effectId": 0,
+            "name": "그림자 일격",
+            "targetRule": 1,
+            "delivery": 0,
+            "animation": 0,
+            "centerOnCaster": false,
+            "windup": 0.30000001192092896,
+            "cooldown": 0,
+            "baseDamage": 0,
+            "attackRatio": 2.5,
+            "armorIgnore": 0,
+            "projectileSpeed": 8
+        },
+        {
+            "skillId": 2007,
+            "manaCost": 100,
+            "castRange": 3,
+            "radius": 1,
+            "effectId": 0,
+            "name": "화염 폭발",
+            "targetRule": 1,
+            "delivery": 1,
+            "animation": 2,
+            "centerOnCaster": false,
+            "windup": 0.5,
+            "cooldown": 0,
+            "baseDamage": 30,
+            "attackRatio": 1.2000000476837158,
+            "armorIgnore": 0,
+            "projectileSpeed": 8
+        },
+        {
+            "skillId": 2008,
+            "manaCost": 100,
+            "castRange": 1,
+            "radius": 0,
+            "effectId": 3003,
+            "name": "추적자의 강타",
+            "targetRule": 1,
+            "delivery": 0,
+            "animation": 0,
+            "centerOnCaster": false,
+            "windup": 0.4000000059604645,
+            "cooldown": 0,
+            "baseDamage": 0,
+            "attackRatio": 1.7999999523162842,
+            "armorIgnore": 0,
+            "projectileSpeed": 8
+        }
+    ],
+    "effects": [
+        {
+            "effectId": 3001,
+            "kind": 0,
+            "value": 80,
+            "duration": 5,
+            "stacking": 1,
+            "stat": 1,
+            "operation": 0
+        },
+        {
+            "effectId": 3002,
+            "kind": 1,
+            "value": 90,
+            "duration": 0,
+            "stacking": 1,
+            "stat": 1,
+            "operation": 0
+        },
+        {
+            "effectId": 3003,
+            "kind": 2,
+            "value": 1,
+            "duration": 1.5,
+            "stacking": 1,
+            "stat": 1,
+            "operation": 0
+        }
+    ],
+    "traits": [
+        {
+            "traitId": 4001,
+            "name": "Human",
+            "category": 0,
+            "groupId": 1,
+            "requiredCount": 2,
+            "effect": 0,
+            "value": 0.15,
+            "secondaryValue": 0,
+            "duration": 5,
+            "threshold": 0
+        },
+        {
+            "traitId": 4002,
+            "name": "Elf",
+            "category": 0,
+            "groupId": 2,
+            "requiredCount": 2,
+            "effect": 1,
+            "value": 20,
+            "secondaryValue": 0,
+            "duration": 0,
+            "threshold": 0
+        },
+        {
+            "traitId": 4003,
+            "name": "Undead",
+            "category": 0,
+            "groupId": 3,
+            "requiredCount": 2,
+            "effect": 2,
+            "value": 0.15,
+            "secondaryValue": 0,
+            "duration": 0,
+            "threshold": 0
+        },
+        {
+            "traitId": 4004,
+            "name": "Orc",
+            "category": 0,
+            "groupId": 4,
+            "requiredCount": 2,
+            "effect": 3,
+            "value": 0.25,
+            "secondaryValue": 0,
+            "duration": 0,
+            "threshold": 0.5
+        },
+        {
+            "traitId": 4101,
+            "name": "Swordsman",
+            "category": 1,
+            "groupId": 1,
+            "requiredCount": 2,
+            "effect": 4,
+            "value": 0.15,
+            "secondaryValue": 0,
+            "duration": 0,
+            "threshold": 0
+        },
+        {
+            "traitId": 4102,
+            "name": "Mage",
+            "category": 1,
+            "groupId": 2,
+            "requiredCount": 2,
+            "effect": 5,
+            "value": 0.2,
+            "secondaryValue": 0,
+            "duration": 0,
+            "threshold": 0
+        },
+        {
+            "traitId": 4103,
+            "name": "Archer",
+            "category": 1,
+            "groupId": 3,
+            "requiredCount": 2,
+            "effect": 6,
+            "value": 0.2,
+            "secondaryValue": 0,
+            "duration": 0,
+            "threshold": 0
+        },
+        {
+            "traitId": 4104,
+            "name": "Assassin",
+            "category": 1,
+            "groupId": 4,
+            "requiredCount": 2,
+            "effect": 7,
+            "value": 0.2,
+            "secondaryValue": 0.3,
+            "duration": 0,
+            "threshold": 0
+        }
+    ],
+    "augments": [
+        {
+            "augmentId": 5001,
+            "name": "Iron Vitality",
+            "description": "All allies gain 15% maximum HP.",
+            "effect": 0,
+            "stat": 0,
+            "operation": 1,
+            "value": 0.15,
+            "duration": 0.0
+        },
+        {
+            "augmentId": 5002,
+            "name": "Combat Training",
+            "description": "All allies gain 15% attack damage.",
+            "effect": 0,
+            "stat": 1,
+            "operation": 1,
+            "value": 0.15,
+            "duration": 0.0
+        },
+        {
+            "augmentId": 5003,
+            "name": "Swift Hands",
+            "description": "All allies gain 15% attack speed.",
+            "effect": 0,
+            "stat": 3,
+            "operation": 1,
+            "value": 0.15,
+            "duration": 0.0
+        },
+        {
+            "augmentId": 5004,
+            "name": "Arcane Research",
+            "description": "All allies gain 20% skill damage healing and shield power.",
+            "effect": 0,
+            "stat": 5,
+            "operation": 1,
+            "value": 0.2,
+            "duration": 0.0
+        },
+        {
+            "augmentId": 5005,
+            "name": "Early Protection",
+            "description": "At battle start all allies gain a 10% max HP shield for 5 seconds.",
+            "effect": 1,
+            "stat": 0,
+            "operation": 0,
+            "value": 0.1,
+            "duration": 5.0
+        },
+        {
+            "augmentId": 5006,
+            "name": "Mercenary Contract",
+            "description": "Immediately gain 8 gold once.",
+            "effect": 3,
+            "stat": 0,
+            "operation": 0,
+            "value": 8.0,
+            "duration": 0.0
+        },
+        {
+            "augmentId": 5007,
+            "name": "Spoils Collector",
+            "description": "Gain 2 extra gold whenever you win a battle.",
+            "effect": 4,
+            "stat": 0,
+            "operation": 0,
+            "value": 2.0,
+            "duration": 0.0
+        },
+        {
+            "augmentId": 5008,
+            "name": "Charged Mana",
+            "description": "All allies start battle with 20 extra MP up to 100.",
+            "effect": 2,
+            "stat": 0,
+            "operation": 0,
+            "value": 20.0,
+            "duration": 0.0
+        }
+    ],
+    "items": [
+        {
+            "itemId": 6001,
+            "name": "철투구",
+            "description": "튼튼한 투구로 받는 피해를 줄입니다.",
+            "iconId": 33,
+            "dropWeight": 1
+        },
+        {
+            "itemId": 6002,
+            "name": "강철갑옷",
+            "description": "두꺼운 갑옷으로 생존력을 높입니다.",
+            "iconId": 35,
+            "dropWeight": 1
+        },
+        {
+            "itemId": 6003,
+            "name": "힘의 장갑",
+            "description": "힘을 실어 적을 공격합니다.",
+            "iconId": 43,
+            "dropWeight": 1
+        },
+        {
+            "itemId": 6004,
+            "name": "신속의 장화",
+            "description": "가벼운 발걸음으로 빠르게 싸웁니다.",
+            "iconId": 41,
+            "dropWeight": 1
+        },
+        {
+            "itemId": 6005,
+            "name": "마법사의 로브",
+            "description": "마력이 깃든 옷으로 스킬을 강화합니다.",
+            "iconId": 37,
+            "dropWeight": 1
+        },
+        {
+            "itemId": 6006,
+            "name": "정밀의 반지",
+            "description": "적의 빈틈을 정확하게 노립니다.",
+            "iconId": 48,
+            "dropWeight": 1
+        }
+    ],
+    "itemStats": [
+        {
+            "entryId": 1,
+            "itemId": 6001,
+            "stat": 2,
+            "operation": 0,
+            "value": 8
+        },
+        {
+            "entryId": 2,
+            "itemId": 6002,
+            "stat": 0,
+            "operation": 0,
+            "value": 120
+        },
+        {
+            "entryId": 3,
+            "itemId": 6003,
+            "stat": 1,
+            "operation": 0,
+            "value": 12
+        },
+        {
+            "entryId": 4,
+            "itemId": 6004,
+            "stat": 4,
+            "operation": 1,
+            "value": 0.15
+        },
+        {
+            "entryId": 5,
+            "itemId": 6004,
+            "stat": 3,
+            "operation": 1,
+            "value": 0.08
+        },
+        {
+            "entryId": 6,
+            "itemId": 6005,
+            "stat": 5,
+            "operation": 1,
+            "value": 0.2
+        },
+        {
+            "entryId": 7,
+            "itemId": 6006,
+            "stat": 6,
+            "operation": 0,
+            "value": 0.1
+        }
+    ]
 }

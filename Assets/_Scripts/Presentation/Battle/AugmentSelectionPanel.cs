@@ -23,10 +23,6 @@ namespace AutoBattler.Presentation.Battle
         public bool IsOpen=>gameObject.activeSelf && overlay.activeSelf;
         public event Action<int> Selected;
         public event Action ToggleRequested;
-#if UNITY_EDITOR
-        public void Configure(GameObject body,CanvasGroup group,Button toggle,TextMeshProUGUI label,AugmentCard[] choices)
-        { overlay=body; overlayGroup=group; toggleButton=toggle; toggleText=label; cards=choices; }
-#endif
         public void Show(RunController run)
         {
             bool pending=run.IsReady && run.State.Augments.HasPending;
@@ -43,12 +39,12 @@ namespace AutoBattler.Presentation.Battle
         {
             if(!Application.isPlaying || toggleButton==null) return;
             toggleButton.onClick.AddListener(Toggle);
-            foreach(var card in cards) card.Selected+=Choose;
+            foreach(AugmentCard card in cards) card.Selected+=Choose;
         }
         private void OnDisable()
         {
             if(toggleButton!=null) toggleButton.onClick.RemoveListener(Toggle);
-            if(cards!=null) foreach(var card in cards) card.Selected-=Choose;
+            if(cards!=null) foreach(AugmentCard card in cards) card.Selected-=Choose;
             if(overlayGroup!=null) overlayGroup.DOKill();
             wasOpen=false;
         }

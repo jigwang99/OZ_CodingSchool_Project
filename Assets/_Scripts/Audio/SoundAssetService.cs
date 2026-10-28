@@ -26,10 +26,10 @@ namespace AutoBattler.Audio
             try
             {
                 if (catalog == null) throw new ArgumentNullException(nameof(catalog));
-                foreach (var entry in catalog.Effects)
+                foreach (SoundEntry entry in catalog.Effects)
                 {
                     if (clips.ContainsKey(entry.Id)) continue;
-                    var lease = await assets.AcquireAsync<AudioClip>(entry.Clip, token);
+                    AssetService.Lease<AudioClip> lease = await assets.AcquireAsync<AudioClip>(entry.Clip, token);
                     if (disposed || token.IsCancellationRequested)
                     { lease.Dispose(); token.ThrowIfCancellationRequested(); throw new ObjectDisposedException(nameof(SoundAssetService)); }
                     clips.Add(entry.Id, lease);
@@ -45,13 +45,13 @@ namespace AutoBattler.Audio
 
         public bool TryGetClip(SoundId id, out AudioClip clip)
         {
-            if (IsReady && clips.TryGetValue(id, out var lease)) { clip = lease.Asset; return clip != null; }
+            if (IsReady && clips.TryGetValue(id, out AssetService.Lease<AudioClip> lease)) { clip = lease.Asset; return clip != null; }
             clip = null; return false;
         }
         private void Clear()
         {
             IsReady = false;
-            foreach (var lease in clips.Values) lease.Dispose();
+            foreach (AssetService.Lease<AudioClip> lease in clips.Values) lease.Dispose();
             clips.Clear();
         }
         public void Dispose()

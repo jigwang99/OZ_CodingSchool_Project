@@ -22,7 +22,7 @@ namespace AutoBattler.Assets
         public UnitPrefabPool(AssetService service,Transform parent,int initialSize=1)
         {
             assets=service; this.initialSize=Mathf.Max(0,initialSize);
-            var root=new GameObject(nameof(ObjectPoolManager)); root.transform.SetParent(parent,false);
+            GameObject root=new GameObject(nameof(ObjectPoolManager)); root.transform.SetParent(parent,false);
             manager=root.AddComponent<ObjectPoolManager>();
         }
         public async UniTask PreloadAsync(AssetReferenceGameObject prefab,CancellationToken token)
@@ -31,7 +31,7 @@ namespace AutoBattler.Assets
             if(disposed) throw new ObjectDisposedException(nameof(UnitPrefabPool));
             object address=prefab.RuntimeKey;
             if(leases.ContainsKey(address)) return;
-            var lease=await assets.AcquireAsync<GameObject>(prefab,token);
+            AssetService.Lease<GameObject> lease=await assets.AcquireAsync<GameObject>(prefab,token);
             try
             {
                 if(disposed) throw new ObjectDisposedException(nameof(UnitPrefabPool));
@@ -44,7 +44,7 @@ namespace AutoBattler.Assets
         public Unit Rent(AssetReferenceGameObject prefab)
         {
             if(disposed) throw new ObjectDisposedException(nameof(UnitPrefabPool));
-            if(!leases.TryGetValue(prefab.RuntimeKey,out var lease))
+            if(!leases.TryGetValue(prefab.RuntimeKey,out AssetService.Lease<GameObject> lease))
                 throw new InvalidOperationException("프리팹 사전 로드 필요.");
             // Configure와 배치 정보 연결 후 호출 측에서 활성화.
             return manager.GetObject<Unit>(lease.Asset,false);
@@ -61,7 +61,7 @@ namespace AutoBattler.Assets
             if(manager!=null) { manager.Dispose(); UnityEngine.Object.Destroy(manager.gameObject); }
             // 인스턴스 파괴 처리 뒤 Addressables 프리팹 핸들 해제.
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
-            foreach(var lease in leases.Values) lease.Dispose(); leases.Clear();
+            foreach(AssetService.Lease<GameObject> lease in leases.Values) lease.Dispose(); leases.Clear();
         }
     }
 }

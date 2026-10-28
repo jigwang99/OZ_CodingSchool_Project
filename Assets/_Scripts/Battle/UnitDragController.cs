@@ -113,7 +113,7 @@ namespace AutoBattler.Battle.Grid
             if (boardState.IsRegistered(view.State))
                 return view;
 
-            var state = new UnitState(nextInstanceId++);
+            UnitState state = new UnitState(nextInstanceId++);
             HexCoord cell = gridLayout.WorldToCell(view.transform.position);
             bool registered = false;
             if (benchLayout != null && benchLayout.TryWorldToSlot(view.transform.position, out int initialSlot))
@@ -189,9 +189,9 @@ namespace AutoBattler.Battle.Grid
             if (hit == null)
             {
                 // 적군도 정보 확인 가능. 드래그 등록과 배치 변경은 아군만 허용.
-                foreach (var candidate in Physics2D.OverlapPointAll(mouseWorldPosition))
+                foreach (Collider2D candidate in Physics2D.OverlapPointAll(mouseWorldPosition))
                 {
-                    var owner = candidate.GetComponentInParent<Unit>();
+                    Unit owner = candidate.GetComponentInParent<Unit>();
                     if (candidate.gameObject.scene != gameObject.scene || owner == null
                         || !owner.isActiveAndEnabled || owner.Definition == null) continue;
                     hit = candidate; unit = owner; break;
@@ -254,10 +254,10 @@ namespace AutoBattler.Battle.Grid
         private void EndDrag()
         {
             if(!isDragging) { CancelDrag(); return; }
-            var target=dropTarget;
+            IUnitDropTarget target=dropTarget;
             if(target!=null && target.Contains(Mouse.current.position.ReadValue()))
             {
-                var unit=draggedUnit;
+                UnitView unit=draggedUnit;
                 unit.transform.position=originalPosition;
                 // 판매 콜백에서 풀로 반환되기 전에 드래그 참조와 강조 해제.
                 ClearDrag();

@@ -4,7 +4,7 @@ namespace AutoBattler.Battle.Units
 {
     public enum StatType { MaxHp, AttackDamage, Defense, AttackSpeed, MoveSpeed, SkillPower, CritChance, CritMultiplier, BasicAttackPower }
     public enum ModifierOperation { Flat, Percent }
-    public enum ModifierSourceKind { System, Skill, OriginTrait, ClassTrait, Augment }
+    public enum ModifierSourceKind { System, Skill, OriginTrait, ClassTrait, Augment, Equipment }
 
     /// <summary>효과 출처. 정의 ID와 시전자 인스턴스 ID를 구분.</summary>
     public readonly struct ModifierSource : IEquatable<ModifierSource>

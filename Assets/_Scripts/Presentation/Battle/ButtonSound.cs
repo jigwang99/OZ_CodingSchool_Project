@@ -13,8 +13,5 @@ namespace AutoBattler.Presentation.Battle
         // 프리팹의 영속 onClick 리스너로 등록하여 화면 전환 명령보다 먼저 재생.
         public void PlayClick()
         { if (button != null && button.IsActive() && button.IsInteractable()) SoundManager.PlayEffect(SoundId.Click); }
-#if UNITY_EDITOR
-        public void Configure(Button target) => button = target;
-#endif
     }
 }

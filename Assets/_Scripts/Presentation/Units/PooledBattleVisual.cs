@@ -29,7 +29,7 @@ namespace AutoBattler.Presentation.Units
         public void PlayParticles(Vector3 position,float scale)
         {
             transform.SetPositionAndRotation(position,Quaternion.Euler(-90f,0f,0f)); transform.localScale=Vector3.one*scale;
-            foreach(var system in particles) system.Play(false);
+            foreach(ParticleSystem system in particles) system.Play(false);
         }
         public void PlayProjectile(Vector3 position,CombatUnitReference destination,Vector3 fallback,Sprite sprite,
             Color color,float seconds,bool hold)
@@ -66,7 +66,7 @@ namespace AutoBattler.Presentation.Units
             else if(elapsed>.03f)
             {
                 bool alive=false;
-                foreach(var system in particles) if(system.IsAlive(false)) { alive=true; break; }
+                foreach(ParticleSystem system in particles) if(system.IsAlive(false)) { alive=true; break; }
                 if(!alive) { ReturnToPool(); return; }
             }
             if(elapsed>=lifetime) ReturnToPool();
@@ -77,20 +77,16 @@ namespace AutoBattler.Presentation.Units
         {
             if(!IsRented) return;
             IsRented=false;
-            var callback=returned; returned=null; ResetState();
+            Action<PooledBattleVisual> callback=returned; returned=null; ResetState();
             if(owner!=null) owner.ReturnObject(key,gameObject);
             callback?.Invoke(this);
         }
         private void ResetState()
         {
-            foreach(var system in particles) if(system!=null) system.Stop(false,ParticleSystemStopBehavior.StopEmittingAndClear);
+            foreach(ParticleSystem system in particles) if(system!=null) system.Stop(false,ParticleSystemStopBehavior.StopEmittingAndClear);
             if(spriteRenderer!=null) { spriteRenderer.sprite=null; spriteRenderer.color=Color.white; spriteRenderer.enabled=false; }
             target=default; start=lastDestination=Vector3.zero; elapsed=duration=0f; followStatus=holdUntilImpact=false;
         }
         private void OnDisable() { if(IsRented) ReturnToPool(); else ResetState(); }
-#if UNITY_EDITOR
-        public void Configure(BattleVisualId id,ParticleSystem[] systems,SpriteRenderer renderer)
-        { key=id; particles=systems; spriteRenderer=renderer; }
-#endif
     }
 }

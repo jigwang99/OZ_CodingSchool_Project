@@ -35,28 +35,23 @@ namespace AutoBattler.Presentation.Battle
         public TextMeshProUGUI CountText=>countText;
         public TextMeshProUGUI EffectText=>effectText;
         public Image Background=>background;
-#if UNITY_EDITOR
-        public void ConfigureReferences(TraitCategory kind,int group,Image panel,Image stripe,
-            TextMeshProUGUI nameLabel,TextMeshProUGUI countLabel,TextMeshProUGUI effectLabel)
-        { category=kind; groupId=group; background=panel; indicator=stripe; nameText=nameLabel; countText=countLabel; effectText=effectLabel; }
-#endif
         public void Show(TraitSnapshot snapshot)
         {
             TraitStatus? unlocked=null,locked=null;
-            foreach(var status in snapshot.Statuses)
+            foreach(TraitStatus status in snapshot.Statuses)
             {
-                var definition=status.Definition;
+                TraitDefinition definition=status.Definition;
                 if(definition.Category!=category || definition.GroupId!=groupId) continue;
                 if(status.IsActive && (!unlocked.HasValue || definition.RequiredCount>unlocked.Value.Definition.RequiredCount)) unlocked=status;
                 if(!locked.HasValue || definition.RequiredCount<locked.Value.Definition.RequiredCount) locked=status;
             }
-            var selected=unlocked ?? locked;
+            TraitStatus? selected=unlocked ?? locked;
             if(!selected.HasValue)
             {
                 Count=RequiredCount=DefinitionId=0; IsActive=false;
                 gameObject.SetActive(false); return;
             }
-            var value=selected.Value; bool animate=hasShown && IsActive!=value.IsActive;
+            TraitStatus value=selected.Value; bool animate=hasShown && IsActive!=value.IsActive;
             Count=value.Count; RequiredCount=value.Definition.RequiredCount; DefinitionId=value.Definition.Id; IsActive=value.IsActive;
             // 배치 종류가 없는 그룹은 숨김. 재배치 시 현재 수치로 복원.
             if(Count==0) { gameObject.SetActive(false); return; }
@@ -65,7 +60,7 @@ namespace AutoBattler.Presentation.Battle
             countText.text=$"{Count}/{RequiredCount}"+(IsActive?" 활성":"");
             effectText.text=Describe(value.Definition);
             StopAnimation();
-            var panelColor=IsActive?activeColor:inactiveColor; var accent=IsActive?activeAccent:inactiveAccent;
+            Color panelColor=IsActive?activeColor:inactiveColor; Color accent=IsActive?activeAccent:inactiveAccent;
             if(animate)
             {
                 background.DOColor(panelColor,tweenDuration).SetUpdate(true);

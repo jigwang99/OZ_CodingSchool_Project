@@ -32,9 +32,9 @@ namespace AutoBattler.Battle.AI
         { this.children=(BehaviourNode[])children.Clone(); Children=Array.AsReadOnly(this.children); }
         protected override BehaviourStatus Evaluate()
         {
-            foreach(var child in children)
+            foreach(BehaviourNode child in children)
             {
-                var result=child.Tick();
+                BehaviourStatus result=child.Tick();
                 if(result!=BehaviourStatus.Success) return result;
             }
             return BehaviourStatus.Success;
@@ -49,9 +49,9 @@ namespace AutoBattler.Battle.AI
         { this.children=(BehaviourNode[])children.Clone(); Children=Array.AsReadOnly(this.children); }
         protected override BehaviourStatus Evaluate()
         {
-            foreach(var child in children)
+            foreach(BehaviourNode child in children)
             {
-                var result=child.Tick();
+                BehaviourStatus result=child.Tick();
                 if(result!=BehaviourStatus.Failure) return result;
             }
             return BehaviourStatus.Failure;

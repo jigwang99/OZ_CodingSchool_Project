@@ -39,15 +39,15 @@ namespace AutoBattler.Presentation.Units
             BattleFlowController phases,HexGridLayout layout)
         {
             assets=service; settings=configuration; flow=phases; grid=layout;
-            var root=new GameObject("BattleVisualPool"); root.transform.SetParent(parent,false);
+            GameObject root=new GameObject("BattleVisualPool"); root.transform.SetParent(parent,false);
             manager=root.AddComponent<ObjectPoolManager>(); flow.PhaseChanged+=OnPhaseChanged;
         }
         public async UniTask PreloadAsync(CancellationToken token)
         {
-            foreach(var entry in settings.Effects)
+            foreach(BattleVisualEntry entry in settings.Effects)
             {
                 if(loaded.ContainsKey(entry.id)) continue;
-                var lease=await assets.AcquireAsync<GameObject>(entry.prefab,token);
+                AssetService.Lease<GameObject> lease=await assets.AcquireAsync<GameObject>(entry.prefab,token);
                 try
                 {
                     token.ThrowIfCancellationRequested();
@@ -59,33 +59,33 @@ namespace AutoBattler.Presentation.Units
         public void BeginBattle(IEnumerable<Unit> units)
         {
             EndBattle(); inBattle=true;
-            foreach(var unit in units) bindings.Add(new Binding(this,unit));
+            foreach(Unit unit in units) bindings.Add(new Binding(this,unit));
         }
         public void EndBattle()
         {
             inBattle=false;
-            foreach(var binding in bindings) binding.Dispose(); bindings.Clear();
-            foreach(var visual in active.ToArray()) if(visual!=null) visual.ReturnToPool();
+            foreach(Binding binding in bindings) binding.Dispose(); bindings.Clear();
+            foreach(PooledBattleVisual visual in active.ToArray()) if(visual!=null) visual.ReturnToPool();
             active.Clear();
         }
         private void OnPhaseChanged(BattlePhase phase) { if(phase!=BattlePhase.Combat) EndBattle(); }
         private PooledBattleVisual Rent(BattleVisualId id)
         {
-            if(disposed || !inBattle || !loaded.TryGetValue(id,out var item)) return null;
+            if(disposed || !inBattle || !loaded.TryGetValue(id,out Loaded item)) return null;
             // 기존 Pool의 확장 생성 경로를 사용하지 않는 대여.
-            if(!manager.TryGetObject<PooledBattleVisual>(id,out var visual)) { SkippedCount++; return null; }
+            if(!manager.TryGetObject<PooledBattleVisual>(id,out PooledBattleVisual visual)) { SkippedCount++; return null; }
             visual.Bind(manager,OnReturned,item.Entry.lifetime); active.Add(visual); PlayedCount++; return visual;
         }
         private void OnReturned(PooledBattleVisual visual)=>active.Remove(visual);
         public PooledBattleVisual Play(BattleVisualId id,Vector3 position)
         {
-            var visual=Rent(id);
+            PooledBattleVisual visual=Rent(id);
             if(visual!=null) visual.PlayParticles(position,loaded[id].Entry.scale);
             return visual;
         }
         private PooledBattleVisual Projectile(Unit caster,Unit target,float seconds,bool magic,Color color,bool hold)
         {
-            var visual=Rent(BattleVisualId.Projectile);
+            PooledBattleVisual visual=Rent(BattleVisualId.Projectile);
             if(visual!=null) visual.PlayProjectile(caster.transform.position+Vector3.up*.2f,new CombatUnitReference(target),
                 target.transform.position+Vector3.up*.2f,magic?settings.MagicOrb:settings.Arrow,color,seconds,hold);
             return visual;
@@ -96,7 +96,7 @@ namespace AutoBattler.Presentation.Units
             disposed=true; flow.PhaseChanged-=OnPhaseChanged; EndBattle();
             manager.Dispose(); UnityEngine.Object.Destroy(manager.gameObject);
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
-            foreach(var item in loaded.Values) item.Lease.Dispose(); loaded.Clear();
+            foreach(Loaded item in loaded.Values) item.Lease.Dispose(); loaded.Clear();
         }
         private sealed class Binding : IDisposable
         {
@@ -121,7 +121,7 @@ namespace AutoBattler.Presentation.Units
                 if(!Current || result.Target.Unit!=unit) return;
                 if(result.Context.Kind==DamageKind.Skill)
                 {
-                    var skill=service.settings.Skill(result.Context.SourceId);
+                    SkillVisualEntry skill=service.settings.Skill(result.Context.SourceId);
                     if(skill?.areaImpact==true) return;
                     service.Play(skill?.impact ?? BattleVisualId.MagicHit,Position);
                 }
@@ -145,14 +145,14 @@ namespace AutoBattler.Presentation.Units
             private void OnProjectile(UnitCombat target,float seconds)
             {
                 if(!Current || target==null) return;
-                var destination=target.GetComponent<Unit>();
+                Unit destination=target.GetComponent<Unit>();
                 bool magic=unit.Definition.ClassId==2;
                 service.Projectile(unit,destination,seconds,magic,magic ? new Color(.6f,.9f,1f) : Color.white,false);
             }
             private void OnSkillReleased(SkillCastContext context)
             {
                 if(!Current || context.Definition.Delivery!=SkillDelivery.Projectile || !context.Target.IsValid) return;
-                var presentation=service.settings.Skill(context.Definition.Id);
+                SkillVisualEntry presentation=service.settings.Skill(context.Definition.Id);
                 float seconds=unit.CurrentCell.Value.DistanceTo(context.Center)/Mathf.Max(.01f,context.Definition.ProjectileSpeed);
                 projectile=service.Projectile(unit,context.Target.Unit,seconds,presentation?.magicProjectile==true,
                     presentation?.projectileColor ?? Color.white,true);
@@ -162,7 +162,7 @@ namespace AutoBattler.Presentation.Units
             {
                 Return(ref projectile,projectileGeneration);
                 if(!Current) return;
-                var presentation=service.settings.Skill(context.Definition.Id);
+                SkillVisualEntry presentation=service.settings.Skill(context.Definition.Id);
                 if(presentation?.areaImpact==true) service.Play(presentation.impact,service.grid.CellToWorld(context.Center));
             }
             private void OnCastFinished()=>Return(ref projectile,projectileGeneration);

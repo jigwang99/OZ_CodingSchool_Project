@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,10 +19,10 @@ namespace AutoBattler.Battle.Combat
         public IReadOnlyList<UnitBehaviourTree> Trees { get; }
         public AutoBattleController(IEnumerable<Unit> units)
         {
-            var participants=units.OrderBy(unit=>unit.InstanceId).ToArray();
-            var view=Array.AsReadOnly(participants);
-            var board=new CombatBoard();
-            foreach(var unit in participants)
+            Unit[] participants=units.OrderBy(unit=>unit.InstanceId).ToArray();
+            ReadOnlyCollection<Unit> view=Array.AsReadOnly(participants);
+            CombatBoard board=new CombatBoard();
+            foreach(Unit unit in participants)
                 if(!unit.CurrentCell.HasValue || !board.TryAdd(unit.InstanceId,unit.CurrentCell.Value))
                     throw new InvalidOperationException("전투 시작 좌표 중복 또는 영역 밖.");
             trees=participants.Select(unit=>new UnitBehaviourTree(new UnitBlackboard(unit,board,view))).ToArray();
@@ -34,7 +35,7 @@ namespace AutoBattler.Battle.Combat
             try
             {
                 token.ThrowIfCancellationRequested();
-                foreach(var tree in trees) tree.Blackboard.Token=token;
+                foreach(UnitBehaviourTree tree in trees) tree.Blackboard.Token=token;
                 float deadline=Time.time+duration;
                 await RunEntriesAsync(token);
                 while(true)
@@ -43,29 +44,29 @@ namespace AutoBattler.Battle.Combat
                     bool allies=trees.Any(tree=>tree.Blackboard.Unit.Team==UnitTeam.Ally && tree.Blackboard.Unit.Health.IsAlive);
                     bool enemies=trees.Any(tree=>tree.Blackboard.Unit.Team==UnitTeam.Enemy && tree.Blackboard.Unit.Health.IsAlive);
                     if(!allies || !enemies || Time.time>=deadline) return allies && !enemies;
-                    foreach(var tree in trees) tree.Tick(token);
+                    foreach(UnitBehaviourTree tree in trees) tree.Tick(token);
                     await UniTask.Delay(50,cancellationToken:token);
                 }
             }
-            finally { foreach(var tree in trees) tree.Dispose(); }
+            finally { foreach(UnitBehaviourTree tree in trees) tree.Dispose(); }
         }
         private async UniTask RunEntriesAsync(CancellationToken token)
         {
-            var entries=new List<(UnitBehaviourTree tree,CombatUnitReference owner,CombatUnitReference target,HexCoord from,HexCoord to)>();
+            List<(UnitBehaviourTree tree, CombatUnitReference owner, CombatUnitReference target, HexCoord from, HexCoord to)> entries=new List<(UnitBehaviourTree tree,CombatUnitReference owner,CombatUnitReference target,HexCoord from,HexCoord to)>();
             // 양 팀 모두 시작 좌표로 판단. 모든 예약을 마친 다음 도약 시작.
-            foreach(var tree in trees)
+            foreach(UnitBehaviourTree tree in trees)
             {
-                var context=tree.Blackboard; var unit=context.Unit;
+                UnitBlackboard context=tree.Blackboard; Unit unit=context.Unit;
                 if(unit.Definition.ClassId!=AssassinEntryPlanner.AssassinClassId || !unit.Move.CanMove) continue;
-                var target=AssassinEntryPlanner.SelectTarget(unit,context.Participants);
+                Unit target=AssassinEntryPlanner.SelectTarget(unit,context.Participants);
                 if(target==null) continue;
                 context.Target=target;
-                if(AssassinEntryPlanner.TryChooseLanding(unit,target,context.Board,out var destination)
+                if(AssassinEntryPlanner.TryChooseLanding(unit,target,context.Board,out HexCoord destination)
                     && context.Board.TryReserveJump(unit.InstanceId,unit.CurrentCell.Value,destination))
                     entries.Add((tree,new CombatUnitReference(unit),new CombatUnitReference(target),unit.CurrentCell.Value,destination));
             }
-            var tasks=new List<UniTask>();
-            foreach(var entry in entries)
+            List<UniTask> tasks=new List<UniTask>();
+            foreach((UnitBehaviourTree tree, CombatUnitReference owner, CombatUnitReference target, HexCoord from, HexCoord to) entry in entries)
                 tasks.Add(JumpAsync(entry.tree,entry.owner,entry.target,entry.from,entry.to,token));
             await UniTask.WhenAll(tasks);
             token.ThrowIfCancellationRequested();
@@ -73,7 +74,7 @@ namespace AutoBattler.Battle.Combat
         private static async UniTask JumpAsync(UnitBehaviourTree tree,CombatUnitReference owner,CombatUnitReference target,
             HexCoord from,HexCoord to,CancellationToken token)
         {
-            var context=tree.Blackboard;
+            UnitBlackboard context=tree.Blackboard;
             try
             {
                 if(!owner.IsAlive) return;

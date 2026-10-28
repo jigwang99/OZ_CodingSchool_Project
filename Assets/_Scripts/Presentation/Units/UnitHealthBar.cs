@@ -19,6 +19,8 @@ namespace AutoBattler.Presentation.Units
         [SerializeField] private HealthBarFill segments;
         [SerializeField] private RectTransform healthRoot;
         [SerializeField] private RectTransform manaRoot;
+        [SerializeField] private RectTransform equipmentRoot;
+        public RectTransform EquipmentRoot=>equipmentRoot;
         [SerializeField] private Color allyColor = new Color(0.2f, 0.9f, 0.35f);
         [SerializeField] private Color enemyColor = new Color(1f, 0.35f, 0.35f);
 
@@ -32,13 +34,6 @@ namespace AutoBattler.Presentation.Units
         public HealthBarFill Segments=>segments;
         public RectTransform HealthRoot => healthRoot;
         public RectTransform ManaRoot => manaRoot;
-#if UNITY_EDITOR
-        public void ConfigureReferences(Canvas canvas, Image fill, TextMeshProUGUI label)
-        { healthCanvas=canvas; fillImage=fill; starText=label; }
-        public void ConfigureSegments(HealthBarFill view)=>segments=view;
-        public void ConfigurePresentation(RectTransform health, RectTransform mana)
-        { healthRoot = health; manaRoot = mana; }
-#endif
 
         public void Bind(Unit unit)
         {
@@ -96,6 +91,7 @@ namespace AutoBattler.Presentation.Units
             // 대기석에서는 성급만 표시하고 전장에 배치되면 HP·MP 표시 복원.
             SetVisible(healthRoot, onBoard);
             SetVisible(manaRoot, onBoard);
+            SetVisible(equipmentRoot,(onBoard || onBench) && owner.Equipment!=null && owner.Equipment.Count>0);
         }
 
         private static void SetVisible(RectTransform root, bool visible)

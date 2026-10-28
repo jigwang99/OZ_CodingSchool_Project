@@ -15,6 +15,7 @@ namespace AutoBattler.Battle.Units
     [DisallowMultipleComponent, RequireComponent(typeof(UnitView),typeof(UnitHealth))]
     [RequireComponent(typeof(UnitStats),typeof(UnitEffects))]
     [RequireComponent(typeof(UnitMana),typeof(UnitSkill))]
+    [RequireComponent(typeof(UnitEquipment))]
     public sealed class Unit : MonoBehaviour
     {
         [SerializeField] private BattleFlowController battleFlow;
@@ -25,6 +26,9 @@ namespace AutoBattler.Battle.Units
         public UnitEffects Effects { get; private set; }
         public UnitMana Mana { get; private set; }
         public UnitSkill Skill { get; private set; }
+        [SerializeField] private AutoBattler.Presentation.Battle.UnitIdentityView identity;
+        public AutoBattler.Presentation.Battle.UnitIdentityView Identity=>identity;
+        public UnitEquipment Equipment { get; private set; }
         public int SpawnVersion { get; private set; }
         public UnitDefinition Definition { get; private set; }
         public UnitTeam Team { get; private set; }
@@ -50,7 +54,7 @@ namespace AutoBattler.Battle.Units
             View=GetComponent<UnitView>(); Health=GetComponent<UnitHealth>();
             Move=GetComponent<UnitMove>(); Combat=GetComponent<UnitCombat>();
             StatModifiers=GetComponent<UnitStats>(); Effects=GetComponent<UnitEffects>();
-            Mana=GetComponent<UnitMana>(); Skill=GetComponent<UnitSkill>();
+            Mana=GetComponent<UnitMana>(); Skill=GetComponent<UnitSkill>(); Equipment=GetComponent<UnitEquipment>();
             Health.BindUnit(this);
             Skill.BindUnit(this);
         }
@@ -66,7 +70,7 @@ namespace AutoBattler.Battle.Units
             ProjectileSpeed=data.Rule(EconomyRule.ProjectileSpeed);
             float multiplier=star==2?data.Rule(EconomyRule.StarMultiplier):1f;
             float bossHp=bossProfile==3?2.5f:bossProfile>0?2f:1f;
-            var baseStats=new UnitStat(Mathf.FloorToInt(definition.Hp*multiplier*bossHp),
+            UnitStat baseStats=new UnitStat(Mathf.FloorToInt(definition.Hp*multiplier*bossHp),
                 Mathf.FloorToInt(definition.Attack*multiplier*(bossProfile>0?1.2f:1f)),definition.Armor,
                 1f,definition.Range,definition.Interval);
             StatModifiers.Initialize(baseStats,definition.CritChance,definition.CritMultiplier);
@@ -94,7 +98,7 @@ namespace AutoBattler.Battle.Units
         { if(ReferenceEquals(Actions,controller)) Actions=null; }
         private void ClearActions()
         {
-            var current=Actions; Actions=null; current?.Dispose();
+            UnitStateController current=Actions; Actions=null; current?.Dispose();
         }
         private void OnDisable()
         {
@@ -104,6 +108,7 @@ namespace AutoBattler.Battle.Units
             if(Mana!=null) Mana.Clear();
             if(Move!=null) Move.Stop();
             if(Effects!=null) Effects.Clear();
+            if(Equipment!=null) Equipment.Clear();
             if(StatModifiers!=null) StatModifiers.ClearModifiers();
         }
     }

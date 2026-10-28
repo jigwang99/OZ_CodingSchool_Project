@@ -46,15 +46,6 @@ namespace AutoBattler.Presentation.Battle
         public Slider EffectVolumeSlider => effectVolumeSlider;
         public TextMeshProUGUI EffectVolumeLabel => effectVolumeLabel;
 
-#if UNITY_EDITOR
-        public void ConfigureSound(Slider slider, TextMeshProUGUI label)
-        { effectVolumeSlider=slider; effectVolumeLabel=label; }
-        public void Configure(CanvasGroup overlay, Button open, Button close, Button quit, TMP_Dropdown dropdown)
-        {
-            modal=overlay; openButton=open; closeButton=close; quitButton=quit;
-            frameRateDropdown=dropdown;
-        }
-#endif
         public void BindContext(CanvasGroup group, RunController controller)
         {
             if(underlying!=group) Close();
@@ -86,7 +77,7 @@ namespace AutoBattler.Presentation.Battle
         }
 
         private bool CanOpen => underlying!=null && !GameNavigation.IsTransitioning
-            && (run==null || run.IsReady && !run.IsShuttingDown && !run.Flow.IsAugmentWindowOpen);
+            && (run==null || run.IsReady && !run.IsShuttingDown && !run.Flow.IsAugmentWindowOpen && !run.Equipment.IsInventoryOpen);
 
         private void LateUpdate()
         {

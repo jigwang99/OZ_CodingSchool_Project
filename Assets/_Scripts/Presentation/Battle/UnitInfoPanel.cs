@@ -47,19 +47,6 @@ namespace AutoBattler.Presentation.Battle
         public Image HealthFill => healthFill;
         public Image ManaFill => manaFill;
         public HealthBarFill HealthSegments=>healthSegments;
-#if UNITY_EDITOR
-        public void Configure(CanvasGroup canvasGroup, Image accent, TextMeshProUGUI title,
-            TextMeshProUGUI identity, TextMeshProUGUI traits, TextMeshProUGUI hp, TextMeshProUGUI mp,
-            Image hpFill, Image mpFill, TextMeshProUGUI stats, TextMeshProUGUI skillName, TextMeshProUGUI skill)
-        {
-            group=canvasGroup; teamAccent=accent; nameText=title; identityText=identity; traitsText=traits;
-            healthText=hp; manaText=mp; healthFill=hpFill; manaFill=mpFill;
-            statsText=stats; skillNameText=skillName; skillText=skill;
-        }
-        public void ConfigureIcons(AutoBattler.Assets.AssetCatalog assets,Image unit,Image skill,Image shield)
-        { catalog=assets; unitIcon=unit; skillIcon=skill; shieldIcon=shield; }
-        public void ConfigureHealthSegments(HealthBarFill view)=>healthSegments=view;
-#endif
         public void Show(Unit unit, DataRepository repository)
         {
             if (unit == null || !unit.isActiveAndEnabled || unit.Definition == null || unit.Stats == null)
@@ -87,7 +74,7 @@ namespace AutoBattler.Presentation.Battle
         }
         private string TraitName(TraitCategory category, int id)
         {
-            if (data != null) foreach (var trait in data.Traits)
+            if (data != null) foreach (TraitDefinition trait in data.Traits)
                 if (trait.Category==category && trait.GroupId==id) return BattleText.TraitName(category,id,trait.Name);
             return BattleText.TraitName(category,id,category==TraitCategory.Origin ? "종족" : "직업");
         }
@@ -115,26 +102,26 @@ namespace AutoBattler.Presentation.Battle
         private static void SetBar(Image image, int current, int maximum, bool animate)
         {
             image.transform.DOKill();
-            var scale=new Vector3(maximum>0 ? Mathf.Clamp01((float)current/maximum) : 0f,1f,1f);
+            Vector3 scale=new Vector3(maximum>0 ? Mathf.Clamp01((float)current/maximum) : 0f,1f,1f);
             if (animate) image.transform.DOScale(scale,.12f).SetUpdate(true);
             else image.transform.localScale=scale;
         }
         private void RefreshDetails()
         {
             if (!IsCurrent()) return;
-            var stats=boundUnit.Stats;
+            UnitStat stats=boundUnit.Stats;
             RefreshHealth(boundUnit.Health.IsAlive);
             manaText.text=$"MP  {boundUnit.Mana.Current}/{boundUnit.Mana.Maximum}";
             statsText.text=$"공격력<pos=205>{stats.AttackDamage}\n방어력<pos=205>{stats.Defense}\n"
                 +$"사거리<pos=205>{stats.AttackRange}칸\n공격 간격<pos=205>{stats.AttackCooldown:0.##}초\n"
                 +$"치명타<pos=205>{boundUnit.StatModifiers.CritChance:P0} / {boundUnit.StatModifiers.CritMultiplier:0.##}배\n"
                 +$"스킬 위력<pos=205>{boundUnit.StatModifiers.SkillPower:P0}\n보호막<pos=205>{boundUnit.Effects.Shield}";
-            var skill=boundUnit.Skill.Definition;
+            SkillDefinition skill=boundUnit.Skill.Definition;
             skillNameText.text=skill?.Name ?? "스킬 없음";
             if (skill==null) { skillText.text=""; return; }
             string target=skill.TargetRule==SkillTargetRule.Self ? "자신"
                 : skill.TargetRule==SkillTargetRule.LowestHealthAlly ? "체력이 가장 낮은 아군" : "현재 공격 대상";
-            var description=new StringBuilder();
+            StringBuilder description=new StringBuilder();
             description.Append($"{target}  |  {skill.ManaCost} MP\n시전 준비 {skill.Windup:0.##}초  /  재사용 {skill.Cooldown:0.##}초\n");
             description.Append($"사거리 {skill.CastRange}칸  /  반경 {skill.Radius}칸\n");
             float starScale=boundUnit.Star==2 && data!=null ? data.Rule(EconomyRule.StarMultiplier) : 1f;
@@ -145,7 +132,7 @@ namespace AutoBattler.Presentation.Battle
                 description.Append($"피해량 {damage:0.#} (방어력 적용 전)\n");
             }
             if (skill.ArmorIgnore>0) description.Append($"방어력 무시 {skill.ArmorIgnore:P0}\n");
-            if (data!=null && data.Effects.TryGetValue(skill.EffectId,out var effect))
+            if (data!=null && data.Effects.TryGetValue(skill.EffectId,out EffectDefinition effect))
             {
                 float value=effect.Value;
                 if (effect.Kind==EffectKind.Heal || effect.Kind==EffectKind.Shield) value*=starScale*power;

@@ -1,3 +1,5 @@
+using AutoBattler.Data.Items;
+using AutoBattler.Battle.Units;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -24,6 +26,8 @@ namespace AutoBattler.Data.Snapshot
         public EffectRow[] effects;
         public TraitRow[] traits;
         public AugmentRow[] augments;
+        public ItemRow[] items;
+        public ItemStatRow[] itemStats;
     }
     [Serializable] public sealed class UnitRow
     {
@@ -80,13 +84,26 @@ namespace AutoBattler.Data.Snapshot
         public IReadOnlyDictionary<int,EffectDefinition> Effects { get; }
         public IReadOnlyList<TraitDefinition> Traits { get; }
         public IReadOnlyDictionary<int,AugmentDefinition> Augments { get; }
+        public IReadOnlyDictionary<int,ItemDefinition> Items { get; }
         private readonly Dictionary<int,int> levelXp, pool;
         private readonly Dictionary<int,int[]> rates;
         private readonly Dictionary<int,float> rules;
         public DataRepository(GameSnapshot data)
         {
-            if(data==null || data.schemaVersion<1 || data.schemaVersion>4) throw new ArgumentException("지원하지 않는 데이터 스키마.");
+            if(data==null || data.schemaVersion<1 || data.schemaVersion>5) throw new ArgumentException("지원하지 않는 데이터 스키마.");
             Version=data.dataVersion;
+            if(data.schemaVersion>=5 && (data.items==null || data.itemStats==null))
+                throw new ArgumentException("아이템 정의 또는 능력치 표 없음.");
+            ItemRow[] itemRows=data.items ?? Array.Empty<ItemRow>();
+            ItemStatRow[] itemStats=data.itemStats ?? Array.Empty<ItemStatRow>();
+            if(itemRows.Any(item=>item==null || item.itemId<=0 || item.iconId<=0 || item.dropWeight<0 || string.IsNullOrWhiteSpace(item.name))
+                || itemRows.Sum(item=>(long)item.dropWeight)>int.MaxValue
+                || itemStats.Any(stat=>stat==null || stat.entryId<=0 || !itemRows.Any(item=>item.itemId==stat.itemId) || !Enum.IsDefined(typeof(StatType),stat.stat)
+                    || !Enum.IsDefined(typeof(ModifierOperation),stat.operation) || float.IsNaN(stat.value) || float.IsInfinity(stat.value)))
+                throw new ArgumentException("아이템 정의 또는 능력치 참조 오류.");
+            Items=new ReadOnlyDictionary<int,ItemDefinition>(itemRows.ToDictionary(item=>item.itemId,item=>new ItemDefinition(item,
+                itemStats.Where(stat=>stat.itemId==item.itemId).OrderBy(stat=>stat.entryId)
+                    .Select(stat=>new StatModifierSpec(stat.stat,stat.operation,stat.value)).ToArray())));
             Augments=new ReadOnlyDictionary<int,AugmentDefinition>((data.schemaVersion>=4
                 ? data.augments ?? throw new ArgumentException("강화 정의 없음.") : Array.Empty<AugmentRow>())
                 .ToDictionary(row=>row.augmentId,row=>new AugmentDefinition(row)));

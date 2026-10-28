@@ -35,16 +35,16 @@ namespace AutoBattler.Managers
         {
             isDontDestroy = true;
             base.Awake();
-            if (!TryGetExisting(out var current) || current != this) return;
+            if (!TryGetExisting(out SoundManager current) || current != this) return;
             float stored = PlayerPrefs.GetFloat(VolumePreferenceKey, defaultVolume);
             EffectVolume = Normalize(stored, defaultVolume);
-            foreach (var channel in channels)
+            foreach (AudioSource channel in channels)
                 if (channel != null) { channel.Stop(); channel.volume = EffectVolume; }
         }
 
         private void OnEnable()
         {
-            if (!Application.isPlaying || !TryGetExisting(out var current) || current != this) return;
+            if (!Application.isPlaying || !TryGetExisting(out SoundManager current) || current != this) return;
             soundAssets = new SoundAssetService();
             audioLifetime = new CancellationTokenSource();
             PreloadAsync().Forget();
@@ -92,7 +92,7 @@ namespace AutoBattler.Managers
             float next = Normalize(value, EffectVolume);
             if (Mathf.Approximately(next, EffectVolume)) return;
             EffectVolume = next;
-            foreach (var channel in channels)
+            foreach (AudioSource channel in channels)
                 if (channel != null) channel.volume = next;
             PlayerPrefs.SetFloat(VolumePreferenceKey, next);
             PlayerPrefs.Save();
@@ -100,15 +100,15 @@ namespace AutoBattler.Managers
         }
 
         // 이벤트 호출부에서는 싱글톤 검색·자동 생성 없이 등록된 매니저만 사용.
-        public static bool PlayEffect(SoundId id) => TryGetExisting(out var manager) && manager.Play(id);
+        public static bool PlayEffect(SoundId id) => TryGetExisting(out SoundManager manager) && manager.Play(id);
         public bool Play(SoundId id)
         {
             if (!isActiveAndEnabled || EffectVolume <= 0f || catalog == null
-                || !catalog.TryGet(id, out var entry) || !TryGetLoadedClip(id, out var clip)) return false;
+                || !catalog.TryGet(id, out SoundEntry entry) || !TryGetLoadedClip(id, out AudioClip clip)) return false;
             double now = AudioSettings.dspTime;
             if (lastPlayed.TryGetValue(id, out double previous) && now - previous < entry.Interval) return false;
             AudioSource available = null;
-            foreach (var channel in channels)
+            foreach (AudioSource channel in channels)
             {
                 if (channel == null) continue;
                 if (!channel.isPlaying) { available = channel; break; }
@@ -137,7 +137,7 @@ namespace AutoBattler.Managers
         private void ReleaseAudioAssets()
         {
             // 재생·채널 참조를 먼저 정리한 뒤 클립 핸들 반환.
-            foreach (var channel in channels)
+            foreach (AudioSource channel in channels)
                 if (channel != null) { channel.Stop(); channel.clip = null; }
             audioLifetime?.Cancel();
             soundAssets?.Dispose(); soundAssets = null;
@@ -149,7 +149,7 @@ namespace AutoBattler.Managers
 #if UNITY_EDITOR
         public void Configure(SoundCatalog sounds, AudioSource[] sources)
         {
-            bool reload = Application.isPlaying && isActiveAndEnabled && TryGetExisting(out var current) && current == this;
+            bool reload = Application.isPlaying && isActiveAndEnabled && TryGetExisting(out SoundManager current) && current == this;
             if (reload) ReleaseAudioAssets();
             catalog = sounds; channels = sources;
             if (reload) OnEnable();

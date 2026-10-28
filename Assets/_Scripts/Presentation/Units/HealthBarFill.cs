@@ -17,9 +17,6 @@ namespace AutoBattler.Presentation.Units
         public Image ShieldImage=>shieldImage;
         public float HealthRatio=>displayedHealth;
         public float ShieldRatio=>displayedShield;
-#if UNITY_EDITOR
-        public void Configure(Image health,Image shield) { healthImage=health; shieldImage=shield; }
-#endif
         public void SetValues(int health,int maximum,int shield,bool animate)
         {
             // 보호막이 최대 체력을 넘어도 합산 오버플로 없이 막대 안에 표시.
@@ -41,7 +38,7 @@ namespace AutoBattler.Presentation.Units
         }
         private void Draw()
         {
-            var health=healthImage.rectTransform; var shield=shieldImage.rectTransform;
+            RectTransform health=healthImage.rectTransform; RectTransform shield=shieldImage.rectTransform;
             health.localScale=new Vector3(displayedHealth,1f,1f);
             shield.anchoredPosition=health.anchoredPosition+new Vector2(health.rect.width*displayedHealth,0f);
             shield.localScale=new Vector3(displayedShield,1f,1f);

@@ -16,10 +16,6 @@ namespace AutoBattler.Presentation.Battle
         public TextMeshProUGUI TitleText=>titleText;
         public TextMeshProUGUI DescriptionText=>descriptionText;
         public event Action<int> Selected;
-#if UNITY_EDITOR
-        public void Configure(Button select,TextMeshProUGUI title,TextMeshProUGUI description,TextMeshProUGUI index)
-        { button=select; titleText=title; descriptionText=description; indexText=index; }
-#endif
         public void Show(AugmentDefinition definition,int index)
         { DisplayedId=definition.Id; titleText.text=BattleText.AugmentName(definition); descriptionText.text=BattleText.AugmentDescription(definition); indexText.text=(index+1).ToString("00"); }
         private void OnEnable() { if(Application.isPlaying && button!=null) button.onClick.AddListener(Request); }

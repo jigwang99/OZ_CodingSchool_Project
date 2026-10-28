@@ -34,7 +34,7 @@ namespace AutoBattler.Battle.AI.States
             }
             // 외부에서 이미 진행 중인 이동은 새 요청 없이 관찰.
             if(Unit.Move.IsMoving) return;
-            var target=Blackboard.Target;
+            Units.Unit target=Blackboard.Target;
             if(target==null || !target.CurrentCell.HasValue || !Unit.Move.CanMove)
             { WaitForPath(); return; }
             HexCoord targetCell=target.CurrentCell.Value;
@@ -46,7 +46,7 @@ namespace AutoBattler.Battle.AI.States
             if(Blackboard.Path==null || Blackboard.Path.Count==0
                 || !Blackboard.Board.TryReserve(Unit.InstanceId,Unit.CurrentCell.Value,Blackboard.Path[0]))
             { WaitForPath(); return; }
-            var next=Blackboard.Path[0]; Blackboard.Path.RemoveAt(0); Blackboard.FailedSince=-1f;
+            HexCoord next=Blackboard.Path[0]; Blackboard.Path.RemoveAt(0); Blackboard.FailedSince=-1f;
             current=Create(Unit.CurrentCell.Value,next,false);
             MoveAsync(current).Forget();
         }
@@ -73,7 +73,7 @@ namespace AutoBattler.Battle.AI.States
         }
         public override void Exit()
         {
-            var operation=current;
+            MoveOperation operation=current;
             if(operation==null) return;
             current=null;
             operation.Cancellation.Cancel();

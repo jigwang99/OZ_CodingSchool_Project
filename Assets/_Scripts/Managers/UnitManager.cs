@@ -1,3 +1,4 @@
+using AutoBattler.Data.Snapshot;
 using System.Collections.Generic;
 using System.Linq;
 using AutoBattler.Assets;
@@ -26,6 +27,8 @@ namespace AutoBattler.Managers
         private HexGridLayout grid;
         private BenchLayout bench;
         private RunState state;
+        private System.Func<int,Sprite> itemIcon;
+        public void ConfigureItemIcons(System.Func<int,Sprite> provider)=>itemIcon=provider;
 
         public IReadOnlyCollection<Unit> Allies=>allies.Values;
         public IReadOnlyCollection<Unit> Enemies=>enemies.AsReadOnly();
@@ -44,12 +47,12 @@ namespace AutoBattler.Managers
         {
             if(state==null) return;
             drag.ClearSelection();
-            foreach(var pair in allies.ToArray())
+            foreach(KeyValuePair<int, Unit> pair in allies.ToArray())
             {
                 if(state.Units.Any(owned=>owned.Placement.InstanceId==pair.Key)) continue;
                 pool.Return(pair.Value); allies.Remove(pair.Key);
             }
-            foreach(var owned in state.Units)
+            foreach(OwnedUnit owned in state.Units)
             {
                 int id=owned.Placement.InstanceId;
                 if(!allies.TryGetValue(id,out Unit unit))
@@ -61,6 +64,7 @@ namespace AutoBattler.Managers
                 }
                 else if(unit.Star!=owned.Star)
                     ConfigureUnit(unit,owned.DefinitionId,owned.Star,id,UnitTeam.Ally);
+                unit.Equipment.Apply(state.Items.Equipped(id),state.Data,itemIcon);
                 AugmentApplicator.ApplyPersistent(unit,state.Augments.Selected);
             }
             Physics2D.SyncTransforms();
@@ -69,15 +73,15 @@ namespace AutoBattler.Managers
         public void CreateEnemies()
         {
             if(state==null) return;
-            foreach(var unit in enemies) pool.Return(unit);
+            foreach(Unit unit in enemies) pool.Return(unit);
             enemies.Clear();
             int id=100000;
-            foreach(var definition in state.Data.Rounds[state.Round].Enemies)
+            foreach(EnemyDefinition definition in state.Data.Rounds[state.Round].Enemies)
             {
                 HexCoord cell=HexCoord.FromOffset(definition.Col,definition.Row);
                 Unit unit=pool.Rent(catalog.VisualPrefab(state.Data.Units[definition.UnitId].VisualId));
                 ConfigureUnit(unit,definition.UnitId,definition.Star,id++,UnitTeam.Enemy,cell,definition.BossProfileId);
-                var displayState=new UnitState(unit.InstanceId) { Location=UnitLocation.OnBoard(cell) };
+                UnitState displayState=new UnitState(unit.InstanceId) { Location=UnitLocation.OnBoard(cell) };
                 unit.View.Bind(displayState,null);
                 unit.transform.position=grid.CellToWorld(cell);
                 unit.gameObject.SetActive(true); enemies.Add(unit);
@@ -87,20 +91,17 @@ namespace AutoBattler.Managers
         private void ConfigureUnit(Unit unit,int definitionId,int star,int id,UnitTeam team,HexCoord? cell=null,int boss=0)
         {
             unit.Configure(state.Data.Units[definitionId],star,id,team,state.Data,flow,grid,bench,cell,boss);
-            UnitIdentityView identity=unit.GetComponent<UnitIdentityView>();
-            if(identity==null) identity=unit.gameObject.AddComponent<UnitIdentityView>();
-            identity.Apply(unit);
-            if(unit.GetComponent<UnitAnimationView>()==null) unit.gameObject.AddComponent<UnitAnimationView>();
+            unit.Identity.Apply(unit);
         }
 
         public void RestorePreparation()
         {
-            foreach(var unit in allies.Values) unit.RestorePreparation();
+            foreach(Unit unit in allies.Values) unit.RestorePreparation();
         }
 
         public void StopCombat()
         {
-            foreach(var unit in allies.Values.Concat(enemies))
+            foreach(Unit unit in allies.Values.Concat(enemies))
             {
                 unit.Move.Stop(); unit.Combat.ResetForRound();
             }
@@ -108,8 +109,8 @@ namespace AutoBattler.Managers
 
         public void Clear()
         {
-            foreach(var unit in allies.Values) pool?.Return(unit);
-            foreach(var unit in enemies) pool?.Return(unit);
+            foreach(Unit unit in allies.Values) pool?.Return(unit);
+            foreach(Unit unit in enemies) pool?.Return(unit);
             allies.Clear(); enemies.Clear(); state=null;
         }
     }

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 
 namespace AutoBattler.Run
 {
@@ -10,13 +11,11 @@ namespace AutoBattler.Run
         [SerializeField] private string displayName="1-1";
         [SerializeField,TextArea] private string description;
         [SerializeField] private int sceneBuildIndex=1;
+        [SerializeField] private AssetReferenceSprite battleBackground;
         public int Id=>id;
         public string DisplayName=>displayName;
         public string Description=>description;
         public int SceneBuildIndex=>sceneBuildIndex;
-#if UNITY_EDITOR
-        public void Configure(int stageId,string name,string details,int buildIndex)
-        { id=stageId; displayName=name; description=details; sceneBuildIndex=buildIndex; }
-#endif
+        public AssetReferenceSprite BattleBackground=>battleBackground;
     }
 }

@@ -47,6 +47,8 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private AugmentSelectionPanel augmentPanel;
         [SerializeField] private SelectedAugmentsView selectedAugments;
         [SerializeField] private UnitInfoPanel unitInfo;
+        [SerializeField] private ItemInventoryPanel inventory;
+        public ItemInventoryPanel Inventory=>inventory;
 
         [Header("전투와 결과")]
         [SerializeField] private Button startBattleButton;
@@ -86,45 +88,6 @@ namespace AutoBattler.Presentation.Battle
         public SelectedAugmentsView SelectedAugments=>selectedAugments;
         public UnitInfoPanel UnitInfo => unitInfo;
 
-#if UNITY_EDITOR
-        // 셋업 도구는 필드 이름 조회 대신 명시적인 참조 주입 사용.
-        public void ConfigureHeader(TextMeshProUGUI round, TextMeshProUGUI gold, TextMeshProUGUI lives,
-            TextMeshProUGUI level, TextMeshProUGUI experience, TextMeshProUGUI deployment, TextMeshProUGUI message)
-        {
-            roundText=round; goldText=gold; livesText=lives; levelText=level;
-            experienceText=experience; deploymentText=deployment; messageText=message;
-        }
-        public void ConfigurePreparation(CanvasGroup panel, RectTransform container, ShopItem[] items,
-            Button refresh, TextMeshProUGUI refreshText, Button buyExperience, TextMeshProUGUI xpText,
-            TextMeshProUGUI selected)
-        {
-            preparationPanel=panel; shopContainer=container; shopItems=items;
-            refreshButton=refresh; refreshLabel=refreshText; buyExperienceButton=buyExperience;
-            buyExperienceLabel=xpText; selectedUnitText=selected;
-        }
-        public void ConfigureSellDrag(GameObject content,UnitSellZone zone) { shopContent=content; sellZone=zone; }
-        public void ConfigureActions(Button start, Button retry, ResultPanel result)
-        { startBattleButton=start; retryLoadButton=retry; resultPanel=result; }
-        public void ConfigureShopContainer(RectTransform container) => shopContainer=container;
-        public void ConfigureShopItems(ShopItem[] items) => shopItems=items;
-        public void ConfigureResultPanel(ResultPanel panel) => resultPanel=panel;
-        public void ConfigureSynergies(SynergyPanel panel) => synergyPanel=panel;
-        public void ConfigureAugments(AugmentSelectionPanel panel)=>augmentPanel=panel;
-        public void ConfigureSelectedAugments(SelectedAugmentsView view)=>selectedAugments=view;
-        public void ConfigureUnitInfo(UnitInfoPanel panel) => unitInfo = panel;
-        public void ConfigureNavigation(GameNavigationSettings settings)=>navigation=settings;
-        public void ConfigureSettingsRoot(CanvasGroup group)=>interactionRoot=group;
-        public void ConfigureLoadTitle(Button button)=>loadTitleButton=button;
-#endif
-
-        public void ConfigureScene(RunController controller)
-        {
-            Unbind();
-            run = controller;
-            if(gameSettings!=null) gameSettings.BindContext(interactionRoot,run);
-            if (Application.isPlaying && isActiveAndEnabled)
-                Bind();
-        }
 
         private void OnEnable()
         {
@@ -160,6 +123,7 @@ namespace AutoBattler.Presentation.Battle
             retryLoadButton.onClick.AddListener(RetryLoad);
             loadTitleButton.onClick.AddListener(ReturnFromLoadError);
             run.DisplayChanged += Refresh;
+            if(inventory!=null) inventory.Bind(run,interactionRoot);
             if(augmentPanel!=null) { augmentPanel.Selected+=SelectAugment; augmentPanel.ToggleRequested+=ToggleAugments; }
             isBound = true;
             hasDisplayedPhase = false;
@@ -172,7 +136,7 @@ namespace AutoBattler.Presentation.Battle
         private void BuyExperience() => run.BuyXp();
         private void ShowSellDrag(UnitView view)
         {
-            var unit=view.GetComponent<Unit>();
+            Unit unit=view.GetComponent<Unit>();
             if(unit==null || unit.Definition==null || view.State==null) return;
             shopContent.SetActive(false);
             sellZone.Show(BattleText.UnitName(unit.Definition),unit.Star,run.State.SalePrice(view.State.InstanceId),CanPrepare());
@@ -183,7 +147,7 @@ namespace AutoBattler.Presentation.Battle
         bool IUnitDropTarget.Contains(Vector2 screenPosition)=>sellZone.Contains(screenPosition);
         bool IUnitDropTarget.TryDrop(UnitView view)
         {
-            var unit=view!=null ? view.GetComponent<Unit>() : null;
+            Unit unit=view!=null ? view.GetComponent<Unit>() : null;
             return CanPrepare() && unit!=null && unit.Team==UnitTeam.Ally && view.State!=null
                 && run.SellUnit(view.State.InstanceId);
         }
@@ -229,14 +193,14 @@ namespace AutoBattler.Presentation.Battle
 
         private void RefreshSelection()
         {
-            var selected = run.Drag.SelectedUnit;
-            var unit = selected != null && selected.State != null
+            UnitView selected = run.Drag.SelectedUnit;
+            Unit unit = selected != null && selected.State != null
                 ? selected.GetComponent<Unit>() : null;
             selectedUnitText.text = unit != null && unit.Definition != null
                 ? BattleText.UnitName(unit.Definition) : "기물 선택";
             if (unitInfo != null)
             {
-                var inspected = run.IsReady && run.Flow.CanInspectUnits ? run.Drag.InspectedUnit : null;
+                Unit inspected = run.IsReady && run.Flow.CanInspectUnits ? run.Drag.InspectedUnit : null;
                 unitInfo.Show(inspected, run.IsReady ? run.State.Data : null);
             }
         }
@@ -263,8 +227,8 @@ namespace AutoBattler.Presentation.Battle
             for (int i = 0; i < shopItems.Length; i++)
             {
                 int id = ready ? run.State.Shop[i] : 0;
-                var unit = id == 0 ? null : run.State.Data.Units[id];
-                var icon = unit == null ? null : run.UnitIcon(unit.IconId);
+                UnitDefinition unit = id == 0 ? null : run.State.Data.Units[id];
+                Sprite icon = unit == null ? null : run.UnitIcon(unit.IconId);
                 shopItems[i].Show(unit, icon, id == 0 ? 0 : run.State.Stock(id), ready ? run.State.Gold : 0, prepare);
             }
 
@@ -292,6 +256,8 @@ namespace AutoBattler.Presentation.Battle
                     ? run.State.WonRun ? "도전 성공!" : "도전 종료"
                     : "전투 결과";
                 resultPanel.Show(title, run.State.LastResult, !run.State.IsOver, hasDisplayedPhase);
+                OwnedItem reward=run.State.Items.Find(run.State.Items.LastRewardInstanceId);
+                if(reward!=null) resultPanel.ShowItemReward(run.State.Data.Items[reward.DefinitionId].Name);
             }
             else
                 resultPanel.Hide();
@@ -319,6 +285,7 @@ namespace AutoBattler.Presentation.Battle
 
         private void Unbind()
         {
+            if(inventory!=null) inventory.Bind(null,null);
             if (unitInfo != null) unitInfo.Hide();
             if (!isBound)
                 return;

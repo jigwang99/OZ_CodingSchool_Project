@@ -53,7 +53,7 @@ namespace AutoBattler.Battle.AI
         private bool IsWaiting()=>Blackboard.Unit.Effects.IsStunned || States.IsBusy;
         private BehaviourStatus WaitForCurrentAction()
         {
-            var unit=Blackboard.Unit;
+            Unit unit=Blackboard.Unit;
             if(unit.Effects.IsStunned) States.Stun();
             else if(States.IsMoving) States.Move();
             else if(unit.Skill.IsCasting) States.Cast();
@@ -79,8 +79,8 @@ namespace AutoBattler.Battle.AI
         }
         private Unit ChooseTarget()
         {
-            var unit=Blackboard.Unit;
-            foreach(var target in Blackboard.Participants.Where(target=>target.Team!=unit.Team && target.Health.IsAlive)
+            Unit unit=Blackboard.Unit;
+            foreach(Unit target in Blackboard.Participants.Where(target=>target.Team!=unit.Team && target.Health.IsAlive)
                 .OrderBy(target=>unit.CurrentCell.Value.DistanceTo(target.CurrentCell.Value))
                 .ThenBy(target=>target.Definition.Role).ThenBy(target=>target.InstanceId))
             {

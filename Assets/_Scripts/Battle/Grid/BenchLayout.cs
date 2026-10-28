@@ -9,6 +9,7 @@ namespace AutoBattler.Battle.Grid
         [SerializeField] private Vector2 originOffset = new Vector2(0f, -2f);
         [SerializeField, Min(0.1f)] private float slotSpacing = 1.5f;
         [SerializeField] private Vector2 slotSize = new Vector2(1.2f, 1.2f);
+        public Vector2 SlotSize=>slotSize;
         private int? highlightedSlot;
         public int? HighlightedSlot => highlightedSlot;
 

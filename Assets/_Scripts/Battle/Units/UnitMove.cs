@@ -53,7 +53,7 @@ namespace AutoBattler.Battle.Units
         { if(unit.Effects.IsStunned || unit.Effects.SlowRate>=1f) Stop(); }
         public void Stop()
         {
-            var operation=movementCancellation;
+            CancellationTokenSource operation=movementCancellation;
             if(operation==null) return;
             movementCancellation=null; IsMoving=false; IsJumping=false;
             operation.Cancel(); SnapToCurrentCell();
@@ -78,12 +78,12 @@ namespace AutoBattler.Battle.Units
                     : unit.CurrentCell.Value.DistanceTo(destination)!=1))
                 return false;
 
-            var operation = CancellationTokenSource.CreateLinkedTokenSource(
+            CancellationTokenSource operation = CancellationTokenSource.CreateLinkedTokenSource(
                 cancellationToken, this.GetCancellationTokenOnDestroy());
             movementCancellation = operation;
             IsMoving = true;
             IsJumping=jump;
-            var owner=new CombatUnitReference(unit);
+            CombatUnitReference owner=new CombatUnitReference(unit);
             bool arrived = false;
             try
             {

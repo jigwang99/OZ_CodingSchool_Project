@@ -19,3 +19,9 @@ MonoBehaviour:
     \uD569\uC131, \uC2DC\uB108\uC9C0\uC640 \uC99D\uAC15 \uC120\uD0DD\uC73C\uB85C
     \uBD80\uB300\uB97C \uC131\uC7A5\uC2DC\uD0AC \uC218 \uC788\uC2B5\uB2C8\uB2E4."
   sceneBuildIndex: 1
+  battleBackground:
+    m_AssetGUID: da15b1de6d99c714fb649f275b09602c
+    m_SubObjectName:
+    m_SubObjectType:
+    m_SubObjectGUID:
+    m_EditorAssetChanged: 0

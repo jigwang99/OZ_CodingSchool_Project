@@ -50,8 +50,8 @@ namespace AutoBattler.Battle.Units
         private int ApplyDamage(DamageContext context,int damage)
         {
             if(!IsAlive || isApplyingDamage || damage<=0) return 0;
-            var damagedState=state;
-            var target=new CombatUnitReference(owner);
+            UnitHealthState damagedState=state;
+            CombatUnitReference target=new CombatUnitReference(owner);
             int version=LifeVersion, resolved=damage;
             isApplyingDamage=true;
             try
@@ -61,7 +61,7 @@ namespace AutoBattler.Battle.Units
                 // 보호막 이벤트에서 재설정·반환된 대상에 이전 피해를 적용하지 않음.
                 if(!IsSameLife(damagedState,version)) return 0;
                 int lostHp=damagedState.TakeDamage(damage);
-                var result=new DamageResult(context,target,resolved,shieldDamage,lostHp,lostHp>0 && !damagedState.IsAlive);
+                DamageResult result=new DamageResult(context,target,resolved,shieldDamage,lostHp,lostHp>0 && !damagedState.IsAlive);
                 if(lostHp==0 && shieldDamage==0) return 0;
                 if(lostHp>0 && IsSameLife(damagedState,version)) CombatEventDispatcher.Publish(DamageTaken,lostHp);
                 if(IsSameLife(damagedState,version)) CombatEventDispatcher.Publish(DamageResolved,result);
@@ -71,7 +71,7 @@ namespace AutoBattler.Battle.Units
                     if(IsSameLife(damagedState,version)) CombatEventDispatcher.Publish(DeathResolved,new KillEvent(result));
                 }
                 // 출처의 현재 수명을 다시 확인하여 풀의 새 유닛에 이전 사건을 전달하지 않음.
-                var attacker=context.Attacker.Unit;
+                Unit attacker=context.Attacker.Unit;
                 if(attacker!=null && attacker.Combat!=null) attacker.Combat.NotifyDamageDealt(result);
                 return lostHp;
             }
@@ -80,7 +80,7 @@ namespace AutoBattler.Battle.Units
         private bool IsSameLife(UnitHealthState damagedState,int version)=>ReferenceEquals(state,damagedState) && LifeVersion==version;
         public int Heal(int amount)
         {
-            var healedState=state; int version=LifeVersion;
+            UnitHealthState healedState=state; int version=LifeVersion;
             int restored=healedState?.Heal(amount) ?? 0;
             if(restored>0 && IsSameLife(healedState,version)) CombatEventDispatcher.Publish(Healed,restored);
             return restored;

@@ -37,7 +37,7 @@ namespace AutoBattler.Run
                 || saved.offers.Distinct().Count()!=saved.offers.Length
                 || saved.offers.Any(id=>!definitions.ContainsKey(id) || saved.selected.Contains(id)))
                 throw new ArgumentException("저장된 증강 정보가 올바르지 않습니다.");
-            var state=new AugmentState(definitions,new RunRandom(saved.randomSeed,saved.randomDrawCount));
+            AugmentState state=new AugmentState(definitions,new RunRandom(saved.randomSeed,saved.randomDrawCount));
             state.selected.AddRange(saved.selected); state.completed.UnionWith(saved.completedRounds);
             state.offers=(int[])saved.offers.Clone(); state.OfferedRound=saved.offeredRound;
             return state;
@@ -45,7 +45,7 @@ namespace AutoBattler.Run
         public void EnterRound(int round,bool enabled)
         {
             if(!enabled || completed.Contains(round) || HasPending || definitions.Count==0) return;
-            var candidates=definitions.Keys.Where(id=>!selected.Contains(id)).OrderBy(id=>id).ToList();
+            List<int> candidates=definitions.Keys.Where(id=>!selected.Contains(id)).OrderBy(id=>id).ToList();
             if(candidates.Count<3) throw new InvalidOperationException("강화 선택에는 미선택 후보 3개 필요.");
             offers=new int[3]; OfferedRound=round;
             for(int i=0;i<offers.Length;i++)

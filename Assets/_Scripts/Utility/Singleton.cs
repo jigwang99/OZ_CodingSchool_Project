@@ -28,7 +28,7 @@ namespace AutoBattler.Utility
                     _instance=FindFirstObjectByType<T>();
                     if(_instance==null)
                     {
-                        var obj=new GameObject(typeof(T).Name);
+                        GameObject obj=new GameObject(typeof(T).Name);
                         _instance=obj.AddComponent<T>();
                     }
                 }

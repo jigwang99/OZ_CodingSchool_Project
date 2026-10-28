@@ -72,8 +72,5 @@ namespace AutoBattler.Presentation.Units
             boundFlow=null;
             RestoreDefaultFacing();
         }
-#if UNITY_EDITOR
-        public void ConfigureRenderers(SpriteRenderer[] renderers) => spriteRenderers=renderers;
-#endif
     }
 }

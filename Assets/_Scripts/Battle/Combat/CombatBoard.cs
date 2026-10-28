@@ -45,11 +45,11 @@ namespace AutoBattler.Battle.Combat
         }
         public void Release(int id)
         {
-            var cells=new List<HexCoord>();
-            foreach(var pair in occupants) if(pair.Value==id) cells.Add(pair.Key);
-            foreach(var cell in cells) occupants.Remove(cell);
-            cells.Clear(); foreach(var pair in reservations) if(pair.Value==id) cells.Add(pair.Key);
-            foreach(var cell in cells) reservations.Remove(cell);
+            List<HexCoord> cells=new List<HexCoord>();
+            foreach(KeyValuePair<HexCoord, int> pair in occupants) if(pair.Value==id) cells.Add(pair.Key);
+            foreach(HexCoord cell in cells) occupants.Remove(cell);
+            cells.Clear(); foreach(KeyValuePair<HexCoord, int> pair in reservations) if(pair.Value==id) cells.Add(pair.Key);
+            foreach(HexCoord cell in cells) reservations.Remove(cell);
             Revision++;
         }
         public void CancelReservation(int id,HexCoord to)

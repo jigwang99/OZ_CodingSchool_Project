@@ -15,9 +15,6 @@ namespace AutoBattler.Presentation.Units
         private UnitMana boundMana;
 
         public Image FillImage => fillImage;
-#if UNITY_EDITOR
-        public void ConfigureReferences(Image fill) => fillImage = fill;
-#endif
 
         public void Bind(Unit unit)
         {
@@ -38,7 +35,7 @@ namespace AutoBattler.Presentation.Units
 
         private void OnManaChanged(int current, int maximum)
         {
-            var fill = fillImage.rectTransform;
+            RectTransform fill = fillImage.rectTransform;
             fill.DOKill();
             float ratio = Ratio(current, maximum);
             // 마나 소진·충전 완료·라운드 초기화는 즉시 반영.

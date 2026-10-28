@@ -1,3 +1,4 @@
+using AutoBattler.Battle.Units;
 using System;
 using AutoBattler.Audio;
 using System.Threading;
@@ -40,12 +41,12 @@ namespace AutoBattler.Managers
             if(stopping || state==null || operation!=null || flow.CurrentPhase!=BattlePhase.Preparation || state.IsOver || state.Augments.HasPending) return false;
             drag.CancelDrag();
             if(state.Board.DeployedCount==0) { publish("기물을 배치해 주세요."); return false; }
-            synergies.Refresh(); var participants=units.Combatants;
-            foreach(var unit in participants) unit.BeginBattle();
-            var battle=new AutoBattleController(participants);
+            synergies.Refresh(); Unit[] participants=units.Combatants;
+            foreach(Unit unit in participants) unit.BeginBattle();
+            AutoBattleController battle=new AutoBattleController(participants);
             if(!flow.TryStartCombat()) return false;
             state.CanPrepare=false; drag.enabled=true;
-            if(SoundManager.TryGetExisting(out var sound)) sound.BeginBattle(participants);
+            if(SoundManager.TryGetExisting(out SoundManager sound)) sound.BeginBattle(participants);
             SoundManager.PlayEffect(SoundId.BattleStart);
             assets.Visuals.BeginBattle(participants); synergies.BeginBattle(participants); augments.ApplyBattleStart(participants);
             operation=CancellationTokenSource.CreateLinkedTokenSource(lifetime);
@@ -59,7 +60,7 @@ namespace AutoBattler.Managers
                 bool won=await battle.RunAsync(state.Data.Rule(EconomyRule.CombatSeconds),current.Token);
                 if(stopping || !flow.TryFinishCombat()) return;
                 current.Cancel(); synergies.EndBattle(); units.StopCombat();
-                if(SoundManager.TryGetExisting(out var sound)) sound.EndBattle();
+                if(SoundManager.TryGetExisting(out SoundManager sound)) sound.EndBattle();
                 if(state.TrySettle(won))
                 { publish(state.LastResult); SoundManager.PlayEffect(won?SoundId.Victory:SoundId.Defeat); }
             }
@@ -73,7 +74,7 @@ namespace AutoBattler.Managers
             finally
             {
                 synergies.EndBattle();
-                if(SoundManager.TryGetExisting(out var sound)) sound.EndBattle();
+                if(SoundManager.TryGetExisting(out SoundManager sound)) sound.EndBattle();
                 if(ReferenceEquals(operation,current)) operation=null;
                 current.Dispose(); completion.TrySetResult();
             }
@@ -88,10 +89,10 @@ namespace AutoBattler.Managers
         }
         public UniTask StopAsync()
         {
-            if(SoundManager.TryGetExisting(out var sound)) sound.EndBattle();
+            if(SoundManager.TryGetExisting(out SoundManager sound)) sound.EndBattle();
             stopping=true; operation?.Cancel(); synergies?.EndBattle(); units?.StopCombat();
             return battleCompletion!=null ? battleCompletion.Task : UniTask.CompletedTask;
         }
-        protected override void OnDestroy() { if(SoundManager.TryGetExisting(out var sound)) sound.EndBattle(); operation?.Cancel(); base.OnDestroy(); }
+        protected override void OnDestroy() { if(SoundManager.TryGetExisting(out SoundManager sound)) sound.EndBattle(); operation?.Cancel(); base.OnDestroy(); }
     }
 }

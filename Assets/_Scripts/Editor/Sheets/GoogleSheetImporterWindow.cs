@@ -26,9 +26,9 @@ namespace AutoBattler.EditorTools.Sheets
         [DataContract] private sealed class ApiRange { [DataMember] public string range; [DataMember] public List<List<object>> values; }
         public static List<CsvTable> ParseApiRows(string json)
         {
-            var serializer=new DataContractJsonSerializer(typeof(ApiResponse));
+            DataContractJsonSerializer serializer=new DataContractJsonSerializer(typeof(ApiResponse));
             ApiResponse response;
-            using(var stream=new MemoryStream(Encoding.UTF8.GetBytes(json))) response=(ApiResponse)serializer.ReadObject(stream);
+            using(MemoryStream stream=new MemoryStream(Encoding.UTF8.GetBytes(json))) response=(ApiResponse)serializer.ReadObject(stream);
             if(response.valueRanges==null) throw new FormatException("Sheets API 응답에 표 없음.");
             return response.valueRanges.Select(range=>new CsvTable(range.range.Split('!')[0].Trim('\''),
                 (range.values ?? new List<List<object>>()).Select(row=>row.Select(value=>Convert.ToString(value,CultureInfo.InvariantCulture)).ToList()).ToList())).ToList();
@@ -60,11 +60,11 @@ namespace AutoBattler.EditorTools.Sheets
             busy=true; operation=new CancellationTokenSource(); report="가져오는 중...";
             try
             {
-                var tables=new Dictionary<string,CsvTable>(); string id=ExtractId(spreadsheet);
+                Dictionary<string, CsvTable> tables=new Dictionary<string,CsvTable>(); string id=ExtractId(spreadsheet);
                 if(string.IsNullOrWhiteSpace(id)) throw new FormatException("스프레드시트 ID 필요.");
                 await LoadTables(id,SnapshotImporter.BaseTabs,tables);
                 int schema=tables["Manifest"].Int(1,"schema_version");
-                var extraTabs=SnapshotImporter.TabsForSchema(schema).Except(SnapshotImporter.BaseTabs).ToArray();
+                string[] extraTabs=SnapshotImporter.TabsForSchema(schema).Except(SnapshotImporter.BaseTabs).ToArray();
                 if(extraTabs.Length>0) await LoadTables(id,extraTabs,tables);
                 operation.Token.ThrowIfCancellationRequested(); Apply(tables);
             }
@@ -80,9 +80,9 @@ namespace AutoBattler.EditorTools.Sheets
                     foreach(string tab in tabs) url+="&ranges="+Uri.EscapeDataString(tab+"!A:Z");
                     if(!string.IsNullOrWhiteSpace(apiKey)) url+="&key="+Uri.EscapeDataString(apiKey);
                     string json=await Download(url,operation.Token);
-                    var responseTables=ParseApiRows(json);
+                    List<CsvTable> responseTables=ParseApiRows(json);
                     if(responseTables.Count!=tabs.Length) throw new FormatException("Sheets API 응답의 표 수 오류.");
-                    foreach(var table in responseTables) tables.Add(table.Name,table);
+                    foreach(CsvTable table in responseTables) tables.Add(table.Name,table);
                 }
                 else
                 {
@@ -98,7 +98,7 @@ namespace AutoBattler.EditorTools.Sheets
         }
         private async UniTask<string> Download(string url,CancellationToken token)
         {
-            using(var request=UnityWebRequest.Get(url))
+            using(UnityWebRequest request=UnityWebRequest.Get(url))
             {
                 request.timeout=30;
                 if(!string.IsNullOrWhiteSpace(bearerToken)) request.SetRequestHeader("Authorization","Bearer "+bearerToken);
@@ -109,8 +109,8 @@ namespace AutoBattler.EditorTools.Sheets
         }
         private void Apply(Dictionary<string,CsvTable> tables)
         {
-            var snapshot=SnapshotImporter.Build(tables); SnapshotImporter.Apply(snapshot);
-            report=$"적용 완료: {snapshot.dataVersion}\n유닛 {snapshot.units.Length}종 / 스킬 {snapshot.skills.Length}종 / 시너지 {snapshot.traits.Length}단계 / 강화 {snapshot.augments.Length}종 / 라운드 {snapshot.rounds.Length}개\n{SnapshotImporter.OutputPath}\n로컬 Addressables 번들을 다시 빌드한 뒤 배포.";
+            Data.Snapshot.GameSnapshot snapshot=SnapshotImporter.Build(tables); SnapshotImporter.Apply(snapshot);
+            report=$"적용 완료: {snapshot.dataVersion}\n유닛 {snapshot.units.Length}종 / 스킬 {snapshot.skills.Length}종 / 시너지 {snapshot.traits.Length}단계 / 강화 {snapshot.augments.Length}종 / 아이템 {snapshot.items.Length}종 / 라운드 {snapshot.rounds.Length}개\n{SnapshotImporter.OutputPath}\n로컬 Addressables 번들을 다시 빌드한 뒤 배포.";
         }
         private void OnDisable() { operation?.Cancel(); apiKey=""; bearerToken=""; }
     }

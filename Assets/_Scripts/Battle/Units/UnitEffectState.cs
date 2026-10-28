@@ -49,7 +49,7 @@ namespace AutoBattler.Battle.Units
             if(definition.Kind==EffectKind.Heal)
             { heal(Math.Max(0,(int)Math.Floor(value))); return default; }
             if(definition.Duration==0f) return default;
-            var existing=definition.Stacking==EffectStacking.Refresh
+            EffectInstance existing=definition.Stacking==EffectStacking.Refresh
                 ? active.FirstOrDefault(entry=>entry.Definition.Id==definition.Id && entry.Source.Equals(source)) : null;
             if(existing!=null)
             {
@@ -59,12 +59,12 @@ namespace AutoBattler.Battle.Units
                 existing.Definition=definition;
                 if(definition.Kind==EffectKind.StatModifier)
                 {
-                    var spec=new StatModifierSpec(definition.Stat,definition.Operation,value);
+                    StatModifierSpec spec=new StatModifierSpec(definition.Stat,definition.Operation,value);
                     if(!stats.UpdateModifier(existing.Modifier,spec)) existing.Modifier=stats.AddModifier(source,spec);
                 }
                 Refresh(); return existing.Handle;
             }
-            var instance=new EffectInstance
+            EffectInstance instance=new EffectInstance
             {
                 Handle=new EffectHandle(Interlocked.Increment(ref nextHandle)),Definition=definition,Source=source,
                 RemainingSeconds=Duration(definition),Magnitude=value,RemainingShield=Amount(value)
@@ -80,7 +80,7 @@ namespace AutoBattler.Battle.Units
         {
             if(seconds<=0f || active.Count==0) return;
             List<EffectInstance> expired=null;
-            foreach(var entry in active)
+            foreach(EffectInstance entry in active)
             {
                 entry.RemainingSeconds-=seconds;
                 if(entry.RemainingSeconds<=0f) (expired ?? (expired=new List<EffectInstance>())).Add(entry);
@@ -89,7 +89,7 @@ namespace AutoBattler.Battle.Units
         }
         public bool Remove(EffectHandle handle)
         {
-            var entry=active.FirstOrDefault(effect=>effect.Handle.Equals(handle));
+            EffectInstance entry=active.FirstOrDefault(effect=>effect.Handle.Equals(handle));
             if(entry==null) return false;
             RemoveEntries(new[] {entry}); return true;
         }
@@ -97,8 +97,8 @@ namespace AutoBattler.Battle.Units
         public void Clear()=>RemoveEntries(active.ToArray());
         private void RemoveEntries(IEnumerable<EffectInstance> entries)
         {
-            var removed=new List<ModifierHandle>(); bool changed=false;
-            foreach(var entry in entries)
+            List<ModifierHandle> removed=new List<ModifierHandle>(); bool changed=false;
+            foreach(EffectInstance entry in entries)
             {
                 if(!active.Remove(entry)) continue;
                 changed=true; if(entry.Modifier.IsValid) removed.Add(entry.Modifier);
@@ -110,8 +110,8 @@ namespace AutoBattler.Battle.Units
         public int AbsorbDamage(int damage)
         {
             if(damage<=0 || Shield==0) return Math.Max(0,damage);
-            var depleted=new List<EffectInstance>();
-            foreach(var shield in active.Where(entry=>entry.Definition.Kind==EffectKind.Shield)
+            List<EffectInstance> depleted=new List<EffectInstance>();
+            foreach(EffectInstance shield in active.Where(entry=>entry.Definition.Kind==EffectKind.Shield)
                 .OrderBy(entry=>entry.RemainingSeconds).ThenBy(entry=>entry.Handle.Value))
             {
                 int absorbed=Math.Min(damage,shield.RemainingShield);
@@ -119,13 +119,13 @@ namespace AutoBattler.Battle.Units
                 if(shield.RemainingShield==0) depleted.Add(shield);
                 if(damage==0) break;
             }
-            foreach(var entry in depleted) active.Remove(entry);
+            foreach(EffectInstance entry in depleted) active.Remove(entry);
             Refresh(); return damage;
         }
         private void Refresh()
         {
             long shield=0; bool stunned=false; float slow=0f;
-            foreach(var entry in active)
+            foreach(EffectInstance entry in active)
             {
                 switch(entry.Definition.Kind)
                 {

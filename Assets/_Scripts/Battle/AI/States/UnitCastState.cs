@@ -9,7 +9,7 @@ namespace AutoBattler.Battle.AI.States
         public override void Enter()
         {
             base.Enter();
-            var context=Blackboard.PreparedSkill;
+            Skills.SkillCastContext context=Blackboard.PreparedSkill;
             Blackboard.PreparedSkill=null;
             if(!Unit.Skill.IsCasting && context!=null) Unit.Skill.CastAsync(context,Blackboard.Token).Forget();
         }

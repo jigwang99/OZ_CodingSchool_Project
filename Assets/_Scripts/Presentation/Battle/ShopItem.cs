@@ -40,15 +40,6 @@ namespace AutoBattler.Presentation.Battle
         public TextMeshProUGUI PriceText => priceText;
         public TextMeshProUGUI PoolText => poolText;
         public TextMeshProUGUI EmptyText => emptyText;
-#if UNITY_EDITOR
-        public void ConfigureReferences(Button button, GameObject contentRoot, Image icon,
-            TextMeshProUGUI placeholder, TextMeshProUGUI nameLabel, TextMeshProUGUI price,
-            TextMeshProUGUI pool, TextMeshProUGUI empty)
-        {
-            buyButton=button; content=contentRoot; iconImage=icon; iconPlaceholderText=placeholder;
-            nameText=nameLabel; priceText=price; poolText=pool; emptyText=empty;
-        }
-#endif
 
         public void BindSlot(int slotIndex) => SlotIndex = slotIndex;
 

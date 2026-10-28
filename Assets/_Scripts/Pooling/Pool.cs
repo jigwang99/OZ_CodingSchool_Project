@@ -34,7 +34,7 @@ namespace AutoBattler.Pooling
         }
         public T GetObject<T>(bool activate=true) where T:Component
         {
-            var component=TakeObject<T>();
+            T component=TakeObject<T>();
             InitializeObject(component.gameObject,activate);
             return component;
         }
@@ -50,7 +50,7 @@ namespace AutoBattler.Pooling
                 if(go==null) instances.Remove(go);
             }
             // 잘못된 타입 요청으로 인스턴스를 잃거나 OnEnable을 호출하지 않도록 먼저 확인.
-            if(!go.TryGetComponent<T>(out var component))
+            if(!go.TryGetComponent<T>(out T component))
             { pool.Enqueue(go); throw new InvalidOperationException($"프리팹에 {typeof(T).Name} 컴포넌트 필요."); }
             rented.Add(go);
             return component;
@@ -84,7 +84,7 @@ namespace AutoBattler.Pooling
         {
             if(disposed) return;
             disposed=true;
-            foreach(var go in instances) if(go!=null) UnityEngine.Object.Destroy(go);
+            foreach(GameObject go in instances) if(go!=null) UnityEngine.Object.Destroy(go);
             instances.Clear(); rented.Clear(); pool.Clear();
         }
     }

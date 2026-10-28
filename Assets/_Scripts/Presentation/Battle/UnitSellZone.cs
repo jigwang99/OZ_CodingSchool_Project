@@ -22,11 +22,6 @@ namespace AutoBattler.Presentation.Battle
         public RectTransform Area=>area;
         public TextMeshProUGUI PriceText=>priceText;
         public TextMeshProUGUI HintText=>hintText;
-#if UNITY_EDITOR
-        public void Configure(RectTransform rect,Canvas owner,CanvasGroup group,Image image,
-            TextMeshProUGUI title,TextMeshProUGUI price,TextMeshProUGUI hint)
-        { area=rect; canvas=owner; panel=group; background=image; titleText=title; priceText=price; hintText=hint; }
-#endif
         public void Show(string name,int star,int price,bool allowed)
         {
             canSell=allowed; IsHovered=false;

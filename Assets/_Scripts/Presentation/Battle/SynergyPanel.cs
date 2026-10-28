@@ -26,11 +26,6 @@ namespace AutoBattler.Presentation.Battle
         public TextMeshProUGUI EmptyText=>emptyText;
         public TraitSnapshot DisplayedSnapshot=>displayed;
         public bool IsDataAvailable=>content.activeSelf;
-#if UNITY_EDITOR
-        public void ConfigureReferences(GameObject body,TextMeshProUGUI status,TextMeshProUGUI empty,TraitRowView[] views,
-            RectTransform origins,RectTransform classes,RectTransform footer)
-        { content=body; statusText=status; emptyText=empty; rows=views; originsTitle=origins; classesTitle=classes; rules=footer; }
-#endif
         public void Show(TraitSnapshot snapshot,bool ready,BattlePhase phase)
         {
             snapshot=snapshot ?? TraitSnapshot.Empty;
@@ -44,7 +39,7 @@ namespace AutoBattler.Presentation.Battle
             rules.gameObject.SetActive(false);
             // 숨긴 행의 자리를 남기지 않고 그룹과 행을 위에서부터 배치.
             bool anyVisible=false;
-            if(available) foreach(var row in rows)
+            if(available) foreach(TraitRowView row in rows)
             {
                 row.Show(snapshot);
                 anyVisible|=row.gameObject.activeSelf;
@@ -59,15 +54,15 @@ namespace AutoBattler.Presentation.Battle
         private void LayoutGroup(TraitCategory category,RectTransform title,bool available,ref float top)
         {
             bool visible=false;
-            foreach(var row in rows) if(available && row.Category==category && row.gameObject.activeSelf) { visible=true; break; }
+            foreach(TraitRowView row in rows) if(available && row.Category==category && row.gameObject.activeSelf) { visible=true; break; }
             title.gameObject.SetActive(visible);
             if(!visible) return;
             title.anchoredPosition=new Vector2(title.anchoredPosition.x,-top);
             top+=26f;
-            foreach(var row in rows)
+            foreach(TraitRowView row in rows)
             {
                 if(row.Category!=category || !row.gameObject.activeSelf) continue;
-                var rect=(RectTransform)row.transform;
+                RectTransform rect=(RectTransform)row.transform;
                 rect.anchoredPosition=new Vector2(rect.anchoredPosition.x,-top);
                 top+=rect.sizeDelta.y+4f;
             }

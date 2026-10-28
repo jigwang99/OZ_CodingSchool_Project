@@ -28,7 +28,7 @@ namespace AutoBattler.Battle.Units
         {
             if(!isActiveAndEnabled || result.Context.Attacker.Unit!=unit) return;
             CombatEventDispatcher.Publish(DamageDealt,result);
-            var kill=new KillEvent(result);
+            KillEvent kill=new KillEvent(result);
             if(isActiveAndEnabled && result.Context.Attacker.Unit==unit && kill.IsCredited)
                 CombatEventDispatcher.Publish(Killed,kill);
         }
@@ -58,9 +58,9 @@ namespace AutoBattler.Battle.Units
         {
             if(!CanAttack || target==null || !target.CanFight || !IsInAttackRange(target)) return;
             int generation=roundGeneration;
-            var targetReference=new CombatUnitReference(target.unit);
+            CombatUnitReference targetReference=new CombatUnitReference(target.unit);
             IsAttacking=true; nextAttackTime=Time.time+unit.Stats.AttackCooldown; unit.Mana.Add(10);
-            using var windup=CancellationTokenSource.CreateLinkedTokenSource(token,this.GetCancellationTokenOnDestroy());
+            using CancellationTokenSource windup=CancellationTokenSource.CreateLinkedTokenSource(token,this.GetCancellationTokenOnDestroy());
             windupCancellation=windup;
             try
             {
@@ -73,7 +73,7 @@ namespace AutoBattler.Battle.Units
                 bool critical=UnityEngine.Random.value<unit.StatModifiers.CritChance;
                 if(critical)
                     multiplier*=unit.StatModifiers.CritMultiplier;
-                var context=DamageContext.BasicAttack(unit,critical);
+                DamageContext context=DamageContext.BasicAttack(unit,critical);
                 // 원거리도 선딜 뒤 논리 투사체의 도착 시간에 피해 적용.
                 if(unit.Definition!=null && unit.Definition.IsRanged)
                 {

@@ -22,6 +22,7 @@ namespace AutoBattler.Run
         public SavedStock[] stock;
         public SavedUnit[] units;
         public SavedAugments augments;
+        public SavedItemInventory items;
     }
 
     [Serializable]
@@ -34,6 +35,16 @@ namespace AutoBattler.Run
 
     [Serializable]
     public sealed class SavedStock { public int definitionId, available; }
+
+    [Serializable]
+    public sealed class SavedItem { public int instanceId,definitionId,stageId,ownerUnitId,slot; }
+    [Serializable]
+    public sealed class SavedItemInventory
+    {
+        public int stageId,nextInstanceId,randomSeed,randomDrawCount,lastRewardInstanceId;
+        public int[] rewardedRounds;
+        public SavedItem[] owned;
+    }
 
     [Serializable]
     public sealed class SavedAugments

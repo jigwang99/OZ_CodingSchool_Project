@@ -24,7 +24,7 @@ namespace AutoBattler.Managers
         public void Refresh()
         {
             if(state==null || flow.CurrentPhase==BattlePhase.Combat) return;
-            var roster=units.Allies.Concat(units.Enemies);
+            IEnumerable<Unit> roster=units.Allies.Concat(units.Enemies);
             Allies=TraitCounter.CountTeam(roster,UnitTeam.Ally,state.Data.Traits);
             Enemies=TraitCounter.CountTeam(roster,UnitTeam.Enemy,state.Data.Traits);
         }

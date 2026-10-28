@@ -31,12 +31,12 @@ namespace AutoBattler.Battle.Units
         }
         public ModifierHandle AddModifier(ModifierSource source,StatModifierSpec spec)
         {
-            var handle=Add(source,spec); Recalculate(); return handle;
+            ModifierHandle handle=Add(source,spec); Recalculate(); return handle;
         }
         private ModifierHandle Add(ModifierSource source,StatModifierSpec spec)
         {
             // 풀 재사용 이후에도 이전 Handle을 재발급하지 않음.
-            var handle=new ModifierHandle(Interlocked.Increment(ref nextHandle));
+            ModifierHandle handle=new ModifierHandle(Interlocked.Increment(ref nextHandle));
             modifiers.Add(handle,new StatModifier(handle,source,spec)); return handle;
         }
         public bool RemoveModifier(ModifierHandle handle)
@@ -46,22 +46,22 @@ namespace AutoBattler.Battle.Units
         }
         public bool UpdateModifier(ModifierHandle handle,StatModifierSpec spec)
         {
-            if(!modifiers.TryGetValue(handle,out var old)) return false;
+            if(!modifiers.TryGetValue(handle,out StatModifier old)) return false;
             modifiers[handle]=new StatModifier(handle,old.Source,spec); Recalculate(); return true;
         }
         public void RemoveModifiers(IEnumerable<ModifierHandle> handles)
         {
             bool changed=false;
-            foreach(var handle in handles) changed|=modifiers.Remove(handle);
+            foreach(ModifierHandle handle in handles) changed|=modifiers.Remove(handle);
             if(changed) Recalculate();
         }
         public void RemoveSource(ModifierSource source)
         { RemoveModifiers(modifiers.Values.Where(modifier=>modifier.Source.Equals(source)).Select(modifier=>modifier.Handle).ToArray()); }
         public ModifierHandle[] ReplaceSource(ModifierSource source,params StatModifierSpec[] specs)
         {
-            foreach(var handle in modifiers.Values.Where(modifier=>modifier.Source.Equals(source)).Select(modifier=>modifier.Handle).ToArray())
+            foreach(ModifierHandle handle in modifiers.Values.Where(modifier=>modifier.Source.Equals(source)).Select(modifier=>modifier.Handle).ToArray())
                 modifiers.Remove(handle);
-            var handles=specs.Select(spec=>Add(source,spec)).ToArray();
+            ModifierHandle[] handles=specs.Select(spec=>Add(source,spec)).ToArray();
             // 중간 제거 상태를 알리지 않고 교체 결과를 한 번 전달.
             Recalculate(); return handles;
         }
@@ -73,7 +73,7 @@ namespace AutoBattler.Battle.Units
         private float Calculate(StatType type,float value)
         {
             double flat=0,percent=0;
-            foreach(var modifier in modifiers.Values)
+            foreach(StatModifier modifier in modifiers.Values)
             {
                 if(modifier.Spec.Stat!=type) continue;
                 if(modifier.Spec.Operation==ModifierOperation.Flat) flat+=modifier.Spec.Value;
