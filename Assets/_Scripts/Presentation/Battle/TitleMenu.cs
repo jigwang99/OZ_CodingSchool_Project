@@ -25,7 +25,6 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private TextMeshProUGUI stageNameText;
         [SerializeField] private TextMeshProUGUI stageDescriptionText;
         [SerializeField] private TextMeshProUGUI statusText;
-        [SerializeField] private GameObject loadingOverlay;
         [SerializeField] private CanvasGroup interactionRoot;
         private GameSettingsView gameSettings;
         private StageDefinition selection;
@@ -116,7 +115,7 @@ namespace AutoBattler.Presentation.Battle
         }
         private void SetBusy(bool value)
         {
-            busy=value; loadingOverlay.SetActive(value);
+            busy=value;
             titlePanel.interactable=!value; stagePanel.interactable=!value;
             startButton.interactable=!value && selection!=null;
             if(continueButton!=null) continueButton.interactable=!value;

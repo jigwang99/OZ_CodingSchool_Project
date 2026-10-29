@@ -77,7 +77,7 @@ namespace AutoBattler.Presentation.Battle
         }
 
         private bool CanOpen => underlying!=null && !GameNavigation.IsTransitioning
-            && (run==null || run.IsReady && !run.IsShuttingDown && !run.Flow.IsAugmentWindowOpen && !run.Equipment.IsInventoryOpen);
+            && (run==null || run.IsReady && !run.IsShuttingDown && !run.Flow.IsAugmentWindowOpen);
 
         private void LateUpdate()
         {

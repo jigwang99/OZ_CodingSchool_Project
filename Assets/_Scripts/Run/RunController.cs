@@ -66,8 +66,11 @@ namespace AutoBattler.Run
         public BattleBackgroundView BackgroundView=>backgroundView;
         private int StageId=>GameNavigation.SelectedStage!=null ? GameNavigation.SelectedStage.Id : stage.Id;
         private UniTaskCompletionSource shutdownCompletion;
+        private readonly UniTaskCompletionSource<bool> initialization=new UniTaskCompletionSource<bool>();
+        public UniTask<bool> WaitForInitializationAsync(CancellationToken token)=>initialization.Task.AttachExternalCancellation(token);
         private void Awake()
         {
+            GameNavigation.RegisterBattleController(this);
             saves=SaveManager.instance;
             lifetime=CancellationTokenSource.CreateLinkedTokenSource(this.GetCancellationTokenOnDestroy());
             assets.Initialize(catalog,flow,grid,unitPoolSize);
@@ -88,9 +91,14 @@ namespace AutoBattler.Run
             IsLoading=true; Report("불러오는 중...");
             try
             {
-                await assets.LoadAsync(lifetime.Token); lifetime.Token.ThrowIfCancellationRequested();
+                GameNavigation.ReportBattleLoading(this,0f,"전장 준비 중...");
+                await assets.LoadAsync(lifetime.Token,Cysharp.Threading.Tasks.Progress.Create<float>(value=>
+                    GameNavigation.ReportBattleLoading(this,.8f*value,"부대 준비 중...")));
+                lifetime.Token.ThrowIfCancellationRequested();
+                GameNavigation.ReportBattleLoading(this,.82f,"전장 불러오는 중...");
                 await assets.LoadBackgroundAsync(GameNavigation.SelectedStage!=null?GameNavigation.SelectedStage:stage,lifetime.Token);
                 if(backgroundView!=null) backgroundView.Show(assets.StageBackground);
+                GameNavigation.ReportBattleLoading(this,.9f,"도전 정보 준비 중...");
                 bool augmentOpen=true;
                 if(GameNavigation.ResumeRequested)
                 {
@@ -101,6 +109,7 @@ namespace AutoBattler.Run
                 else State=new RunState(assets.Data,seed,StageId);
                 equipment.Bind(State); units.Bind(State); shop.Bind(State); augments.Bind(State); synergies.Bind(State); battle.Bind(State);
                 drag.BindBoard(State.Board,State.Placement); State.Changed+=OnStateChanged; IsReady=true;
+                GameNavigation.ReportBattleLoading(this,.95f,"전장과 유닛 배치 중...");
                 units.SyncAllies(); units.CreateEnemies(); synergies.Refresh();
                 if(State.CanPrepare) augments.EnterPreparation(augmentOpen);
                 else flow.TryRestoreResult();
@@ -116,7 +125,12 @@ namespace AutoBattler.Run
                 State=null;
                 Report("불러오기에 실패했습니다. 다시 시도해 주세요."); Debug.LogException(exception,this);
             }
-            finally { IsLoading=false; DisplayChanged?.Invoke(); }
+            finally
+            {
+                IsLoading=false;
+                if(IsReady) GameNavigation.ReportBattleLoading(this,1f,"전투 준비 완료");
+                initialization.TrySetResult(IsReady); DisplayChanged?.Invoke();
+            }
         }
         private void Report(string message) { Message=saveFailed?saves.LastError:message; DisplayChanged?.Invoke(); }
         private void OnPlacementChanged()
@@ -130,18 +144,18 @@ namespace AutoBattler.Run
         }
         // 기존 HUD·씬의 공개 명령 유지. 실제 동작은 기능별 매니저에서 처리.
         private bool SaveAfter(bool changed) { if(changed) TrySaveProgress(); return changed; }
-        public bool Buy(int slot)=>IsReady && !equipment.IsInventoryOpen && SaveAfter(shop.Buy(slot));
-        public bool RefreshShop()=>IsReady && !equipment.IsInventoryOpen && SaveAfter(shop.RefreshShop());
-        public bool BuyXp()=>IsReady && !equipment.IsInventoryOpen && SaveAfter(shop.BuyXp());
-        public bool SellSelected()=>IsReady && !equipment.IsInventoryOpen && SaveAfter(shop.SellSelected());
-        public bool SellUnit(int instanceId)=>IsReady && !equipment.IsInventoryOpen && SaveAfter(shop.Sell(instanceId));
+        public bool Buy(int slot)=>IsReady && SaveAfter(shop.Buy(slot));
+        public bool RefreshShop()=>IsReady && SaveAfter(shop.RefreshShop());
+        public bool BuyXp()=>IsReady && SaveAfter(shop.BuyXp());
+        public bool SellSelected()=>IsReady && SaveAfter(shop.SellSelected());
+        public bool SellUnit(int instanceId)=>IsReady && SaveAfter(shop.Sell(instanceId));
         public bool ToggleAugmentWindow()=>IsReady && SaveAfter(augments.ToggleWindow());
         public bool SelectAugment(int id)=>IsReady && SaveAfter(augments.Select(id));
         public bool EquipItem(int itemId,int unitId)=>IsReady && SaveAfter(equipment.Equip(itemId,unitId));
         public bool UnequipItem(int itemId)=>IsReady && SaveAfter(equipment.Unequip(itemId));
         public bool StartBattle()
         {
-            if(!IsReady || equipment.IsInventoryOpen) return false;
+            if(!IsReady) return false;
             if(State.CanPrepare && !State.Augments.HasPending && State.Board.DeployedCount>0 && !TrySaveProgress()) return false;
             return battle.StartBattle();
         }
@@ -186,6 +200,6 @@ namespace AutoBattler.Run
             catch(Exception exception) { completion.TrySetException(exception); }
         }
         // 파괴 콜백에서는 자식 기물의 배치가 이미 해제됐을 수 있으므로 저장 없이 정리만 진행.
-        private void OnDestroy()=>ShutdownAsync(false).Forget();
+        private void OnDestroy() { initialization.TrySetResult(false); ShutdownAsync(false).Forget(); }
     }
 }

@@ -32,6 +32,9 @@ namespace AutoBattler.Battle.Grid
         private Vector2 pressPosition;
         private UnitState dragState;
         private bool isDragging;
+        private bool itemDragging;
+        public bool IsItemDragging => itemDragging;
+        public Camera BoardCamera => boardCamera;
         private IUnitDropTarget dropTarget;
         private Unit inspectedUnit;
         private int inspectedSpawnVersion;
@@ -77,6 +80,15 @@ namespace AutoBattler.Battle.Grid
         public void BindDropTarget(IUnitDropTarget target)=>dropTarget=target;
         public void UnbindDropTarget(IUnitDropTarget target)
         { if(ReferenceEquals(dropTarget,target)) { CancelDrag(); dropTarget=null; } }
+        public void SetItemDragging(bool active)
+        { if (active) CancelDrag(); itemDragging = active; }
+        public void Inspect(Unit unit)
+        {
+            inspectedUnit = unit;
+            inspectedSpawnVersion = unit != null ? unit.SpawnVersion : 0;
+            inspectedInstanceId = unit != null ? unit.InstanceId : 0;
+            SelectedUnit = unit != null && unit.Team == UnitTeam.Ally ? unit.View : null;
+        }
         public void ClearSelection() { CancelDrag(); SelectedUnit = null; inspectedUnit = null; }
         public void BindBoard(BoardState board, PlacementService service)
         {
@@ -140,7 +152,7 @@ namespace AutoBattler.Battle.Grid
 
         private void Update()
         {
-            if (battleFlow == null || !battleFlow.CanInspectUnits
+            if (itemDragging || AutoBattler.Run.GameNavigation.IsTransitioning || battleFlow == null || !battleFlow.CanInspectUnits
                 || Mouse.current == null || boardCamera == null || gridLayout == null)
             {
                 CancelDrag();

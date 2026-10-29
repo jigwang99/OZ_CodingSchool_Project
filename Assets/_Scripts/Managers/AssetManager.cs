@@ -41,19 +41,29 @@ namespace AutoBattler.Managers
             GameObject root=new GameObject("UnitPool"); root.transform.SetParent(transform,false);
             Units=new UnitPrefabPool(assets,root.transform,poolSize);
         }
-        public async UniTask LoadAsync(CancellationToken token)
+        public async UniTask LoadAsync(CancellationToken token,IProgress<float> progress=null)
         {
             token.ThrowIfCancellationRequested();
             if(shutdown!=null) throw new ObjectDisposedException(nameof(AssetManager));
             if(snapshot==null) snapshot=await assets.AcquireAsync<TextAsset>(catalog.Snapshot,token);
             DataRepository repository=new DataRepository(JsonUtility.FromJson<GameSnapshot>(snapshot.Asset.text));
-            foreach(AssetReferenceGameObject address in repository.Units.Values.Select(unit=>catalog.VisualPrefab(unit.VisualId))
-                .GroupBy(reference=>reference.RuntimeKey).Select(group=>group.First()))
-                await Units.PreloadAsync(address,token);
-            foreach(int iconId in repository.Items.Values.Select(item=>item.IconId).Distinct())
+            progress?.Report(.1f);
+            AssetReferenceGameObject[] prefabs=repository.Units.Values.Select(unit=>catalog.VisualPrefab(unit.VisualId))
+                .GroupBy(reference=>reference.RuntimeKey).Select(group=>group.First()).ToArray();
+            for(int i=0;i<prefabs.Length;i++)
+            {
+                await Units.PreloadAsync(prefabs[i],token);
+                progress?.Report(.1f+.5f*(i+1)/prefabs.Length);
+            }
+            int[] icons=repository.Items.Values.Select(item=>item.IconId).Distinct().ToArray();
+            for(int i=0;i<icons.Length;i++)
+            {
+                int iconId=icons[i];
                 if(!itemIcons.ContainsKey(iconId)) itemIcons.Add(iconId,await assets.AcquireAsync<Sprite>(catalog.ItemIconReference(iconId),token));
+                progress?.Report(.6f+.15f*(i+1)/icons.Length);
+            }
             if(Visuals==null) Visuals=new BattleVisualService(assets,catalog.BattleVisuals,transform,flow,grid);
-            await Visuals.PreloadAsync(token); token.ThrowIfCancellationRequested(); Data=repository;
+            await Visuals.PreloadAsync(token); token.ThrowIfCancellationRequested(); Data=repository; progress?.Report(1f);
         }
         public UniTask ShutdownAsync()
         {

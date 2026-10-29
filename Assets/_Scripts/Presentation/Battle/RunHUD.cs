@@ -42,7 +42,6 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private TextMeshProUGUI buyExperienceLabel;
         [SerializeField] private GameObject shopContent;
         [SerializeField] private UnitSellZone sellZone;
-        [SerializeField] private TextMeshProUGUI selectedUnitText;
         [SerializeField] private SynergyPanel synergyPanel;
         [SerializeField] private AugmentSelectionPanel augmentPanel;
         [SerializeField] private SelectedAugmentsView selectedAugments;
@@ -78,7 +77,6 @@ namespace AutoBattler.Presentation.Battle
         public Button BuyExperienceButton => buyExperienceButton;
         public GameObject ShopContent=>shopContent;
         public UnitSellZone SellZone=>sellZone;
-        public TextMeshProUGUI SelectedUnitText => selectedUnitText;
         public Button StartBattleButton => startBattleButton;
         public Button RetryLoadButton => retryLoadButton;
         public Button LoadTitleButton=>loadTitleButton;
@@ -124,6 +122,7 @@ namespace AutoBattler.Presentation.Battle
             loadTitleButton.onClick.AddListener(ReturnFromLoadError);
             run.DisplayChanged += Refresh;
             if(inventory!=null) inventory.Bind(run,interactionRoot);
+            if(unitInfo!=null) unitInfo.BindRun(run);
             if(augmentPanel!=null) { augmentPanel.Selected+=SelectAugment; augmentPanel.ToggleRequested+=ToggleAugments; }
             isBound = true;
             hasDisplayedPhase = false;
@@ -193,11 +192,6 @@ namespace AutoBattler.Presentation.Battle
 
         private void RefreshSelection()
         {
-            UnitView selected = run.Drag.SelectedUnit;
-            Unit unit = selected != null && selected.State != null
-                ? selected.GetComponent<Unit>() : null;
-            selectedUnitText.text = unit != null && unit.Definition != null
-                ? BattleText.UnitName(unit.Definition) : "기물 선택";
             if (unitInfo != null)
             {
                 Unit inspected = run.IsReady && run.Flow.CanInspectUnits ? run.Drag.InspectedUnit : null;
@@ -286,7 +280,7 @@ namespace AutoBattler.Presentation.Battle
         private void Unbind()
         {
             if(inventory!=null) inventory.Bind(null,null);
-            if (unitInfo != null) unitInfo.Hide();
+            if (unitInfo != null) { unitInfo.Hide(); unitInfo.BindRun(null); }
             if (!isBound)
                 return;
             if (run != null)

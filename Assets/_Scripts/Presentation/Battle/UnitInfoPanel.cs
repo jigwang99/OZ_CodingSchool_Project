@@ -1,4 +1,6 @@
 using System.Text;
+using System.Linq;
+using AutoBattler.Run;
 using AutoBattler.Battle.Units;
 using AutoBattler.Data.Skills;
 using AutoBattler.Data.Snapshot;
@@ -33,6 +35,35 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private Image unitIcon,skillIcon,shieldIcon;
         public Image UnitIcon=>unitIcon;
         public Image SkillIcon=>skillIcon;
+        [Header("장착 아이템")]
+        [SerializeField] private ItemIconButton[] equipmentSlots = new ItemIconButton[3];
+        private RunController run;
+        public ItemIconButton[] EquipmentSlots => equipmentSlots;
+        public void BindRun(RunController controller)
+        {
+            if (run != null) run.DisplayChanged -= RefreshEquipment;
+            run = controller;
+            if (run != null) run.DisplayChanged += RefreshEquipment;
+        }
+        private void Awake()
+        { foreach (ItemIconButton slot in equipmentSlots) slot.Pressed += Unequip; }
+        private void Unequip(int itemId)
+        {
+            Unit unit = boundUnit;
+            if (unit != null && run != null && run.UnequipItem(itemId))
+            { run.Drag.Inspect(unit); RefreshEquipment(); }
+        }
+        private void RefreshEquipment()
+        {
+            for (int i = 0; i < equipmentSlots.Length; i++)
+            {
+                OwnedItem item = IsCurrent() && run != null && run.IsReady && boundUnit.Team == UnitTeam.Ally
+                    ? run.State.Items.Equipped(boundUnit.InstanceId).FirstOrDefault(owned => owned.Slot == i) : null;
+                AutoBattler.Data.Items.ItemDefinition definition = item != null ? run.State.Data.Items[item.DefinitionId] : null;
+                equipmentSlots[i].Show(item?.InstanceId ?? 0, boundUnit != null ? boundUnit.Equipment.Icon(i) : null,
+                    definition?.Name ?? "빈 슬롯", false, run != null && run.Equipment.CanEquip);
+            }
+        }
         private Unit boundUnit;
         private DataRepository data;
         private int spawnVersion;
@@ -59,6 +90,7 @@ namespace AutoBattler.Presentation.Battle
             unit.Mana.Changed+=OnManaChanged;
             unit.StatModifiers.Changed+=RefreshDetails;
             unit.Effects.Changed+=RefreshDetails;
+            unit.Equipment.Changed += RefreshEquipment;
             gameObject.SetActive(true);
             nameText.text=BattleText.UnitName(unit.Definition);
             identityText.text=$"{(unit.Team==UnitTeam.Ally ? "아군" : "적군")}   {new string('*', unit.Star)}   비용 {unit.Definition.Cost}G";
@@ -68,6 +100,7 @@ namespace AutoBattler.Presentation.Battle
             if(unitIcon!=null) { unitIcon.sprite=catalog.Icon(unit.Definition.IconId); unitIcon.enabled=unitIcon.sprite!=null; }
             if(skillIcon!=null) { skillIcon.sprite=catalog.BattleVisuals.Skill(unit.Skill.Definition?.Id ?? 0)?.icon; skillIcon.enabled=skillIcon.sprite!=null; }
             RefreshDetails();
+            RefreshEquipment();
             RefreshHealth(false);
             SetBar(manaFill, unit.Mana.Current, unit.Mana.Maximum, false);
             group.DOKill(); group.alpha=0f; group.DOFade(1f,.12f).SetUpdate(true);
@@ -109,6 +142,7 @@ namespace AutoBattler.Presentation.Battle
         private void RefreshDetails()
         {
             if (!IsCurrent()) return;
+            RefreshEquipment();
             UnitStat stats=boundUnit.Stats;
             RefreshHealth(boundUnit.Health.IsAlive);
             manaText.text=$"MP  {boundUnit.Mana.Current}/{boundUnit.Mana.Maximum}";
@@ -173,12 +207,15 @@ namespace AutoBattler.Presentation.Battle
                 boundUnit.Mana.Changed-=OnManaChanged;
                 boundUnit.StatModifiers.Changed-=RefreshDetails;
                 boundUnit.Effects.Changed-=RefreshDetails;
+                boundUnit.Equipment.Changed -= RefreshEquipment;
             }
             boundUnit=null; data=null;
             if(healthSegments!=null) healthSegments.Clear();
             if (healthFill!=null) healthFill.transform.DOKill();
             if (manaFill!=null) manaFill.transform.DOKill();
         }
+        private void OnDestroy()
+        { BindRun(null); foreach (ItemIconButton slot in equipmentSlots) slot.Pressed -= Unequip; }
         private void OnDisable() { Unbind(); if(group!=null) group.DOKill(); }
     }
 }

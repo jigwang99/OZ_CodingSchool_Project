@@ -29,6 +29,8 @@ namespace AutoBattler.Battle.Units
         [SerializeField] private AutoBattler.Presentation.Battle.UnitIdentityView identity;
         public AutoBattler.Presentation.Battle.UnitIdentityView Identity=>identity;
         public UnitEquipment Equipment { get; private set; }
+        [SerializeField] private UnitDropFeedback dropFeedback;
+        public UnitDropFeedback DropFeedback => dropFeedback;
         public int SpawnVersion { get; private set; }
         public UnitDefinition Definition { get; private set; }
         public UnitTeam Team { get; private set; }

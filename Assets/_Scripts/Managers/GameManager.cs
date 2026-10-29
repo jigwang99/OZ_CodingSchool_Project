@@ -15,6 +15,10 @@ namespace AutoBattler.Managers
         [SerializeField] private GameFrameRate defaultFrameRate = GameFrameRate.Fps60;
         [SerializeField] private AutoBattler.Presentation.Battle.GameSettingsView settings;
 
+        [Header("씬 전환 로딩 화면")]
+        [SerializeField] private AutoBattler.Presentation.Battle.SceneLoadingView loadingScreen;
+        public AutoBattler.Presentation.Battle.SceneLoadingView LoadingScreen=>loadingScreen;
+
         public GameFrameRate CurrentFrameRate { get; private set; } = GameFrameRate.Fps60;
         public event Action<GameFrameRate> FrameRateChanged;
         public AutoBattler.Presentation.Battle.GameSettingsView Settings => settings;
