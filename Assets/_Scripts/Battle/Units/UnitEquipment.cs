@@ -28,13 +28,19 @@ namespace AutoBattler.Battle.Units
             int[] current=new int[ItemInventoryState.EquipmentCapacity];
             foreach(OwnedItem item in equipped) current[item.Slot]=item.InstanceId;
             if(version==unit.SpawnVersion && current.SequenceEqual(instances)) return;
-            ClearSources();
+            if(version!=unit.SpawnVersion) ClearSources();
+            // 유지 중인 장비를 제거하지 않아 전투 중 최대 HP의 중간 감소 방지.
+            foreach(ModifierSource source in sources.ToArray())
+            {
+                if(equipped.Any(item=>item.InstanceId==source.CasterInstanceId)) continue;
+                stats.RemoveSource(source); sources.Remove(source);
+            }
             Array.Clear(instances,0,instances.Length); Array.Clear(icons,0,icons.Length);
             foreach(OwnedItem item in equipped)
             {
                 ItemDefinition definition=data.Items[item.DefinitionId];
                 ModifierSource source=new ModifierSource(ModifierSourceKind.Equipment,definition.Id,item.InstanceId);
-                stats.ReplaceSource(source,definition.Modifiers); sources.Add(source);
+                if(!sources.Contains(source)) { stats.ReplaceSource(source,definition.Modifiers); sources.Add(source); }
                 instances[item.Slot]=item.InstanceId; icons[item.Slot]=iconProvider(definition.IconId);
             }
             version=unit.SpawnVersion; Changed?.Invoke();

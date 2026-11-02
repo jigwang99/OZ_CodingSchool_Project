@@ -29,6 +29,8 @@ namespace AutoBattler.Run
         public bool IsOver { get; private set; } public bool WonRun { get; private set; }
         public bool CanPrepare { get; set; }=true;
         public bool IsSettled=>settledRound==Round;
+        public bool CanTradeUnits => !IsOver && !Augments.HasPending;
+        public bool CanManageRoster => !IsOver && !Augments.HasPending && (CanPrepare || !IsSettled);
         public string LastError { get; private set; }
         public string LastResult { get; private set; }
         public IReadOnlyList<OwnedUnit> Units => owned.AsReadOnly();
@@ -56,16 +58,17 @@ namespace AutoBattler.Run
         { Data=data; this.random=random; Augments=augments; Placement=new PlacementService(Board);
             Items=new ItemInventoryState(data.Items,1,random.Seed^0x59B17); }
 
-        public RunSaveData Capture(int stageId,bool augmentWindowOpen)
+        public RunSaveData Capture(int stageId,bool augmentWindowOpen,bool replayCombat=false)
         {
             if(stageId!=Items.StageId) throw new InvalidOperationException("현재 도전의 스테이지와 아이템 스테이지 불일치.");
-            if(!CanPrepare && !IsSettled) throw new InvalidOperationException("전투 중에는 전투 직전 저장 상태를 유지합니다.");
+            if(!CanPrepare && !IsSettled && !replayCombat) throw new InvalidOperationException("전투 중에는 전투 직전 저장 상태를 유지합니다.");
             if(owned.Any(unit=>!Board.HasValidLocation(unit.Placement) || !Placement.IsValidLocation(unit.Placement.Location)))
                 throw new InvalidOperationException("배치가 해제된 유닛은 저장할 수 없습니다.");
             return new RunSaveData
             {
                 dataVersion=Data.Version, stageId=stageId, savedAtUtc=DateTime.UtcNow.ToString("O"),
-                phase=CanPrepare?RunSavePhase.Preparation:RunSavePhase.Result,
+                // 전투 중 경제·장비 변경은 현재 논리 배치로 준비 단계 재시작 저장.
+                phase=IsSettled?RunSavePhase.Result:RunSavePhase.Preparation,
                 round=Round,gold=Gold,lives=Lives,level=Level,xp=Xp,winStreak=WinStreak,nextInstanceId=nextId,
                 isOver=IsOver,wonRun=WonRun,lastResult=LastResult,augmentWindowOpen=augmentWindowOpen,
                 randomSeed=random.Seed,randomDrawCount=random.DrawCount,shop=(int[])shop.Clone(),
@@ -138,12 +141,13 @@ namespace AutoBattler.Run
                 throw new ArgumentException("저장된 증강 진행 이력이 일치하지 않습니다.");
             state.Items=ItemInventoryState.Restore(data.Items,saved.items,saved.stageId,saved.randomSeed^0x59B17,
                 state.owned.Select(unit=>unit.Placement.InstanceId).ToArray(),saved.round);
+            if(state.CanPrepare) state.MergePendingUnits();
             return state;
         }
         public bool TryEquipItem(int itemInstanceId,int unitInstanceId)
         {
-            if(!Ready() || !owned.Any(unit=>unit.Placement.InstanceId==unitInstanceId)
-                || !Items.TryEquip(itemInstanceId,unitInstanceId)) return Fail("준비 단계의 아군에게 빈 장착 칸이 필요합니다.");
+            if(!CanManageRoster || !owned.Any(unit=>unit.Placement.InstanceId==unitInstanceId)
+                || !Items.TryEquip(itemInstanceId,unitInstanceId)) return Fail("아군에게 빈 장착 칸이 필요합니다.");
             Notify(); return true;
         }
         public bool TryUnequipItem(int itemInstanceId)
@@ -170,10 +174,11 @@ namespace AutoBattler.Run
         }
         public bool TryBuy(int slot)
         {
-            if(!Ready() || slot<0 || slot>=shop.Length || shop[slot]==0) return Fail("구매할 수 없는 상점입니다.");
+            if(!CanTradeUnits || slot<0 || slot>=shop.Length || shop[slot]==0) return Fail("구매할 수 없는 상점입니다.");
             int id=shop[slot], cost=Data.Units[id].Cost;
             if(Gold<cost) return Fail("골드가 부족합니다.");
-            OwnedUnit[] matches=owned.Where(x=>x.DefinitionId==id && x.Star==1)
+            OwnedUnit[] matches=owned.Where(x=>x.DefinitionId==id && x.Star==1
+                    && (CanPrepare || IsSettled || x.Placement.Location.Kind==UnitLocationKind.Bench))
                 .OrderBy(x=>x.Placement.Location.Kind==UnitLocationKind.Board ? 0:1)
                 .ThenBy(x=>PositionOrder(x.Placement.Location)).ThenBy(x=>x.Placement.InstanceId).Take(2).ToArray();
             int free=Placement.FindFreeBenchSlot();
@@ -199,9 +204,11 @@ namespace AutoBattler.Run
         }
         public bool TrySell(int instanceId)
         {
-            if(!Ready()) return Fail("준비 단계에서 판매할 수 있습니다.");
+            if(!CanTradeUnits) return Fail("현재 판매할 수 없습니다.");
             OwnedUnit unit=owned.FirstOrDefault(x=>x.Placement.InstanceId==instanceId);
             if(unit==null) return Fail("판매할 기물을 선택해 주세요.");
+            if(!CanPrepare && !IsSettled && unit.Placement.Location.Kind!=UnitLocationKind.Bench)
+                return Fail("전투 중에는 대기석 유닛만 판매할 수 있습니다.");
             int copies=unit.Star==2?3:1, price=SalePrice(instanceId);
             if(!Board.TryUnregister(unit.Placement)) return Fail("기물의 배치 정보를 찾을 수 없습니다.");
             Items.ReturnFromUnit(instanceId);
@@ -250,7 +257,27 @@ namespace AutoBattler.Run
         public bool TryNextRound()
         {
             if(IsOver || settledRound!=Round || CanPrepare) return false;
-            Round++; CanPrepare=true; Reroll(); Augments.EnterRound(Round,Data.Rounds[Round].OffersAugment); Notify(); return true;
+            Round++; CanPrepare=true; MergePendingUnits(); Reroll(); Augments.EnterRound(Round,Data.Rounds[Round].OffersAugment); Notify(); return true;
+        }
+        private void MergePendingUnits()
+        {
+            foreach(int definition in owned.Where(unit=>unit.Star==1).Select(unit=>unit.DefinitionId).Distinct().ToArray())
+            {
+                while(true)
+                {
+                    OwnedUnit[] matches=owned.Where(unit=>unit.DefinitionId==definition && unit.Star==1)
+                        .OrderBy(unit=>unit.Placement.Location.Kind==UnitLocationKind.Board?0:1)
+                        .ThenBy(unit=>PositionOrder(unit.Placement.Location)).ThenBy(unit=>unit.Placement.InstanceId).Take(3).ToArray();
+                    if(matches.Length<3) break;
+                    OwnedUnit survivor=matches[0];
+                    foreach(OwnedUnit consumed in matches.Skip(1))
+                    {
+                        Items.MergeUnits(survivor.Placement.InstanceId,consumed.Placement.InstanceId);
+                        Board.TryUnregister(consumed.Placement); owned.Remove(consumed);
+                    }
+                    survivor.Star=2;
+                }
+            }
         }
         private void Reroll()
         {

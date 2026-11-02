@@ -39,13 +39,13 @@ namespace AutoBattler.Managers
             { LastError="저장 파일을 읽을 수 없습니다. 새 도전을 시작할 수 있습니다."; }
         }
 
-        public bool TrySave(RunState state,int stageId,bool augmentWindowOpen)
+        public bool TrySave(RunState state,int stageId,bool augmentWindowOpen,bool replayCombat=false)
         {
             string temporary=SavePath+".tmp";
             try
             {
                 if(stageId<=0 || state==null || string.IsNullOrEmpty(state.Data.Version)) throw new ArgumentException("저장할 도전 정보 없음.");
-                RunSaveData saved=state.Capture(stageId,augmentWindowOpen);
+                RunSaveData saved=state.Capture(stageId,augmentWindowOpen,replayCombat);
                 string json=JsonUtility.ToJson(saved,true);
                 Directory.CreateDirectory(directory);
                 // 같은 폴더에 완성된 파일을 쓴 뒤 교체하여 기존 정상 파일 보호.

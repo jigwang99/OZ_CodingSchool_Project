@@ -61,7 +61,7 @@ namespace AutoBattler.Presentation.Battle
                     ? run.State.Items.Equipped(boundUnit.InstanceId).FirstOrDefault(owned => owned.Slot == i) : null;
                 AutoBattler.Data.Items.ItemDefinition definition = item != null ? run.State.Data.Items[item.DefinitionId] : null;
                 equipmentSlots[i].Show(item?.InstanceId ?? 0, boundUnit != null ? boundUnit.Equipment.Icon(i) : null,
-                    definition?.Name ?? "빈 슬롯", false, run != null && run.Equipment.CanEquip);
+                    definition?.Name ?? "빈 슬롯", false, run != null && run.Equipment.CanUnequip);
             }
         }
         private Unit boundUnit;

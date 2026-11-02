@@ -11,6 +11,7 @@ namespace AutoBattler.Battle.Flow
         public bool CanInspectUnits => isActiveAndEnabled && (CanPlaceUnits || CurrentPhase == BattlePhase.Combat);
         public bool CanPlaceUnits => isActiveAndEnabled && (CurrentPhase==BattlePhase.Preparation
             || CurrentPhase==BattlePhase.AugmentSelection && !IsAugmentWindowOpen);
+        public bool CanDragBenchUnits => isActiveAndEnabled && CurrentPhase==BattlePhase.Combat;
         public event Action<BattlePhase> PhaseChanged;
         private bool isChangingPhase;
 

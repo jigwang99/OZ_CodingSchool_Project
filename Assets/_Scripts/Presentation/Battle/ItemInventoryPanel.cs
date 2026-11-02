@@ -200,7 +200,7 @@ namespace AutoBattler.Presentation.Battle
             if (selection == null || selection.OwnerUnitId != 0) { selectedItem = 0; selection = null; }
             detailLabel.text = selection == null ? (stored.Length == 0 ? "전투 승리 시 아이템 획득" : "아이템을 클릭하면 효과 표시")
                 : $"{run.State.Data.Items[selection.DefinitionId].Name}\n{run.State.Data.Items[selection.DefinitionId].Description}\n{ItemText.Stats(run.State.Data.Items[selection.DefinitionId])}";
-            hintLabel.text = run.Equipment.CanEquip ? "아이템을 아군에게 드래그하여 장착" : "준비 단계에서 장착·해제 가능";
+            hintLabel.text = run.Equipment.CanEquip ? "아이템을 아군에게 드래그하여 장착" : "현재 아이템을 장착할 수 없습니다";
         }
         private void ClearIcons()
         { foreach (ItemIconButton slot in storedSlots) slot.Show(0, null, "빈 슬롯", false, false); }

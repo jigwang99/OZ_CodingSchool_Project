@@ -23,7 +23,18 @@ namespace AutoBattler.Presentation.Battle
         public event Action ContinueRequested;
         public event Action RetryRequested;
         public event Action TitleRequested;
+        [Header("카운트다운 알림 배치")]
+        [SerializeField] private Vector2 countdownSize=new Vector2(660f,142f);
+        [SerializeField] private float countdownTop=128f;
+        private RectLayout normalFrame;
+        private RectLayout[] normalLabels;
+        private float[] normalFontSizes;
+        private bool layoutCaptured;
+        private bool compact;
         private bool isPresented;
+        private bool automaticCountdown;
+        private int countdownSeconds=-1;
+        private string itemReward;
 
         public CanvasGroup CanvasGroup => canvasGroup;
         public TextMeshProUGUI TitleText => titleText;
@@ -34,9 +45,29 @@ namespace AutoBattler.Presentation.Battle
         public Button TitleButton => titleButton;
 
         public void ShowItemReward(string name)
-        { if(CanContinue) { endMessageText.text=$"아이템 획득: {name}"; endMessageText.gameObject.SetActive(true); } }
+        { if(CanContinue) { itemReward=name; RefreshCaption(); } }
+        public void ShowCountdown(float seconds)
+        {
+            if(!CanContinue) return;
+            ApplyCountdownLayout();
+            canvasGroup.interactable=false; canvasGroup.blocksRaycasts=false;
+            automaticCountdown=true;
+            nextRoundButton.interactable=false; nextRoundButton.gameObject.SetActive(false);
+            int remaining=Mathf.Max(0,Mathf.CeilToInt(seconds));
+            if(countdownSeconds==remaining) return;
+            countdownSeconds=remaining; RefreshCaption();
+        }
+        private void RefreshCaption()
+        {
+            string countdown=countdownSeconds<0?"":countdownSeconds==0?"다음 전투 준비 중...":$"다음 전투 준비까지 {countdownSeconds}초";
+            string reward=string.IsNullOrEmpty(itemReward)?"":$"아이템 획득: {itemReward}";
+            endMessageText.text=reward+(reward.Length>0 && countdown.Length>0?" · ":"")+countdown;
+            endMessageText.gameObject.SetActive(endMessageText.text.Length>0);
+        }
         public void Show(string title, string result, bool canContinue, bool animate = true)
         {
+            CaptureLayout(); RestoreLayout();
+            automaticCountdown=false; countdownSeconds=-1; itemReward=null;
             bool wasVisible = gameObject.activeSelf;
             isPresented = true;
             titleText.text = title;
@@ -63,6 +94,7 @@ namespace AutoBattler.Presentation.Battle
 
         public void Hide()
         {
+            RestoreLayout();
             CanContinue = false;
             isPresented = false;
             canvasGroup.DOKill();
@@ -72,6 +104,50 @@ namespace AutoBattler.Presentation.Battle
             gameObject.SetActive(false);
         }
 
+        private TextMeshProUGUI[] Labels=>new[] {titleText,resultText,endMessageText};
+        private void CaptureLayout()
+        {
+            if(layoutCaptured) return;
+            layoutCaptured=true; normalFrame=new RectLayout((RectTransform)transform);
+            TextMeshProUGUI[] labels=Labels;
+            normalLabels=new RectLayout[labels.Length]; normalFontSizes=new float[labels.Length];
+            for(int i=0;i<labels.Length;i++)
+            { normalLabels[i]=new RectLayout(labels[i].rectTransform); normalFontSizes[i]=labels[i].fontSize; }
+        }
+        private void ApplyCountdownLayout()
+        {
+            CaptureLayout();
+            if(compact) return;
+            compact=true;
+            RectTransform frame=(RectTransform)transform;
+            frame.anchorMin=frame.anchorMax=frame.pivot=new Vector2(.5f,1f);
+            frame.anchoredPosition=new Vector2(0f,-countdownTop); frame.sizeDelta=countdownSize;
+            TextMeshProUGUI[] labels=Labels;
+            for(int i=0;i<labels.Length;i++)
+            {
+                RectTransform rect=labels[i].rectTransform;
+                rect.anchorMin=rect.anchorMax=rect.pivot=new Vector2(0f,1f);
+                rect.anchoredPosition=new Vector2(12f,i==0?-8f:i==1?-40f:-104f);
+                rect.sizeDelta=new Vector2(countdownSize.x-24f,i==1?48f:32f);
+                labels[i].fontSize=i==0?24f:i==1?19f:18f;
+            }
+        }
+        private void RestoreLayout()
+        {
+            if(!compact) return;
+            compact=false; normalFrame.Restore((RectTransform)transform);
+            TextMeshProUGUI[] labels=Labels;
+            for(int i=0;i<labels.Length;i++)
+            { normalLabels[i].Restore(labels[i].rectTransform); labels[i].fontSize=normalFontSizes[i]; }
+        }
+        private readonly struct RectLayout
+        {
+            private readonly Vector2 anchorMin,anchorMax,pivot,position,size;
+            public RectLayout(RectTransform rect)
+            { anchorMin=rect.anchorMin; anchorMax=rect.anchorMax; pivot=rect.pivot; position=rect.anchoredPosition; size=rect.sizeDelta; }
+            public void Restore(RectTransform rect)
+            { rect.anchorMin=anchorMin; rect.anchorMax=anchorMax; rect.pivot=pivot; rect.anchoredPosition=position; rect.sizeDelta=size; }
+        }
         public void StopAnimation() => canvasGroup.DOKill();
         public void SetNavigationBusy(bool busy)
         {
@@ -93,7 +169,7 @@ namespace AutoBattler.Presentation.Battle
 
         private void RequestContinue()
         {
-            if (CanContinue && nextRoundButton.IsInteractable())
+            if (!automaticCountdown && CanContinue && nextRoundButton.IsInteractable())
                 ContinueRequested?.Invoke();
         }
         private void RequestRetry()

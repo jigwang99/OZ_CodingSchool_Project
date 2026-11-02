@@ -46,7 +46,8 @@ namespace AutoBattler.Managers
         public void SyncAllies()
         {
             if(state==null) return;
-            drag.ClearSelection();
+            if(state.CanPrepare) drag.ClearSelection();
+            else drag.CancelDrag();
             foreach(KeyValuePair<int, Unit> pair in allies.ToArray())
             {
                 if(state.Units.Any(owned=>owned.Placement.InstanceId==pair.Key)) continue;
@@ -55,17 +56,18 @@ namespace AutoBattler.Managers
             foreach(OwnedUnit owned in state.Units)
             {
                 int id=owned.Placement.InstanceId;
+                bool initialize=false;
                 if(!allies.TryGetValue(id,out Unit unit))
                 {
                     unit=pool.Rent(catalog.VisualPrefab(state.Data.Units[owned.DefinitionId].VisualId));
-                    ConfigureUnit(unit,owned.DefinitionId,owned.Star,id,UnitTeam.Ally);
+                    ConfigureUnit(unit,owned.DefinitionId,owned.Star,id,UnitTeam.Ally); initialize=true;
                     drag.BindView(unit.View,owned.Placement);
                     unit.gameObject.SetActive(true); allies.Add(id,unit);
                 }
                 else if(unit.Star!=owned.Star)
-                    ConfigureUnit(unit,owned.DefinitionId,owned.Star,id,UnitTeam.Ally);
+                { ConfigureUnit(unit,owned.DefinitionId,owned.Star,id,UnitTeam.Ally); initialize=true; }
                 unit.Equipment.Apply(state.Items.Equipped(id),state.Data,itemIcon);
-                AugmentApplicator.ApplyPersistent(unit,state.Augments.Selected);
+                if(state.CanPrepare || initialize) AugmentApplicator.ApplyPersistent(unit,state.Augments.Selected);
             }
             Physics2D.SyncTransforms();
         }

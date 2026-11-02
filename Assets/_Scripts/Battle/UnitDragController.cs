@@ -33,6 +33,11 @@ namespace AutoBattler.Battle.Grid
         private UnitState dragState;
         private bool isDragging;
         private bool itemDragging;
+        private bool resultTrading;
+        public bool CanInspectUnits => battleFlow!=null && (battleFlow.CanInspectUnits
+            || resultTrading && battleFlow.CurrentPhase==BattlePhase.Result);
+        public void SetResultTrading(bool allowed)
+        { resultTrading=allowed; if(!allowed) CancelDrag(); }
         public bool IsItemDragging => itemDragging;
         public Camera BoardCamera => boardCamera;
         private IUnitDropTarget dropTarget;
@@ -63,6 +68,7 @@ namespace AutoBattler.Battle.Grid
 
         private void OnPhaseChanged(BattlePhase phase)
         {
+            if(phase!=BattlePhase.Result) resultTrading=false;
             if (phase != BattlePhase.Preparation)
                 CancelDrag();
         }
@@ -152,7 +158,7 @@ namespace AutoBattler.Battle.Grid
 
         private void Update()
         {
-            if (itemDragging || AutoBattler.Run.GameNavigation.IsTransitioning || battleFlow == null || !battleFlow.CanInspectUnits
+            if (itemDragging || AutoBattler.Run.GameNavigation.IsTransitioning || battleFlow == null || !CanInspectUnits
                 || Mouse.current == null || boardCamera == null || gridLayout == null)
             {
                 CancelDrag();
@@ -172,7 +178,7 @@ namespace AutoBattler.Battle.Grid
                 if (Mouse.current.leftButton.wasPressedThisFrame)
                     TryBeginDrag(mouseWorldPosition);
             }
-            if (!battleFlow.CanPlaceUnits)
+            if (!battleFlow.CanPlaceUnits && !CanDragForSale(draggedUnit))
             {
                 CancelDrag();
                 return;
@@ -218,7 +224,7 @@ namespace AutoBattler.Battle.Grid
             inspectedSpawnVersion = unit != null ? unit.SpawnVersion : 0;
             inspectedInstanceId = unit != null ? unit.InstanceId : 0;
             SelectedUnit = unit != null && unit.Team == UnitTeam.Ally ? unit.View : null;
-            if (!battleFlow.CanPlaceUnits || unit != null && unit.Team == UnitTeam.Enemy)
+            if ((!battleFlow.CanPlaceUnits && !CanDragForSale(SelectedUnit)) || unit != null && unit.Team == UnitTeam.Enemy)
                 return;
             draggedUnit = RegisterUnit(hit);
             if (draggedUnit == null)
@@ -228,6 +234,10 @@ namespace AutoBattler.Battle.Grid
             dragOffset = originalPosition - mouseWorldPosition;
             pressPosition=Mouse.current.position.ReadValue(); dragState=draggedUnit.State;
         }
+
+        private bool CanDragForSale(UnitView view) => view!=null && view.State!=null
+            && (battleFlow.CanDragBenchUnits && view.State.Location.Kind==UnitLocationKind.Bench
+                || resultTrading && battleFlow.CurrentPhase==BattlePhase.Result);
 
         private void UpdateDrag(Vector3 mouseWorldPosition)
         {
@@ -243,6 +253,7 @@ namespace AutoBattler.Battle.Grid
             ClearHighlights();
             DragMoved?.Invoke(screenPosition);
             if(dropTarget!=null && dropTarget.Contains(screenPosition)) return;
+            if(!battleFlow.CanPlaceUnits) return;
             if (!TryGetDestination(draggedUnit.transform.position, out UnitLocation destination)
                 || !placementService.CanMoveUnit(draggedUnit.State, destination)) return;
             if (destination.Kind == UnitLocationKind.Board)
@@ -276,6 +287,7 @@ namespace AutoBattler.Battle.Grid
                 target.TryDrop(unit);
                 Physics2D.SyncTransforms(); return;
             }
+            if(!battleFlow.CanPlaceUnits) { CancelDrag(); return; }
             PlacementResult result = TryGetDestination(draggedUnit.transform.position, out UnitLocation destination)
                 ? placementService.TryMoveUnit(draggedUnit.State, destination) : new PlacementResult(false);
             if (result.Success)

@@ -138,7 +138,7 @@ namespace AutoBattler.Presentation.Battle
             Unit unit=view.GetComponent<Unit>();
             if(unit==null || unit.Definition==null || view.State==null) return;
             shopContent.SetActive(false);
-            sellZone.Show(BattleText.UnitName(unit.Definition),unit.Star,run.State.SalePrice(view.State.InstanceId),CanPrepare());
+            sellZone.Show(BattleText.UnitName(unit.Definition),unit.Star,run.State.SalePrice(view.State.InstanceId),run.IsReady && run.Shop.CanSell(view.State.InstanceId));
         }
         private void UpdateSellDrag(Vector2 pointer)=>sellZone.SetPointer(pointer);
         private void HideSellDrag()
@@ -147,8 +147,8 @@ namespace AutoBattler.Presentation.Battle
         bool IUnitDropTarget.TryDrop(UnitView view)
         {
             Unit unit=view!=null ? view.GetComponent<Unit>() : null;
-            return CanPrepare() && unit!=null && unit.Team==UnitTeam.Ally && view.State!=null
-                && run.SellUnit(view.State.InstanceId);
+            return run.IsReady && unit!=null && unit.Team==UnitTeam.Ally && view.State!=null
+                && run.Shop.CanSell(view.State.InstanceId) && run.SellUnit(view.State.InstanceId);
         }
         private void NextRound() => run.Continue();
         private void RetryLoad() => run.RetryLoad();
@@ -187,6 +187,8 @@ namespace AutoBattler.Presentation.Battle
                 return;
             if (run.IsReady && run.Flow.CurrentPhase == BattlePhase.Combat)
                 messageText.text = $"전투 중   남은 시간 {Mathf.CeilToInt(run.RemainingSeconds)}초";
+            if(run.IsReady && run.Flow.CurrentPhase==BattlePhase.Result && !run.State.IsOver)
+                resultPanel.ShowCountdown(run.Battle.NextPreparationSeconds);
             RefreshSelection();
         }
 
@@ -194,7 +196,7 @@ namespace AutoBattler.Presentation.Battle
         {
             if (unitInfo != null)
             {
-                Unit inspected = run.IsReady && run.Flow.CanInspectUnits ? run.Drag.InspectedUnit : null;
+                Unit inspected = run.IsReady && run.Drag.CanInspectUnits ? run.Drag.InspectedUnit : null;
                 unitInfo.Show(inspected, run.IsReady ? run.State.Data : null);
             }
         }
@@ -207,6 +209,8 @@ namespace AutoBattler.Presentation.Battle
             if(augmentPanel!=null) augmentPanel.Show(run);
             if(selectedAugments!=null) selectedAugments.Show(run);
             bool prepare = CanPrepare();
+            bool canBuy = ready && run.Shop.CanBuy;
+            bool canManage = prepare || canBuy;
             if(synergyPanel!=null) synergyPanel.Show(ready?run.AllySynergies:null,ready,run.Flow.CurrentPhase);
             messageText.text = run.Message;
             roundText.text = ready ? $"라운드 {(run.State.Round - 1) / 4 + 1}-{(run.State.Round - 1) % 4 + 1}" : "라운드 --";
@@ -223,7 +227,7 @@ namespace AutoBattler.Presentation.Battle
                 int id = ready ? run.State.Shop[i] : 0;
                 UnitDefinition unit = id == 0 ? null : run.State.Data.Units[id];
                 Sprite icon = unit == null ? null : run.UnitIcon(unit.IconId);
-                shopItems[i].Show(unit, icon, id == 0 ? 0 : run.State.Stock(id), ready ? run.State.Gold : 0, prepare);
+                shopItems[i].Show(unit, icon, id == 0 ? 0 : run.State.Stock(id), ready ? run.State.Gold : 0, canBuy);
             }
 
             // 비용 표시도 시트의 경제 규칙을 사용.
@@ -235,7 +239,7 @@ namespace AutoBattler.Presentation.Battle
             startBattleButton.gameObject.SetActive(ready);
             retryLoadButton.gameObject.SetActive(!ready && !run.IsLoading);
             loadTitleButton.gameObject.SetActive(!ready && !run.IsLoading);
-            preparationPanel.interactable = prepare;
+            preparationPanel.interactable = canManage;
             RefreshSelection();
 
             if (ready && run.State.IsOver)
@@ -252,6 +256,7 @@ namespace AutoBattler.Presentation.Battle
                 resultPanel.Show(title, run.State.LastResult, !run.State.IsOver, hasDisplayedPhase);
                 OwnedItem reward=run.State.Items.Find(run.State.Items.LastRewardInstanceId);
                 if(reward!=null) resultPanel.ShowItemReward(run.State.Data.Items[reward.DefinitionId].Name);
+                if(!run.State.IsOver) resultPanel.ShowCountdown(run.Battle.NextPreparationSeconds);
             }
             else
                 resultPanel.Hide();
@@ -260,11 +265,11 @@ namespace AutoBattler.Presentation.Battle
                 preparationPanel.DOKill();
                 if (animate)
                 {
-                    preparationPanel.DOFade(prepare ? 1f : 0.45f, fadeDuration).SetUpdate(true);
+                    preparationPanel.DOFade(canManage ? 1f : 0.45f, fadeDuration).SetUpdate(true);
                 }
                 else
                 {
-                    preparationPanel.alpha = prepare ? 1f : 0.45f;
+                    preparationPanel.alpha = canManage ? 1f : 0.45f;
                 }
                 displayedPhase = run.Flow.CurrentPhase;
                 hasDisplayedPhase = true;
@@ -273,7 +278,7 @@ namespace AutoBattler.Presentation.Battle
             {
                 // 초기 로드 완료도 단계 전환 없이 준비 화면 갱신.
                 preparationPanel.DOKill();
-                preparationPanel.alpha = prepare ? 1f : 0.45f;
+                preparationPanel.alpha = canManage ? 1f : 0.45f;
             }
         }
 

@@ -76,11 +76,11 @@ namespace AutoBattler.Run
             assets.Initialize(catalog,flow,grid,unitPoolSize);
             units.Initialize(assets.Units,catalog,flow,drag,grid,bench);
             units.ConfigureItemIcons(ItemIcon);
-            equipment.Initialize(flow,Report);
+            equipment.Initialize(flow,units,Report);
             shop.Initialize(flow,drag,Report);
             augments.Initialize(flow,drag,Report);
             synergies.Initialize(units,flow);
-            battle.Initialize(flow,drag,units,assets,synergies,augments,Report,lifetime.Token);
+            battle.Initialize(flow,drag,units,assets,synergies,augments,Report,Continue,lifetime.Token);
             drag.enabled=false; drag.PlacementChanged+=OnPlacementChanged;
         }
         private void Start()=>BootAsync().Forget();
@@ -112,7 +112,7 @@ namespace AutoBattler.Run
                 GameNavigation.ReportBattleLoading(this,.95f,"전장과 유닛 배치 중...");
                 units.SyncAllies(); units.CreateEnemies(); synergies.Refresh();
                 if(State.CanPrepare) augments.EnterPreparation(augmentOpen);
-                else flow.TryRestoreResult();
+                else { flow.TryRestoreResult(); drag.SetResultTrading(!State.IsOver); battle.ScheduleNextPreparation(); }
                 if(!GameNavigation.ResumeRequested) TrySaveProgress();
                 Report(!State.CanPrepare?State.LastResult:State.Augments.HasPending?"증강 선택":"준비");
             }
@@ -138,12 +138,14 @@ namespace AutoBattler.Run
         private void OnStateChanged()
         {
             drag.SetPlayerLevel(State.Level);
-            if(State.CanPrepare) { units.SyncAllies(); synergies.Refresh(); }
-            if(State.IsSettled) TrySaveProgress();
+            drag.SetResultTrading(State.IsSettled && !State.IsOver && flow.CurrentPhase==BattlePhase.Result);
+            units.SyncAllies();
+            if(!State.IsSettled) synergies.Refresh();
+            if(State.IsSettled) { battle.ScheduleNextPreparation(); TrySaveProgress(); }
             DisplayChanged?.Invoke();
         }
         // 기존 HUD·씬의 공개 명령 유지. 실제 동작은 기능별 매니저에서 처리.
-        private bool SaveAfter(bool changed) { if(changed) TrySaveProgress(); return changed; }
+        private bool SaveAfter(bool changed) { if(changed) SaveProgress(flow.CurrentPhase==BattlePhase.Combat); return changed; }
         public bool Buy(int slot)=>IsReady && SaveAfter(shop.Buy(slot));
         public bool RefreshShop()=>IsReady && SaveAfter(shop.RefreshShop());
         public bool BuyXp()=>IsReady && SaveAfter(shop.BuyXp());
@@ -161,10 +163,11 @@ namespace AutoBattler.Run
         }
         public bool Continue()=>IsReady && flow.CurrentPhase==BattlePhase.Result && !State.IsOver
             && TrySaveProgress() && SaveAfter(battle.Continue());
-        public bool TrySaveProgress()
+        public bool TrySaveProgress()=>SaveProgress(false);
+        private bool SaveProgress(bool replayCombat)
         {
-            if(!IsReady || State==null || !State.CanPrepare && !State.IsSettled) return false;
-            bool success=saves.TrySave(State,StageId,flow.IsAugmentWindowOpen);
+            if(!IsReady || State==null || !State.CanPrepare && !State.IsSettled && !replayCombat) return false;
+            bool success=saves.TrySave(State,StageId,flow.IsAugmentWindowOpen,replayCombat);
             bool recovered=saveFailed && success;
             saveFailed=!success;
             if(!success) Report(saves.LastError);

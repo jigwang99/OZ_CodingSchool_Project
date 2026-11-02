@@ -1134,44 +1134,44 @@
     "items": [
         {
             "itemId": 6001,
-            "name": "철투구",
+            "name": "가죽 투구",
             "description": "튼튼한 투구로 받는 피해를 줄입니다.",
-            "iconId": 33,
+            "iconId": 34,
             "dropWeight": 1
         },
         {
             "itemId": 6002,
-            "name": "강철갑옷",
+            "name": "가죽 갑옷",
             "description": "두꺼운 갑옷으로 생존력을 높입니다.",
-            "iconId": 35,
+            "iconId": 36,
             "dropWeight": 1
         },
         {
             "itemId": 6003,
-            "name": "힘의 장갑",
+            "name": "가죽 장갑",
             "description": "힘을 실어 적을 공격합니다.",
-            "iconId": 43,
+            "iconId": 44,
             "dropWeight": 1
         },
         {
             "itemId": 6004,
-            "name": "신속의 장화",
+            "name": "가죽 장화",
             "description": "가벼운 발걸음으로 빠르게 싸웁니다.",
-            "iconId": 41,
+            "iconId": 42,
             "dropWeight": 1
         },
         {
             "itemId": 6005,
-            "name": "마법사의 로브",
+            "name": "가죽 로브",
             "description": "마력이 깃든 옷으로 스킬을 강화합니다.",
-            "iconId": 37,
+            "iconId": 38,
             "dropWeight": 1
         },
         {
             "itemId": 6006,
-            "name": "정밀의 반지",
+            "name": "가죽 바지",
             "description": "적의 빈틈을 정확하게 노립니다.",
-            "iconId": 48,
+            "iconId": 40,
             "dropWeight": 1
         }
     ],
