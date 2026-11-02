@@ -29,6 +29,7 @@ namespace AutoBattler.Run
         public bool IsOver { get; private set; } public bool WonRun { get; private set; }
         public bool CanPrepare { get; set; }=true;
         public bool IsSettled=>settledRound==Round;
+        public bool HasPendingRoundReward { get; private set; }
         public bool CanTradeUnits => !IsOver && !Augments.HasPending;
         public bool CanManageRoster => !IsOver && !Augments.HasPending && (CanPrepare || !IsSettled);
         public string LastError { get; private set; }
@@ -41,6 +42,7 @@ namespace AutoBattler.Run
         private readonly int[] shop=new int[5];
         private readonly RunRandom random;
         private int nextId=1, settledRound;
+        private bool pendingRoundWon;
         public RunState(DataRepository data,int seed,int stageId=1)
             :this(data,new RunRandom(seed),new AugmentState(data.Augments,seed))
         {
@@ -72,6 +74,7 @@ namespace AutoBattler.Run
                 round=Round,gold=Gold,lives=Lives,level=Level,xp=Xp,winStreak=WinStreak,nextInstanceId=nextId,
                 isOver=IsOver,wonRun=WonRun,lastResult=LastResult,augmentWindowOpen=augmentWindowOpen,
                 randomSeed=random.Seed,randomDrawCount=random.DrawCount,shop=(int[])shop.Clone(),
+                unitDefinitionIds=Data.Units.Keys.OrderBy(id=>id).ToArray(),
                 stock=stock.OrderBy(pair=>pair.Key).Select(pair=>new SavedStock {definitionId=pair.Key,available=pair.Value}).ToArray(),
                 units=owned.Select(unit=>
                 {
@@ -79,7 +82,8 @@ namespace AutoBattler.Run
                     return new SavedUnit {definitionId=unit.DefinitionId,instanceId=unit.Placement.InstanceId,star=unit.Star,
                         location=unit.Placement.Location.Kind,col=col,row=row,benchSlot=unit.Placement.Location.BenchSlot};
                 }).ToArray(),
-                augments=Augments.Capture(),items=Items.Capture()
+                augments=Augments.Capture(),items=Items.Capture(),
+                hasPendingRoundReward=HasPendingRoundReward,pendingRoundWon=pendingRoundWon
             };
         }
 
@@ -93,6 +97,7 @@ namespace AutoBattler.Run
                 || saved.winStreak<0 || saved.winStreak>saved.round
                 || saved.phase!=RunSavePhase.Preparation && saved.phase!=RunSavePhase.Result
                 || saved.phase==RunSavePhase.Preparation && saved.isOver
+                || saved.hasPendingRoundReward && saved.phase!=RunSavePhase.Result
                 || saved.phase==RunSavePhase.Result && saved.isOver!=(saved.lives==0 || saved.round==data.Rounds.Count)
                 || saved.wonRun && (!saved.isOver || saved.round!=data.Rounds.Count)
                 || !saved.isOver && saved.lives==0
@@ -104,7 +109,9 @@ namespace AutoBattler.Run
                 Round=saved.round,Gold=saved.gold,Lives=saved.lives,Level=saved.level,Xp=saved.xp,
                 WinStreak=saved.winStreak,CanPrepare=saved.phase==RunSavePhase.Preparation,
                 IsOver=saved.isOver,WonRun=saved.wonRun,LastResult=saved.lastResult,
-                nextId=saved.nextInstanceId,settledRound=saved.phase==RunSavePhase.Result?saved.round:saved.round-1
+                nextId=saved.nextInstanceId,settledRound=saved.phase==RunSavePhase.Result?saved.round:saved.round-1,
+                // 이전 저장은 대기 보상이 없으므로 이미 지급된 결과로 복원.
+                HasPendingRoundReward=saved.hasPendingRoundReward,pendingRoundWon=saved.pendingRoundWon
             };
             state.Placement.SetPlayerLevel(state.Level);
             foreach(SavedStock entry in saved.stock)
@@ -113,8 +120,13 @@ namespace AutoBattler.Run
                     || state.stock.ContainsKey(entry.definitionId)) throw new ArgumentException("저장된 기물 재고가 올바르지 않습니다.");
                 state.stock.Add(entry.definitionId,entry.available);
             }
-            if(state.stock.Count!=data.Units.Count || saved.shop.Any(id=>id!=0 && !data.Units.ContainsKey(id)))
+            // 저장 당시의 유닛 목록으로 재고 누락과 콘텐츠 추가를 구분.
+            int[] known=saved.unitDefinitionIds ?? Enumerable.Range(1001,8).ToArray();
+            if(known.Distinct().Count()!=known.Length || !new HashSet<int>(known).SetEquals(state.stock.Keys)
+                || saved.shop.Any(id=>id!=0 && !data.Units.ContainsKey(id)))
                 throw new ArgumentException("저장된 상점 정보가 올바르지 않습니다.");
+            foreach(UnitDefinition definition in data.Units.Values)
+                if(!state.stock.ContainsKey(definition.Id)) state.stock.Add(definition.Id,data.PoolCopies(definition.Cost));
             Array.Copy(saved.shop,state.shop,5);
             foreach(SavedUnit entry in saved.units)
             {
@@ -241,22 +253,34 @@ namespace AutoBattler.Run
         {
             if(IsOver || settledRound==Round || CanPrepare || Augments.HasPending) return false;
             settledRound=Round; WinStreak=won?WinStreak+1:0;
+            AddXp(Data.IntRule(EconomyRule.RoundXp));
+            if(!won) Lives--;
+            Items.ClearResult();
+            IsOver=Lives<=0 || Round==Data.Rounds.Count;
+            WonRun=IsOver && won && Round==Data.Rounds.Count;
+            HasPendingRoundReward=true; pendingRoundWon=won;
+            LastResult=$"{(won?"승리":"패배")}\n보상은 전투 종료 타이머가 끝나면 지급";
+            Notify(); return true;
+        }
+        public bool TryGrantRoundRewards()
+        {
+            if(!IsSettled || !HasPendingRoundReward) return false;
+            bool won=pendingRoundWon;
             int streak=WinStreak>=5?3:WinStreak==4?2:WinStreak==3?1:0;
+            // 카운트다운 중 구매·판매를 반영한 지급 시점의 골드로 이자 계산.
             int interest=Math.Min(Data.IntRule(EconomyRule.InterestCap),Gold/Data.IntRule(EconomyRule.InterestDivisor));
             int augmentGold=won?Augments.Selected.Where(x=>x.Effect==AugmentEffect.VictoryGold).Sum(x=>(int)x.Value):0;
             int income=Data.Rounds[Round].Reward+streak+interest+augmentGold;
-            Gold+=income; AddXp(Data.IntRule(EconomyRule.RoundXp));
-            if(!won) Lives--;
-            Items.ClearResult();
+            Gold+=income;
             if(won) Items.GrantVictory(Round);
-            IsOver=Lives<=0 || Round==Data.Rounds.Count;
-            WonRun=IsOver && won && Round==Data.Rounds.Count;
+            // 알림과 저장 전에 대기 상태를 해제하여 재진입·이어하기 중복 지급 차단.
+            HasPendingRoundReward=false; pendingRoundWon=false;
             LastResult=$"{(won?"승리":"패배")}   +{income}골드\n이자 {interest} · 연승 {streak} · 증강 {augmentGold}";
             Notify(); return true;
         }
         public bool TryNextRound()
         {
-            if(IsOver || settledRound!=Round || CanPrepare) return false;
+            if(IsOver || settledRound!=Round || CanPrepare || HasPendingRoundReward) return false;
             Round++; CanPrepare=true; MergePendingUnits(); Reroll(); Augments.EnterRound(Round,Data.Rounds[Round].OffersAugment); Notify(); return true;
         }
         private void MergePendingUnits()

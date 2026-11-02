@@ -27,7 +27,8 @@ namespace AutoBattler.Presentation.Units
         private void OnAttack(UnitCombat target)
         {
             if(animator==null) return;
-            animator.SetTrigger(unit.Definition.IsRanged ? (unit.Definition.ClassId==2?UnitAnimatorParameters.AttackMagic:UnitAnimatorParameters.AttackShoot) : UnitAnimatorParameters.AttackSlash);
+            animator.SetTrigger(unit.Definition.IsRanged ? (unit.Definition.ClassId==2?UnitAnimatorParameters.AttackMagic:UnitAnimatorParameters.AttackShoot)
+                :unit.Definition.ClassId==6?UnitAnimatorParameters.AttackPrick:UnitAnimatorParameters.AttackSlash);
         }
         private void OnDisable() { if(unit!=null && unit.Combat!=null) unit.Combat.AttackStarted-=OnAttack; }
     }

@@ -10,5 +10,6 @@ namespace AutoBattler.Presentation.Units
         public static readonly int AttackSlash = Animator.StringToHash("AttackSlash");
         public static readonly int AttackShoot = Animator.StringToHash("AttackShoot");
         public static readonly int AttackMagic = Animator.StringToHash("AttackMagic");
+        public static readonly int AttackPrick = Animator.StringToHash("AttackPrick");
     }
 }

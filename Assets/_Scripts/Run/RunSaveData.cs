@@ -19,10 +19,12 @@ namespace AutoBattler.Run
         public string lastResult;
         public int randomSeed, randomDrawCount;
         public int[] shop;
+        public int[] unitDefinitionIds;
         public SavedStock[] stock;
         public SavedUnit[] units;
         public SavedAugments augments;
         public SavedItemInventory items;
+        public bool hasPendingRoundReward, pendingRoundWon;
     }
 
     [Serializable]

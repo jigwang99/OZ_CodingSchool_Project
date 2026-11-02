@@ -92,7 +92,7 @@ namespace AutoBattler.Managers
         }
         public void ScheduleNextPreparation()
         {
-            if(stopping || state==null || !state.IsSettled || state.IsOver || flow.CurrentPhase!=BattlePhase.Result)
+            if(stopping || state==null || !state.IsSettled || state.IsOver && !state.HasPendingRoundReward || flow.CurrentPhase!=BattlePhase.Result)
             { CancelPreparationDelay(); return; }
             if(preparationDelay!=null && waitingRound==state.Round) return;
             CancelPreparationDelay(); waitingRound=state.Round;
@@ -111,9 +111,11 @@ namespace AutoBattler.Managers
                 // 게임 배속·프레임 제한과 관계없이 실제 시간으로 대기.
                 await UniTask.Delay(TimeSpan.FromSeconds(resultDelaySeconds),DelayType.Realtime,cancellationToken:current.Token);
                 while(!stopping && ReferenceEquals(state,expected) && state.Round==round
-                    && state.IsSettled && !state.IsOver && flow.CurrentPhase==BattlePhase.Result)
+                    && state.IsSettled && (state.HasPendingRoundReward || !state.IsOver) && flow.CurrentPhase==BattlePhase.Result)
                 {
                     current.Token.ThrowIfCancellationRequested();
+                    if(state.TryGrantRoundRewards()) publish(state.LastResult);
+                    if(state.IsOver) return;
                     if(advancePreparation()) return;
                     // 저장 실패 시 결과를 유지하고 다시 시도하여 진행도 보호.
                     await UniTask.Delay(1000,ignoreTimeScale:true,cancellationToken:current.Token);

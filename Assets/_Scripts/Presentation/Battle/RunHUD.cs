@@ -163,7 +163,7 @@ namespace AutoBattler.Presentation.Battle
         private void ReturnToTitle()=>NavigateAsync(true).Forget();
         private async Cysharp.Threading.Tasks.UniTask NavigateAsync(bool title)
         {
-            if((!run.IsReady && !run.IsShuttingDown) || run.State==null || !run.State.IsOver || GameNavigation.IsTransitioning) return;
+            if((!run.IsReady && !run.IsShuttingDown) || run.State==null || !run.State.IsOver || run.State.HasPendingRoundReward || GameNavigation.IsTransitioning) return;
             resultPanel.SetNavigationBusy(true);
             try
             {
@@ -187,8 +187,8 @@ namespace AutoBattler.Presentation.Battle
                 return;
             if (run.IsReady && run.Flow.CurrentPhase == BattlePhase.Combat)
                 messageText.text = $"전투 중   남은 시간 {Mathf.CeilToInt(run.RemainingSeconds)}초";
-            if(run.IsReady && run.Flow.CurrentPhase==BattlePhase.Result && !run.State.IsOver)
-                resultPanel.ShowCountdown(run.Battle.NextPreparationSeconds);
+            if(run.IsReady && run.Flow.CurrentPhase==BattlePhase.Result && (!run.State.IsOver || run.State.HasPendingRoundReward))
+                resultPanel.ShowCountdown(run.Battle.NextPreparationSeconds,run.State.IsOver);
             RefreshSelection();
         }
 
@@ -253,10 +253,10 @@ namespace AutoBattler.Presentation.Battle
                 string title = run.State.IsOver
                     ? run.State.WonRun ? "도전 성공!" : "도전 종료"
                     : "전투 결과";
-                resultPanel.Show(title, run.State.LastResult, !run.State.IsOver, hasDisplayedPhase);
+                resultPanel.Show(title, run.State.LastResult, !run.State.IsOver || run.State.HasPendingRoundReward, hasDisplayedPhase);
                 OwnedItem reward=run.State.Items.Find(run.State.Items.LastRewardInstanceId);
                 if(reward!=null) resultPanel.ShowItemReward(run.State.Data.Items[reward.DefinitionId].Name);
-                if(!run.State.IsOver) resultPanel.ShowCountdown(run.Battle.NextPreparationSeconds);
+                if(!run.State.IsOver || run.State.HasPendingRoundReward) resultPanel.ShowCountdown(run.Battle.NextPreparationSeconds,run.State.IsOver);
             }
             else
                 resultPanel.Hide();

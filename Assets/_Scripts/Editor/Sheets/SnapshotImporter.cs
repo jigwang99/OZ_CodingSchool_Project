@@ -101,7 +101,7 @@ namespace AutoBattler.EditorTools.Sheets
                 foreach(TraitRow trait in data.traits)
                 {
                     int r=FindRow(t,"trait_id",trait.traitId);
-                    if(string.IsNullOrWhiteSpace(trait.name) || trait.groupId<1 || trait.groupId>4 || trait.requiredCount<1 || trait.requiredCount>10
+                    if(string.IsNullOrWhiteSpace(trait.name) || trait.groupId<1 || trait.requiredCount<1 || trait.requiredCount>10
                         || trait.value<0 || trait.secondaryValue<0 || trait.duration<0 || trait.threshold<0 || trait.threshold>1
                         || (trait.effect==TraitEffect.ShieldAtStart && trait.duration<=0)
                         || (trait.effect==TraitEffect.LowHealthAttack && trait.threshold<=0)
@@ -109,7 +109,8 @@ namespace AutoBattler.EditorTools.Sheets
                         throw t.Error(r,"trait_id","시너지 수치·집계 범위 오류.");
                     if(!stages.Add((trait.category,trait.groupId,trait.requiredCount))) throw t.Error(r,"required_count","같은 시너지 단계 중복.");
                 }
-                if(data.traits.Select(x=>(x.category,x.groupId)).Distinct().Count()!=8) throw new FormatException("Traits: 계열 4종과 직업 4종 정의 필요.");
+                if(!data.traits.Any(trait=>trait.category==TraitCategory.Origin) || !data.traits.Any(trait=>trait.category==TraitCategory.Class))
+                    throw new FormatException("Traits: 종족과 직업 시너지 정의 필요.");
             }
             if(schema>=2)
             {
@@ -138,11 +139,11 @@ namespace AutoBattler.EditorTools.Sheets
                 int r=FindRow(tables["Units"],"unit_id",unit.unitId); CsvTable t=tables["Units"];
                 if(unit.cost<1 || unit.cost>5) throw t.Error(r,"cost","1~5 범위.");
                 if(unit.hp<1 || unit.attack<1 || unit.armor<0 || unit.attackInterval<=0 || unit.attackRange<1 || unit.attackRange>14) throw t.Error(r,"hp/attack/armor/attack_interval/attack_range","전투 수치 범위 오류.");
-                if(unit.combatRole<0 || unit.combatRole>3 || unit.originId<1 || unit.originId>4 || unit.classId<1 || unit.classId>4) throw t.Error(r,"combat_role/origin_id/class_id","정의 범위 오류.");
+                if(unit.combatRole<0 || unit.combatRole>3 || unit.originId<1 || unit.classId<1) throw t.Error(r,"combat_role/origin_id/class_id","정의 범위 오류.");
                 if(unit.attackType!="Melee" && unit.attackType!="Ranged") throw t.Error(r,"attack_type","Melee 또는 Ranged.");
                 if(unit.critChance<0 || unit.critChance>1 || unit.critMultiplier<1) throw t.Error(r,"crit_chance/crit_multiplier","확률 0~1, 배율 1 이상.");
                 if(unit.skillId!=0 && !data.skills.Any(x=>x.skillId==unit.skillId)) throw t.Error(r,"skill_id","없는 스킬 참조.");
-                if(unit.visualId<1 || unit.visualId>8 || unit.iconId<1 || unit.iconId>8) throw t.Error(r,"visual_id/icon_id","현재 AssetCatalog ID 1~8 필요.");
+                if(unit.visualId<1 || unit.iconId<1) throw t.Error(r,"visual_id/icon_id","AssetCatalog에 연결할 양수 ID 필요.");
             }
             if(!data.units.Any(x=>x.cost==1)) throw new FormatException("Units: 시작용 1코스트 필요.");
             if(data.rounds.Length==0 || data.rounds.OrderBy(x=>x.roundId).Select((x,i)=>x.roundId!=i+1).Any(x=>x)) throw new FormatException("Rounds round_id: 1부터 연속된 라운드 필요.");

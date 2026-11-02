@@ -35,6 +35,7 @@ namespace AutoBattler.Presentation.Battle
         private bool automaticCountdown;
         private int countdownSeconds=-1;
         private string itemReward;
+        private bool finalCountdown;
 
         public CanvasGroup CanvasGroup => canvasGroup;
         public TextMeshProUGUI TitleText => titleText;
@@ -45,13 +46,14 @@ namespace AutoBattler.Presentation.Battle
         public Button TitleButton => titleButton;
 
         public void ShowItemReward(string name)
-        { if(CanContinue) { itemReward=name; RefreshCaption(); } }
-        public void ShowCountdown(float seconds)
+        { if(isPresented) { itemReward=name; RefreshCaption(); } }
+        public void ShowCountdown(float seconds,bool isFinal=false)
         {
             if(!CanContinue) return;
             ApplyCountdownLayout();
             canvasGroup.interactable=false; canvasGroup.blocksRaycasts=false;
             automaticCountdown=true;
+            finalCountdown=isFinal;
             nextRoundButton.interactable=false; nextRoundButton.gameObject.SetActive(false);
             int remaining=Mathf.Max(0,Mathf.CeilToInt(seconds));
             if(countdownSeconds==remaining) return;
@@ -59,7 +61,8 @@ namespace AutoBattler.Presentation.Battle
         }
         private void RefreshCaption()
         {
-            string countdown=countdownSeconds<0?"":countdownSeconds==0?"다음 전투 준비 중...":$"다음 전투 준비까지 {countdownSeconds}초";
+            string countdown=countdownSeconds<0?(CanContinue?"":"다시 도전하거나 타이틀로 돌아갈 수 있습니다.")
+                :countdownSeconds==0?"보상 지급 중...":finalCountdown?$"보상 지급까지 {countdownSeconds}초":$"보상 지급 및 다음 전투 준비까지 {countdownSeconds}초";
             string reward=string.IsNullOrEmpty(itemReward)?"":$"아이템 획득: {itemReward}";
             endMessageText.text=reward+(reward.Length>0 && countdown.Length>0?" · ":"")+countdown;
             endMessageText.gameObject.SetActive(endMessageText.text.Length>0);

@@ -22,9 +22,9 @@ namespace AutoBattler.Presentation.Battle
         public static string TraitName(TraitCategory category,int id,string fallback)
         {
             if(category==TraitCategory.Origin)
-                switch(id) {case 1:return "인간";case 2:return "엘프";case 3:return "언데드";case 4:return "오크";}
+                switch(id) {case 1:return "인간";case 2:return "엘프";case 3:return "언데드";case 4:return "오크";case 5:return "수인";case 6:return "유령";}
             else
-                switch(id) {case 1:return "검사";case 2:return "마법사";case 3:return "궁수";case 4:return "암살자";}
+                switch(id) {case 1:return "검사";case 2:return "마법사";case 3:return "궁수";case 4:return "암살자";case 5:return "격투가";case 6:return "창병";}
             return fallback;
         }
         public static string AugmentName(AugmentDefinition definition)

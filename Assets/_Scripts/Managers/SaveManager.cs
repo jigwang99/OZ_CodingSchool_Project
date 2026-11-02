@@ -97,7 +97,7 @@ namespace AutoBattler.Managers
                 || saved.shop==null || saved.stock==null || saved.units==null || saved.augments==null
                 || saved.phase!=RunSavePhase.Preparation && saved.phase!=RunSavePhase.Result)
                 throw new ArgumentException("지원하지 않는 저장 형식.");
-            SavedStageId=saved.stageId; SavedRound=saved.round; HasSavedRun=!saved.isOver;
+            SavedStageId=saved.stageId; SavedRound=saved.round; HasSavedRun=!saved.isOver || saved.hasPendingRoundReward;
         }
         private static bool IsFileError(Exception exception)=>exception is IOException || exception is UnauthorizedAccessException
             || exception is ArgumentException || exception is InvalidOperationException || exception is NotSupportedException;
