@@ -164,6 +164,9 @@ namespace AutoBattler.Presentation.Units
                 if(!Current) return;
                 SkillVisualEntry presentation=service.settings.Skill(context.Definition.Id);
                 if(presentation?.areaImpact==true) service.Play(presentation.impact,service.grid.CellToWorld(context.Center));
+                else if(context.Definition.TargetRule==SkillTargetRule.NearestOtherAllies)
+                    foreach(SkillTarget target in context.AppliedTargets)
+                        if(target.IsValid) service.Play(presentation?.impact ?? BattleVisualId.MagicHit,target.Unit.transform.position+Vector3.up*.2f);
             }
             private void OnCastFinished()=>Return(ref projectile,projectileGeneration);
             private static void Return(ref PooledBattleVisual visual,int generation)

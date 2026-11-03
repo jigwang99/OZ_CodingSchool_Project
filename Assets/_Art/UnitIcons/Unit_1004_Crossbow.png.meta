@@ -1,0 +1,250 @@
+fileFormatVersion: 2
+guid: 8b1d85ff116e905478145f4ad1b49eb1
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 584870911578919938
+    second: Unit_1004_Crossbow_0
+  - first:
+      213: 4961065500073685145
+    second: Unit_1004_Crossbow_1
+  - first:
+      213: -2905325196368027822
+    second: Unit_1004_Crossbow_2
+  - first:
+      213: -7846552584593660935
+    second: Unit_1004_Crossbow_3
+  - first:
+      213: 5816665244239858881
+    second: Unit_1004_Crossbow_4
+  - first:
+      213: 3169267012506636350
+    second: Unit_1004_Crossbow_5
+  - first:
+      213: 6452896672738596577
+    second: Unit_1004_Crossbow_6
+  - first:
+      213: 5898129138955125279
+    second: Unit_1004_Crossbow_7
+  - first:
+      213: 9082727885805668319
+    second: Unit_1004_Crossbow_8
+  - first:
+      213: 8862008799740636631
+    second: Unit_1004_Crossbow_9
+  - first:
+      213: -2873025100919874257
+    second: Unit_1004_Crossbow_10
+  - first:
+      213: 5538986731696529509
+    second: Unit_1004_Crossbow_11
+  - first:
+      213: -225662939097782615
+    second: Unit_1004_Crossbow_12
+  - first:
+      213: -4369903677796446391
+    second: Unit_1004_Crossbow_13
+  - first:
+      213: -3510842991658937482
+    second: Unit_1004_Crossbow_14
+  - first:
+      213: 7629494825281774476
+    second: Unit_1004_Crossbow_15
+  - first:
+      213: -130402526049293282
+    second: Unit_1004_Crossbow_16
+  - first:
+      213: 7016975026261732182
+    second: Unit_1004_Crossbow_17
+  - first:
+      213: 4610701896045574624
+    second: Unit_1004_Crossbow_18
+  - first:
+      213: -2634694663769294644
+    second: Unit_1004_Crossbow_19
+  - first:
+      213: -6638235745358731398
+    second: Unit_1004_Crossbow_20
+  - first:
+      213: -8194609633281526767
+    second: Unit_1004_Crossbow_21
+  - first:
+      213: 1215260598410818332
+    second: Unit_1004_Crossbow_22
+  - first:
+      213: -4056724532401965131
+    second: Unit_1004_Crossbow_23
+  - first:
+      213: 2002901882413176191
+    second: Unit_1004_Crossbow_24
+  - first:
+      213: -8762304613977126744
+    second: Unit_1004_Crossbow_25
+  - first:
+      213: -5485867796829305128
+    second: Unit_1004_Crossbow_26
+  - first:
+      213: 5897221115044423941
+    second: Unit_1004_Crossbow_27
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 32
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 64
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WindowsStoreApps
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Unit_1004_Crossbow
+      rect:
+        serializedVersion: 2
+        x: 188
+        y: 145
+        width: 912
+        height: 912
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5e97eb03825dee720800000000000000
+      internalID: 1537655665
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    outline: []
+    customData:
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices:
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Unit_1004_Crossbow: 1537655665
+  mipmapLimitGroupName:
+  pSDRemoveMatte: 0
+  userData:
+  assetBundleName:
+  assetBundleVariant:

@@ -9,11 +9,19 @@ namespace AutoBattler.Run
     {
         [SerializeField] private int id=1;
         [SerializeField] private string displayName="1-1";
+        [SerializeField,Min(1)] private int chapter=1;
+        [SerializeField,Min(1)] private int number=1;
+        [SerializeField] private string regionName="마을 광장";
+        [SerializeField] private string locationName="광장 입구";
         [SerializeField,TextArea] private string description;
         [SerializeField] private int sceneBuildIndex=1;
         [SerializeField] private AssetReferenceSprite battleBackground;
         public int Id=>id;
         public string DisplayName=>displayName;
+        public int Chapter=>chapter;
+        public int Number=>number;
+        public string RegionName=>regionName;
+        public string LocationName=>locationName;
         public string Description=>description;
         public int SceneBuildIndex=>sceneBuildIndex;
         public AssetReferenceSprite BattleBackground=>battleBackground;

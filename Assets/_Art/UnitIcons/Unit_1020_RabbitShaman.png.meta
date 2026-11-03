@@ -1,0 +1,229 @@
+fileFormatVersion: 2
+guid: 1cb09d6d90ace054c9b95c4957f6e83d
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 1372724316132654298
+    second: Unit_1020_RabbitShaman_0
+  - first:
+      213: -2250910071835203418
+    second: Unit_1020_RabbitShaman_1
+  - first:
+      213: 5662915614816801468
+    second: Unit_1020_RabbitShaman_2
+  - first:
+      213: -4510645954820862428
+    second: Unit_1020_RabbitShaman_3
+  - first:
+      213: -6716766567976497232
+    second: Unit_1020_RabbitShaman_4
+  - first:
+      213: 5232204874562468821
+    second: Unit_1020_RabbitShaman_5
+  - first:
+      213: 3531858387745683931
+    second: Unit_1020_RabbitShaman_6
+  - first:
+      213: 2013426265469811719
+    second: Unit_1020_RabbitShaman_7
+  - first:
+      213: 3581727639684789301
+    second: Unit_1020_RabbitShaman_8
+  - first:
+      213: -6086274082677572328
+    second: Unit_1020_RabbitShaman_9
+  - first:
+      213: -6984016114954534417
+    second: Unit_1020_RabbitShaman_10
+  - first:
+      213: -904163014983694467
+    second: Unit_1020_RabbitShaman_11
+  - first:
+      213: 3926574581601891402
+    second: Unit_1020_RabbitShaman_12
+  - first:
+      213: -6107383379433132145
+    second: Unit_1020_RabbitShaman_13
+  - first:
+      213: 6578188298963222036
+    second: Unit_1020_RabbitShaman_14
+  - first:
+      213: 5432730954751813098
+    second: Unit_1020_RabbitShaman_15
+  - first:
+      213: -4320228422863603881
+    second: Unit_1020_RabbitShaman_16
+  - first:
+      213: -6559476573215122155
+    second: Unit_1020_RabbitShaman_17
+  - first:
+      213: -5265934509119357095
+    second: Unit_1020_RabbitShaman_18
+  - first:
+      213: 1584424705825616593
+    second: Unit_1020_RabbitShaman_19
+  - first:
+      213: -7232210456904581740
+    second: Unit_1020_RabbitShaman_20
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 32
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 64
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WindowsStoreApps
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Unit_1020_RabbitShaman
+      rect:
+        serializedVersion: 2
+        x: 158
+        y: 151
+        width: 934
+        height: 934
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5e97eb03825dee720800000000000000
+      internalID: 1537655665
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    outline: []
+    customData:
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices:
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Unit_1020_RabbitShaman: 1537655665
+  mipmapLimitGroupName:
+  pSDRemoveMatte: 0
+  userData:
+  assetBundleName:
+  assetBundleVariant:

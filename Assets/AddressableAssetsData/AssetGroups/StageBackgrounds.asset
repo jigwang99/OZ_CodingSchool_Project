@@ -15,8 +15,158 @@ MonoBehaviour:
   m_GroupName: StageBackgrounds
   m_GUID: 90a9c8177d1dc5d4abded2276e9fdda2
   m_SerializeEntries:
+  - m_GUID: 005a160e70a02f84192e6be836ff636d
+    m_Address: stage-background/4-2
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 01b81f411252a5d40baa5c394ba5457b
+    m_Address: stage-background/3-4
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0e0f108ffbea9234cb7c9d2c4324f2cd
+    m_Address: stage-background/4-3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 17359bc7da19dd946b9106599055ab17
+    m_Address: stage-background/2-2
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 19f9c7ca9968fd049be7c5bcf770a6d3
+    m_Address: stage-background/5-4
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1efde3cc5e928614ba6c718984c69aad
+    m_Address: stage-background/5-2
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 27d642e2acdd3b544a4cc304cb615365
+    m_Address: stage-background/2-4
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 30b583abc4d840349aac9cf63a87629a
+    m_Address: stage-background/3-1
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 328f97b152279c346b95b7931e2bbc53
+    m_Address: stage-background/1-4
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3d310a47034ac4c469611e1f5ed5faa1
+    m_Address: stage-background/3-3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 465372f9f9ca17543b6bb00d62215617
+    m_Address: stage-background/5-3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 494217b306a46374bb958405f52e476d
+    m_Address: stage-background/1-2
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6e9f17b4c63540b4c8852eeea1ddc27a
+    m_Address: stage-background/4-5
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 787af35f8fcc34d4c9aa56119cf88a2e
+    m_Address: stage-background/4-4
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7ce54e8566130e84ba34306105c34169
+    m_Address: stage-background/6-1
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7d7fa1f5358482d4eac4e6eef42158f1
+    m_Address: stage-background/2-1
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7e6fc6389f1d007489c9e9e36ee0403c
+    m_Address: stage-background/6-5
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9aa4dd51999df8645bea3ed41fb7347a
+    m_Address: stage-background/1-5
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a42660315977b2041ad2ddb38a790991
+    m_Address: stage-background/6-4
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a8bb7038b89c5b94ba10a0b6df0606fb
+    m_Address: stage-background/3-2
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: aa62bda0e2e8b5944b7593a39d1200a6
+    m_Address: stage-background/2-5
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b2824add064db8747bc3dfb843135baa
+    m_Address: stage-background/5-5
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b34e47717326c484cb60e04c0b23008c
+    m_Address: stage-background/6-3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b400060844deac94dba4a8f4b85ec046
+    m_Address: stage-background/1-3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b52c5ab70d214734887201baa599bf0e
+    m_Address: stage-background/4-1
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cc1b4513ee8728f42828bdc49061d99a
+    m_Address: stage-background/1-1
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: da15b1de6d99c714fb649f275b09602c
     m_Address: Assets/_Art/Backgrounds/Stage_1_1_ForestEntrance.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: daeac4a4938817c48afa6646b1d5b02f
+    m_Address: stage-background/5-1
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ecac7b0a1d80d8a4fa7f7b6dc3ee3845
+    m_Address: stage-background/3-5
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f2f9004e4d3b6ec45a4ac52b9f836d53
+    m_Address: stage-background/6-2
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f8ce781b042becf4a80fd2aaac33b52d
+    m_Address: stage-background/2-3
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

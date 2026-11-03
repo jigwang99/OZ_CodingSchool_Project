@@ -1,0 +1,313 @@
+fileFormatVersion: 2
+guid: c4c1e3bb41e217342ac8d2d141271b09
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -7787645937508650817
+    second: Unit_1013_ElfSwordDancer_0
+  - first:
+      213: 2741743557390012423
+    second: Unit_1013_ElfSwordDancer_1
+  - first:
+      213: 2090511653634318300
+    second: Unit_1013_ElfSwordDancer_2
+  - first:
+      213: -6093624684800256392
+    second: Unit_1013_ElfSwordDancer_3
+  - first:
+      213: -6983468441138108156
+    second: Unit_1013_ElfSwordDancer_4
+  - first:
+      213: -1303070985879078539
+    second: Unit_1013_ElfSwordDancer_5
+  - first:
+      213: 6565491810592629763
+    second: Unit_1013_ElfSwordDancer_6
+  - first:
+      213: 8662029728378509316
+    second: Unit_1013_ElfSwordDancer_7
+  - first:
+      213: -8887320554624406542
+    second: Unit_1013_ElfSwordDancer_8
+  - first:
+      213: 8822388129876448227
+    second: Unit_1013_ElfSwordDancer_9
+  - first:
+      213: 3649716401609323423
+    second: Unit_1013_ElfSwordDancer_10
+  - first:
+      213: 2580087456037023340
+    second: Unit_1013_ElfSwordDancer_11
+  - first:
+      213: -7891021870973036024
+    second: Unit_1013_ElfSwordDancer_12
+  - first:
+      213: 7963148517355238722
+    second: Unit_1013_ElfSwordDancer_13
+  - first:
+      213: -8071582449790883556
+    second: Unit_1013_ElfSwordDancer_14
+  - first:
+      213: -4519621029786058296
+    second: Unit_1013_ElfSwordDancer_15
+  - first:
+      213: -1117016013165668295
+    second: Unit_1013_ElfSwordDancer_16
+  - first:
+      213: 6748776620239248060
+    second: Unit_1013_ElfSwordDancer_17
+  - first:
+      213: -5972043306249092938
+    second: Unit_1013_ElfSwordDancer_18
+  - first:
+      213: -1207033859127473993
+    second: Unit_1013_ElfSwordDancer_19
+  - first:
+      213: -2074432208126152996
+    second: Unit_1013_ElfSwordDancer_20
+  - first:
+      213: -8385000315029535045
+    second: Unit_1013_ElfSwordDancer_21
+  - first:
+      213: -8302702550132659405
+    second: Unit_1013_ElfSwordDancer_22
+  - first:
+      213: -8345526358405963916
+    second: Unit_1013_ElfSwordDancer_23
+  - first:
+      213: 3440974579218760335
+    second: Unit_1013_ElfSwordDancer_24
+  - first:
+      213: 8599869128078217996
+    second: Unit_1013_ElfSwordDancer_25
+  - first:
+      213: -4205564543597094958
+    second: Unit_1013_ElfSwordDancer_26
+  - first:
+      213: 2077598193933294320
+    second: Unit_1013_ElfSwordDancer_27
+  - first:
+      213: -3924145158416448301
+    second: Unit_1013_ElfSwordDancer_28
+  - first:
+      213: 2920574597738370371
+    second: Unit_1013_ElfSwordDancer_29
+  - first:
+      213: -1661958970171644284
+    second: Unit_1013_ElfSwordDancer_30
+  - first:
+      213: 7830945057809824374
+    second: Unit_1013_ElfSwordDancer_31
+  - first:
+      213: 3932974489030734194
+    second: Unit_1013_ElfSwordDancer_32
+  - first:
+      213: -4266547265469403635
+    second: Unit_1013_ElfSwordDancer_33
+  - first:
+      213: 2589328028300705614
+    second: Unit_1013_ElfSwordDancer_34
+  - first:
+      213: 6141327832112237339
+    second: Unit_1013_ElfSwordDancer_35
+  - first:
+      213: 1940000109276652572
+    second: Unit_1013_ElfSwordDancer_36
+  - first:
+      213: 8370456376010558127
+    second: Unit_1013_ElfSwordDancer_37
+  - first:
+      213: -2266999158579513659
+    second: Unit_1013_ElfSwordDancer_38
+  - first:
+      213: 7947056700163802074
+    second: Unit_1013_ElfSwordDancer_39
+  - first:
+      213: 1104294954084441925
+    second: Unit_1013_ElfSwordDancer_40
+  - first:
+      213: 3942312800518215306
+    second: Unit_1013_ElfSwordDancer_41
+  - first:
+      213: 7591026700454202124
+    second: Unit_1013_ElfSwordDancer_42
+  - first:
+      213: 1862340854260050411
+    second: Unit_1013_ElfSwordDancer_43
+  - first:
+      213: -4855354206124707922
+    second: Unit_1013_ElfSwordDancer_44
+  - first:
+      213: -3522777213214766816
+    second: Unit_1013_ElfSwordDancer_45
+  - first:
+      213: 4665810979968576490
+    second: Unit_1013_ElfSwordDancer_46
+  - first:
+      213: 2281780753762481591
+    second: Unit_1013_ElfSwordDancer_47
+  - first:
+      213: 725925748084861793
+    second: Unit_1013_ElfSwordDancer_48
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 32
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 64
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WindowsStoreApps
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Unit_1013_ElfSwordDancer
+      rect:
+        serializedVersion: 2
+        x: 182
+        y: 161
+        width: 891
+        height: 891
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5e97eb03825dee720800000000000000
+      internalID: 1537655665
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    outline: []
+    customData:
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices:
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Unit_1013_ElfSwordDancer: 1537655665
+  mipmapLimitGroupName:
+  pSDRemoveMatte: 0
+  userData:
+  assetBundleName:
+  assetBundleVariant:

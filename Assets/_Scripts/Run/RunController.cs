@@ -62,9 +62,9 @@ namespace AutoBattler.Run
         private CancellationTokenSource lifetime;
         private SaveManager saves;
         private bool saveFailed;
-        public StageDefinition Stage=>stage;
+        public StageDefinition Stage=>GameNavigation.SelectedStage!=null?GameNavigation.SelectedStage:stage;
         public BattleBackgroundView BackgroundView=>backgroundView;
-        private int StageId=>GameNavigation.SelectedStage!=null ? GameNavigation.SelectedStage.Id : stage.Id;
+        private int StageId=>Stage.Id;
         private UniTaskCompletionSource shutdownCompletion;
         private readonly UniTaskCompletionSource<bool> initialization=new UniTaskCompletionSource<bool>();
         public UniTask<bool> WaitForInitializationAsync(CancellationToken token)=>initialization.Task.AttachExternalCancellation(token);

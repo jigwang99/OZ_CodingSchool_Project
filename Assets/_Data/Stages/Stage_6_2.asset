@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d07fe3fc9cc555d479663c3f020718fc, type: 3}
+  m_Name: Stage_6_2
+  m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Run.StageDefinition
+  id: 27
+  displayName: 6-2
+  chapter: 6
+  number: 2
+  regionName: "\uB9DD\uC790\uC758 \uAC15"
+  locationName: "\uAC08\uB300 \uAC15\uBCC0"
+  description:
+  sceneBuildIndex: 1
+  battleBackground:
+    m_AssetGUID: f2f9004e4d3b6ec45a4ac52b9f836d53
+    m_SubObjectName:
+    m_SubObjectType:
+    m_SubObjectGUID:
+    m_EditorAssetChanged: 0

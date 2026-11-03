@@ -213,7 +213,7 @@ namespace AutoBattler.Presentation.Battle
             bool canManage = prepare || canBuy;
             if(synergyPanel!=null) synergyPanel.Show(ready?run.AllySynergies:null,ready,run.Flow.CurrentPhase);
             messageText.text = run.Message;
-            roundText.text = ready ? $"라운드 {(run.State.Round - 1) / 4 + 1}-{(run.State.Round - 1) % 4 + 1}" : "라운드 --";
+            roundText.text = ready ? $"스테이지 {run.Stage.DisplayName} · {run.State.Round}/{run.State.Data.Rounds.Count}" : "스테이지 --";
             goldText.text = ready ? $"골드 {run.State.Gold}" : "골드 --";
             livesText.text = ready ? $"목숨 {run.State.Lives}" : "목숨 --";
             levelText.text = ready ? $"레벨 {run.State.Level}" : "레벨 --";

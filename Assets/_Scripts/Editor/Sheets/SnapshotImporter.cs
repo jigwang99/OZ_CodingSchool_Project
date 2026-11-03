@@ -23,15 +23,16 @@ namespace AutoBattler.EditorTools.Sheets
         public static readonly string[] SkillTabs=BaseTabs.Concat(new[]{"Skills","Effects"}).ToArray();
         public static readonly string[] TraitTabs=SkillTabs.Concat(new[]{"Traits"}).ToArray();
         public static readonly string[] AugmentTabs=TraitTabs.Concat(new[]{"Augments"}).ToArray();
-        public static readonly string[] Tabs=AugmentTabs.Concat(new[]{"Items","ItemStats"}).ToArray();
-        public static string[] TabsForSchema(int schema)=>schema==1?BaseTabs:schema==2?SkillTabs:schema==3?TraitTabs:schema==4?AugmentTabs:schema==5?Tabs:throw new FormatException("지원하지 않는 스키마.");
+        public static readonly string[] ItemTabs=AugmentTabs.Concat(new[]{"Items","ItemStats"}).ToArray();
+        public static readonly string[] Tabs=ItemTabs.Concat(new[]{"SkillRules"}).ToArray();
+        public static string[] TabsForSchema(int schema)=>schema==1?BaseTabs:schema==2?SkillTabs:schema==3?TraitTabs:schema==4?AugmentTabs:schema==5?ItemTabs:schema==6?Tabs:throw new FormatException("지원하지 않는 스키마.");
         public static GameSnapshot Build(Dictionary<string,CsvTable> tables)
         {
             foreach(string tab in BaseTabs) if(!tables.ContainsKey(tab)) throw new FormatException(tab+": 표 없음.");
             CsvTable manifest=tables["Manifest"];
             if(manifest.Rows.Count!=2) throw manifest.Error(1,"schema_version","단일 Manifest 행 필요.");
             int schema=manifest.Int(1,"schema_version");
-            if(manifest.Rows.Count!=2 || schema<1 || schema>5) throw manifest.Error(1,"schema_version","스키마 1~5의 단일 Manifest 행 필요.");
+            if(manifest.Rows.Count!=2 || schema<1 || schema>6) throw manifest.Error(1,"schema_version","스키마 1~6의 단일 Manifest 행 필요.");
             foreach(string tab in TabsForSchema(schema)) if(!tables.ContainsKey(tab)) throw new FormatException(tab+": 표 없음.");
             GameSnapshot data=new GameSnapshot {schemaVersion=schema,dataVersion=manifest.Get(1,"data_version")};
             if(string.IsNullOrWhiteSpace(data.dataVersion)) throw manifest.Error(1,"data_version","버전 필요.");
@@ -55,6 +56,14 @@ namespace AutoBattler.EditorTools.Sheets
             data.effects=schema==1?Array.Empty<EffectRow>():Read(tables["Effects"],(t,r)=>new EffectRow {
                 effectId=t.Int(r,"effect_id"),kind=ReadEnum<EffectKind>(t,r,"kind"),value=t.Float(r,"value"),duration=t.Float(r,"duration"),
                 stacking=ReadEnum<EffectStacking>(t,r,"stacking"),stat=ReadEnum<StatType>(t,r,"stat"),operation=ReadEnum<ModifierOperation>(t,r,"operation") });
+            data.skillRules=schema<6?Array.Empty<SkillRuleRow>():Read(tables["SkillRules"],(t,r)=>new SkillRuleRow {
+                skillId=t.Int(r,"skill_id"),shape=ReadEnum<SkillShape>(t,r,"shape"),targetCount=t.Int(r,"target_count"),
+                hitCount=t.Int(r,"hit_count"),hitInterval=t.Float(r,"hit_interval"),retargetOnKill=t.Bool(r,"retarget_on_kill"),
+                executeThreshold=t.Float(r,"execute_threshold"),executeMultiplier=t.Float(r,"execute_multiplier"),
+                distanceBonus=t.Float(r,"distance_bonus"),lifeStealRatio=t.Float(r,"life_steal_ratio"),
+                secondaryEffectId=t.Int(r,"secondary_effect_id",true),secondaryTarget=ReadEnum<SecondarySkillTarget>(t,r,"secondary_target"),
+                secondaryRadius=t.Int(r,"secondary_radius"),effectLowHpThreshold=t.Float(r,"effect_low_hp_threshold"),
+                effectLowHpMultiplier=t.Float(r,"effect_low_hp_multiplier"),shieldMaxHpRatio=t.Float(r,"shield_max_hp_ratio") });
             data.traits=schema<3?Array.Empty<TraitRow>():Read(tables["Traits"],(t,r)=>new TraitRow {
                 traitId=t.Int(r,"trait_id"),name=t.Get(r,"name"),category=ReadEnum<TraitCategory>(t,r,"category"),
                 groupId=t.Int(r,"group_id"),requiredCount=t.Int(r,"required_count"),effect=ReadEnum<TraitEffect>(t,r,"effect"),
@@ -126,8 +135,23 @@ namespace AutoBattler.EditorTools.Sheets
                 foreach(EffectRow effect in data.effects)
                 {
                     CsvTable t=tables["Effects"]; int r=FindRow(t,"effect_id",effect.effectId);
-                    if(effect.value<0 || (effect.kind==EffectKind.Slow && effect.value>1)
+                    if(effect.value<0 && effect.kind!=EffectKind.StatModifier || (effect.kind==EffectKind.Slow && effect.value>1)
                         || (effect.kind!=EffectKind.Heal && effect.duration==0)) throw t.Error(r,"value/duration","효과 수치 범위 오류.");
+                }
+            }
+            if(schema>=6)
+            {
+                CsvTable table=tables["SkillRules"]; CheckIds(data.skillRules,rule=>rule.skillId,table);
+                foreach(SkillRuleRow rule in data.skillRules)
+                {
+                    int row=FindRow(table,"skill_id",rule.skillId);
+                    if(!data.skills.Any(skill=>skill.skillId==rule.skillId) || rule.targetCount<0 || rule.targetCount>56
+                        || rule.hitCount<1 || rule.hitCount>10 || rule.hitInterval<0 || rule.executeThreshold<0 || rule.executeThreshold>1
+                        || rule.executeMultiplier<1 || rule.distanceBonus<0 || rule.lifeStealRatio<0 || rule.lifeStealRatio>1
+                        || rule.secondaryRadius<0 || rule.secondaryRadius>14 || rule.effectLowHpThreshold<0 || rule.effectLowHpThreshold>1
+                        || rule.effectLowHpMultiplier<1 || rule.shieldMaxHpRatio<0 || rule.shieldMaxHpRatio>1
+                        || rule.secondaryEffectId!=0 && !data.effects.Any(effect=>effect.effectId==rule.secondaryEffectId))
+                        throw table.Error(row,"skill_id","확장 스킬 규칙 또는 효과 참조 오류.");
                 }
             }
             CheckIds(data.units,x=>x.unitId,tables["Units"]); CheckIds(data.rounds,x=>x.roundId,tables["Rounds"]);
@@ -193,8 +217,8 @@ namespace AutoBattler.EditorTools.Sheets
         }
         public static void Apply(GameSnapshot snapshot)
         {
-            if(File.Exists(OutputPath) && JsonUtility.FromJson<GameSnapshot>(File.ReadAllText(OutputPath)).schemaVersion>=5 && snapshot.schemaVersion<5)
-                throw new FormatException("아이템 표가 없는 이전 스키마는 적용할 수 없습니다. Manifest schema_version=5, Items, ItemStats 표를 추가하세요.");
+            if(File.Exists(OutputPath) && JsonUtility.FromJson<GameSnapshot>(File.ReadAllText(OutputPath)).schemaVersion>snapshot.schemaVersion)
+                throw new FormatException("이전 스키마는 현재 스냅샷에 적용할 수 없습니다. 최신 Manifest와 필수 표를 확인하세요.");
             string directory=Path.GetDirectoryName(OutputPath); Directory.CreateDirectory(directory);
             string temporary=OutputPath+".pending";
             try

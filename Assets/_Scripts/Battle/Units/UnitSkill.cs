@@ -38,6 +38,7 @@ namespace AutoBattler.Battle.Units
         public event Action<SkillCastContext> EffectReleased;
         public event Action<SkillCastContext> EffectApplied;
         internal void NotifyEffectApplied(SkillCastContext context)=>AutoBattler.Battle.Combat.CombatEventDispatcher.Publish(EffectApplied,context);
+        internal void NotifyRepeatedRelease(SkillCastContext context)=>AutoBattler.Battle.Combat.CombatEventDispatcher.Publish(EffectReleased,context);
         public event Action CastFinished;
         private void Awake()=>unit=GetComponent<Unit>();
         private void OnEnable()=>BindUnit(GetComponent<Unit>());
@@ -87,7 +88,7 @@ namespace AutoBattler.Battle.Units
                 if(!unit.IsInCombat || !unit.Health.IsAlive) return;
                 if(!context.Target.IsValid || !SkillTargetSelector.IsEligible(unit,Definition,context.Target.Unit))
                 {
-                    Unit replacement=SkillTargetSelector.Select(unit,Definition,context.Participants);
+                    Unit replacement=SkillTargetSelector.Select(unit,Definition,context.CurrentParticipants);
                     if(replacement==null) { op.Reason=SkillCancelReason.NoTarget; return; }
                     context.Target=new SkillTarget(replacement);
                 }

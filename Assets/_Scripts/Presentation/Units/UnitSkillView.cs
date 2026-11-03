@@ -19,7 +19,8 @@ namespace AutoBattler.Presentation.Units
             if(facing!=null && context.Target.Unit!=unit) facing.FacePosition(context.Target.Unit.transform.position);
             if(animator==null) return;
             int hash=context.Definition.Animation==SkillAnimation.Magic?UnitAnimatorParameters.AttackMagic
-                :context.Definition.Animation==SkillAnimation.Shoot?UnitAnimatorParameters.AttackShoot:UnitAnimatorParameters.AttackSlash;
+                    :context.Definition.Animation==SkillAnimation.Shoot?UnitAnimatorParameters.AttackShoot
+                    :context.Definition.Animation==SkillAnimation.Prick?UnitAnimatorParameters.AttackPrick:UnitAnimatorParameters.AttackSlash;
             animator.SetTrigger(hash);
         }
         private void OnDisable()=>unit.Skill.CastStarted-=OnCast;

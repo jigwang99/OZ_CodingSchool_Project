@@ -16,6 +16,7 @@ namespace AutoBattler.Battle.Skills
             {
                 case SkillTargetRule.Self:return target==caster;
                 case SkillTargetRule.LowestHealthAlly:return target.Team==caster.Team && target.Health.CurrentHp<target.Health.MaxHp;
+                case SkillTargetRule.NearestOtherAllies:return target!=caster && target.Team==caster.Team;
                 default:return target.Team!=caster.Team;
             }
         }
@@ -26,6 +27,9 @@ namespace AutoBattler.Battle.Skills
             IEnumerable<Unit> candidates=participants.Where(target=>IsEligible(caster,skill,target));
             if(skill.TargetRule==SkillTargetRule.LowestHealthAlly)
                 return candidates.OrderBy(target=>(double)target.Health.CurrentHp/target.Health.MaxHp).ThenBy(target=>target.InstanceId).FirstOrDefault();
+            if(skill.TargetRule==SkillTargetRule.NearestOtherAllies)
+                return candidates.OrderBy(target=>caster.CurrentCell.Value.DistanceTo(target.CurrentCell.Value))
+                    .ThenBy(target=>target.InstanceId).FirstOrDefault();
             return candidates.OrderBy(target=>caster.CurrentCell.Value.DistanceTo(target.CurrentCell.Value))
                 .ThenBy(target=>target.Definition.Role).ThenBy(target=>target.InstanceId).FirstOrDefault();
         }

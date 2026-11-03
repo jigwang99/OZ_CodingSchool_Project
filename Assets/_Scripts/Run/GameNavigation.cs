@@ -28,8 +28,8 @@ namespace AutoBattler.Run
         public static UniTask<bool> ResumeStageAsync(GameNavigationSettings settings)
         {
             SaveManager saves=SaveManager.instance;
-            if(settings==null || !saves.HasSavedRun || saves.SavedStageId!=settings.DefaultStage.Id) return UniTask.FromResult(false);
-            return LoadAsync(settings.DefaultStage.SceneBuildIndex,settings.DefaultStage,null,true);
+            if(settings==null || !saves.HasSavedRun || !settings.TryGetStage(saves.SavedStageId,out StageDefinition stage)) return UniTask.FromResult(false);
+            return LoadAsync(stage.SceneBuildIndex,stage,null,true);
         }
         public static UniTask<bool> RetryAsync(GameNavigationSettings settings,RunController run)
             =>StartStageAsync(settings,SelectedStage!=null?SelectedStage:settings!=null?settings.DefaultStage:null,run);

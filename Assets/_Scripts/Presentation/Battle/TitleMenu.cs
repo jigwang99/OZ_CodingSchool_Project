@@ -18,6 +18,7 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private Button openStagesButton;
         [SerializeField] private Button quitButton;
         [SerializeField] private Button stageButton;
+        [SerializeField] private StageSelectionView stageSelection;
         [SerializeField] private Button startButton;
         [SerializeField] private Button backButton;
         [SerializeField] private Button continueButton;
@@ -35,6 +36,8 @@ namespace AutoBattler.Presentation.Battle
         public Button OpenStagesButton=>openStagesButton;
         public Button QuitButton=>quitButton;
         public Button StageButton=>stageButton;
+        public StageSelectionView StageSelection=>stageSelection;
+        public StageDefinition SelectedStage=>selection;
         public Button StartButton=>startButton;
         public Button BackButton=>backButton;
         public TextMeshProUGUI StageNameText=>stageNameText;
@@ -51,7 +54,7 @@ namespace AutoBattler.Presentation.Battle
             if(gameSettings!=null) gameSettings.BindContext(interactionRoot,null);
             openStagesButton.onClick.AddListener(OpenStages);
             quitButton.onClick.AddListener(Quit);
-            stageButton.onClick.AddListener(SelectStage);
+            stageSelection.Selected+=SelectStage;
             startButton.onClick.AddListener(StartSelected);
             backButton.onClick.AddListener(Back);
             selection=null; SetBusy(false); Show(titlePanel,stagePanel); statusText.text=saves.LastError??"";
@@ -59,7 +62,7 @@ namespace AutoBattler.Presentation.Battle
         }
         private void RefreshContinue()
         {
-            continueButton.gameObject.SetActive(saves.HasSavedRun && saves.SavedStageId==settings.DefaultStage.Id);
+            continueButton.gameObject.SetActive(saves.HasSavedRun && settings.TryGetStage(saves.SavedStageId,out _));
             continueButton.interactable=!busy;
         }
         private void Resume()=>ResumeAsync().Forget();
@@ -81,17 +84,18 @@ namespace AutoBattler.Presentation.Battle
             if(busy || GameNavigation.IsTransitioning) return;
             selection=null; startButton.interactable=false;
             stageNameText.text="스테이지를 선택하세요";
-            stageDescriptionText.text="현재 1-1 스테이지에 도전할 수 있습니다.";
-            stageButton.GetComponent<Image>().color=new Color(.12f,.22f,.3f);
+            stageDescriptionText.text="";
             Show(stagePanel,titlePanel); statusText.text="";
+            int chapter=settings.TryGetStage(saves.SavedStageId,out StageDefinition saved)?saved.Chapter:settings.DefaultStage.Chapter;
+            stageSelection.Open(chapter);
         }
-        private void SelectStage()
+        private void SelectStage(StageDefinition stage)
         {
             if(busy || !IsStageSelectionOpen) return;
-            selection=settings.DefaultStage;
+            selection=stage;
+            if(selection==null) { stageNameText.text="스테이지를 선택하세요"; stageDescriptionText.text=""; startButton.interactable=false; return; }
             stageNameText.text=$"STAGE {selection.DisplayName}";
-            stageDescriptionText.text=selection.Description;
-            stageButton.GetComponent<Image>().color=new Color(.14f,.42f,.43f);
+            stageDescriptionText.text=selection.RegionName+" · "+selection.LocationName;
             startButton.interactable=true;
         }
         private void Back()
@@ -118,6 +122,7 @@ namespace AutoBattler.Presentation.Battle
             busy=value;
             titlePanel.interactable=!value; stagePanel.interactable=!value;
             startButton.interactable=!value && selection!=null;
+            stageSelection.SetInteractable(!value);
             if(continueButton!=null) continueButton.interactable=!value;
         }
         private static void Show(CanvasGroup show,CanvasGroup hide)
@@ -138,7 +143,7 @@ namespace AutoBattler.Presentation.Battle
             if(gameSettings!=null) gameSettings.UnbindContext(interactionRoot);
             if(openStagesButton!=null) openStagesButton.onClick.RemoveListener(OpenStages);
             if(quitButton!=null) quitButton.onClick.RemoveListener(Quit);
-            if(stageButton!=null) stageButton.onClick.RemoveListener(SelectStage);
+            if(stageSelection!=null) stageSelection.Selected-=SelectStage;
             if(startButton!=null) startButton.onClick.RemoveListener(StartSelected);
             if(backButton!=null) backButton.onClick.RemoveListener(Back);
             if(titlePanel!=null) titlePanel.DOKill();

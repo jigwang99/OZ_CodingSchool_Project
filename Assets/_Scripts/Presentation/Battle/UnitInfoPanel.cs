@@ -154,7 +154,8 @@ namespace AutoBattler.Presentation.Battle
             skillNameText.text=skill?.Name ?? "스킬 없음";
             if (skill==null) { skillText.text=""; return; }
             string target=skill.TargetRule==SkillTargetRule.Self ? "자신"
-                : skill.TargetRule==SkillTargetRule.LowestHealthAlly ? "체력이 가장 낮은 아군" : "현재 공격 대상";
+                : skill.TargetRule==SkillTargetRule.LowestHealthAlly ? "체력이 가장 낮은 아군"
+                : skill.TargetRule==SkillTargetRule.NearestOtherAllies ? $"가까운 다른 아군 최대 {skill.TargetCount}명" : "현재 공격 대상";
             StringBuilder description=new StringBuilder();
             description.Append($"{target}  |  {skill.ManaCost} MP\n시전 준비 {skill.Windup:0.##}초  /  재사용 {skill.Cooldown:0.##}초\n");
             description.Append($"사거리 {skill.CastRange}칸  /  반경 {skill.Radius}칸\n");
@@ -169,15 +170,29 @@ namespace AutoBattler.Presentation.Battle
             if (data!=null && data.Effects.TryGetValue(skill.EffectId,out EffectDefinition effect))
             {
                 float value=effect.Value;
-                if (effect.Kind==EffectKind.Heal || effect.Kind==EffectKind.Shield) value*=starScale*power;
+                if(effect.Kind==EffectKind.Shield && skill.ShieldMaxHpRatio>0) value=stats.MaxHp*skill.ShieldMaxHpRatio*power;
+                else if (effect.Kind==EffectKind.Heal || effect.Kind==EffectKind.Shield) value*=starScale*power;
                 if (effect.Kind==EffectKind.Slow) description.Append($"둔화 {value:P0}");
                 else if (effect.Kind==EffectKind.Stun) description.Append("기절");
-                else if (effect.Kind==EffectKind.StatModifier) description.Append($"{StatName(effect.Stat)} {(effect.Operation==ModifierOperation.Flat ? "고정" : "비율")} {value:0.##}");
+                else if (effect.Kind==EffectKind.StatModifier) description.Append($"{StatName(effect.Stat)} {(effect.Operation==ModifierOperation.Flat ? value.ToString("+0.##;-0.##;0") : value.ToString("+0%;-0%;0%"))}");
                 else description.Append($"{(effect.Kind==EffectKind.Heal ? "체력 회복" : "보호막")} {value:0.#}");
                 if (effect.Duration>0) description.Append($" ({effect.Duration:0.##}초)");
                 description.AppendLine();
             }
             if (skill.Delivery==SkillDelivery.Projectile) description.Append("투사체");
+            if(skill.Shape==SkillShape.Line) description.Append($"\n직선 관통 {(skill.TargetCount>0?$"최대 {skill.TargetCount}명":"전체")}");
+            if(skill.Shape==SkillShape.FrontArc) description.Append("\n시전자 정면 부채꼴 범위");
+            if(skill.HitCount>1) description.Append($"\n{skill.HitInterval:0.##}초 간격 {skill.HitCount}회 공격{(skill.RetargetOnKill?" · 대상 사망 시 재선정":"")}");
+            if(skill.ExecuteThreshold>0) description.Append($"\n대상 체력 {skill.ExecuteThreshold:P0} 이하: 피해 {skill.ExecuteMultiplier:0.##}배");
+            if(skill.DistanceBonus>0) description.Append($"\n거리 1칸 초과마다 피해 +{skill.DistanceBonus:P0}");
+            if(skill.LifeStealRatio>0) description.Append($"\n실제 체력 피해의 {skill.LifeStealRatio:P0} 회복");
+            if(skill.EffectLowHpThreshold>0) description.Append($"\n자신 체력 {skill.EffectLowHpThreshold:P0} 이하: 강화 효과 {skill.EffectLowHpMultiplier:0.##}배");
+            if(data!=null && data.Effects.TryGetValue(skill.SecondaryEffectId,out EffectDefinition additional))
+            {
+                string recipients=skill.SecondaryTarget==SecondarySkillTarget.EnemiesAroundCaster?$"주변 {skill.SecondaryRadius}칸 적":"같은 대상";
+                string extra=additional.Kind==EffectKind.Shield?$"보호막 {additional.Value*starScale*power:0.#}":$"{StatName(additional.Stat)} {additional.Value:P0}";
+                description.Append($"\n추가: {recipients} {extra} ({additional.Duration:0.#}초)");
+            }
             skillText.text=description.ToString().TrimEnd();
         }
         private static string StatName(StatType stat) => stat switch

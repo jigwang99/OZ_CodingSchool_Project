@@ -14,3 +14,34 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Run.GameNavigationSettings
   titleSceneBuildIndex: 0
   defaultStage: {fileID: 11400000, guid: 654c4bc2f32190b41a4b2292cdc456de, type: 2}
+  stages:
+  - {fileID: 11400000, guid: 654c4bc2f32190b41a4b2292cdc456de, type: 2}
+  - {fileID: 11400000, guid: d8a7986f3508027419e78d7571cf1862, type: 2}
+  - {fileID: 11400000, guid: 25a00f638f28fb44c801fa71b9ad70de, type: 2}
+  - {fileID: 11400000, guid: 8d800c107ae6dbf4f888fcfdbb0b62bf, type: 2}
+  - {fileID: 11400000, guid: 90ddde3f399f4e54b9fba7649ef1e224, type: 2}
+  - {fileID: 11400000, guid: 636e8baa1efc16f46b3c23e26f9fcaec, type: 2}
+  - {fileID: 11400000, guid: 716e5f55a57222642adf2d472278232a, type: 2}
+  - {fileID: 11400000, guid: 3023b5eefb75f754c8d88a0941351ed4, type: 2}
+  - {fileID: 11400000, guid: 9620145c2d31d054683f47046a3f68bd, type: 2}
+  - {fileID: 11400000, guid: 96555ef05566a804caee96d947960a3f, type: 2}
+  - {fileID: 11400000, guid: a52e9fed6513bec4bacec8e85b3fa230, type: 2}
+  - {fileID: 11400000, guid: 5be33461d3a6d8042af52e2a4d533dc0, type: 2}
+  - {fileID: 11400000, guid: d2ef8d55087e79246ae578ee404bc795, type: 2}
+  - {fileID: 11400000, guid: 5f96af15a590fe949a41105ea6e0def9, type: 2}
+  - {fileID: 11400000, guid: 13202f55480847c48a50ed02943ef000, type: 2}
+  - {fileID: 11400000, guid: ff9313077cf7d70408c38bc614cc075e, type: 2}
+  - {fileID: 11400000, guid: 994413153b983d342bc2caef1f539220, type: 2}
+  - {fileID: 11400000, guid: 7f55f61cc7dd7104d85080a2ec9120b8, type: 2}
+  - {fileID: 11400000, guid: 17eb8a23a798ca646bea31dc3800baf1, type: 2}
+  - {fileID: 11400000, guid: d656b7788c1f5854892533f63fa686d8, type: 2}
+  - {fileID: 11400000, guid: ddfefd35d7e462f4ca6673061f217d82, type: 2}
+  - {fileID: 11400000, guid: 6f246f4ce46e83745a0526d1ad506d21, type: 2}
+  - {fileID: 11400000, guid: d13ba1d31e7278a488a5ad484e06f8dc, type: 2}
+  - {fileID: 11400000, guid: 25c80850f164bce4e89fa0a5650ce8e6, type: 2}
+  - {fileID: 11400000, guid: 38ced353455a9ae45a4f4f5e7eab259b, type: 2}
+  - {fileID: 11400000, guid: 132866ad6da0d1441ba56835c0d479d7, type: 2}
+  - {fileID: 11400000, guid: 892ce6770f2029342be749a97ba9ea85, type: 2}
+  - {fileID: 11400000, guid: 19c4f117f2dfe9b4ab74dc2f9060b927, type: 2}
+  - {fileID: 11400000, guid: f5c791cbcabdd4e489ef8cb2a740b26b, type: 2}
+  - {fileID: 11400000, guid: afe47fbdadef4ff49b9be4bdfa01a83d, type: 2}

@@ -23,6 +23,7 @@ namespace AutoBattler.Data.Snapshot
         public PoolRow[] poolCounts;
         public EconomyRow[] economy;
         public SkillRow[] skills;
+        public SkillRuleRow[] skillRules;
         public EffectRow[] effects;
         public TraitRow[] traits;
         public AugmentRow[] augments;
@@ -90,7 +91,7 @@ namespace AutoBattler.Data.Snapshot
         private readonly Dictionary<int,float> rules;
         public DataRepository(GameSnapshot data)
         {
-            if(data==null || data.schemaVersion<1 || data.schemaVersion>5) throw new ArgumentException("지원하지 않는 데이터 스키마.");
+            if(data==null || data.schemaVersion<1 || data.schemaVersion>6) throw new ArgumentException("지원하지 않는 데이터 스키마.");
             Version=data.dataVersion;
             if(data.schemaVersion>=5 && (data.items==null || data.itemStats==null))
                 throw new ArgumentException("아이템 정의 또는 능력치 표 없음.");
@@ -109,13 +110,17 @@ namespace AutoBattler.Data.Snapshot
                 .ToDictionary(row=>row.augmentId,row=>new AugmentDefinition(row)));
             Units=new ReadOnlyDictionary<int,UnitDefinition>(data.units.ToDictionary(x=>x.unitId,x=>new UnitDefinition(x)));
             Rounds=new ReadOnlyDictionary<int,RoundDefinition>(data.rounds.ToDictionary(x=>x.roundId,x=>new RoundDefinition(x,data.roundUnits.Where(e=>e.roundId==x.roundId))));
-            Skills=new ReadOnlyDictionary<int,SkillDefinition>((data.skills ?? Array.Empty<SkillRow>()).ToDictionary(x=>x.skillId,x=>new SkillDefinition(x)));
+            Dictionary<int,SkillRuleRow> skillRules=(data.skillRules ?? Array.Empty<SkillRuleRow>()).ToDictionary(rule=>rule.skillId);
+            Skills=new ReadOnlyDictionary<int,SkillDefinition>((data.skills ?? Array.Empty<SkillRow>()).ToDictionary(x=>x.skillId,
+                x=>new SkillDefinition(x,skillRules.TryGetValue(x.skillId,out SkillRuleRow rule)?rule:null)));
             Effects=new ReadOnlyDictionary<int,EffectDefinition>((data.effects ?? Array.Empty<EffectRow>()).ToDictionary(x=>x.effectId,x=>x.Create()));
             Traits=Array.AsReadOnly(data.schemaVersion>=3
                 ? (data.traits ?? throw new ArgumentException("시너지 정의 없음.")).OrderBy(row=>row.traitId).Select(row=>new TraitDefinition(row)).ToArray()
                 : Array.Empty<TraitDefinition>());
             if(data.units.Any(unit=>unit.skillId!=0 && !Skills.ContainsKey(unit.skillId))
-                || Skills.Values.Any(skill=>skill.EffectId!=0 && !Effects.ContainsKey(skill.EffectId)))
+                || Skills.Values.Any(skill=>skill.EffectId!=0 && !Effects.ContainsKey(skill.EffectId)
+                    || skill.SecondaryEffectId!=0 && !Effects.ContainsKey(skill.SecondaryEffectId))
+                || skillRules.Keys.Any(id=>!Skills.ContainsKey(id)))
                 throw new ArgumentException("존재하지 않는 스킬·효과 ID 참조.");
             levelXp=data.levels.ToDictionary(x=>x.level,x=>x.requiredXp);
             pool=data.poolCounts.ToDictionary(x=>x.cost,x=>x.copiesPerUnit);
