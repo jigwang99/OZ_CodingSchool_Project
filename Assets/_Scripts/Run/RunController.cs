@@ -24,6 +24,7 @@ namespace AutoBattler.Run
         [SerializeField] private BenchLayout bench;
         [SerializeField] private StageDefinition stage;
         [SerializeField] private BattleBackgroundView backgroundView;
+        [SerializeField] private BenchFloorView benchView;
         [SerializeField] private int seed=20261012;
         [SerializeField,Min(0)] private int unitPoolSize=1;
         [Header("기능별 매니저")]
@@ -64,6 +65,7 @@ namespace AutoBattler.Run
         private bool saveFailed;
         public StageDefinition Stage=>GameNavigation.SelectedStage!=null?GameNavigation.SelectedStage:stage;
         public BattleBackgroundView BackgroundView=>backgroundView;
+        public BenchFloorView BenchView=>benchView;
         private int StageId=>Stage.Id;
         private UniTaskCompletionSource shutdownCompletion;
         private readonly UniTaskCompletionSource<bool> initialization=new UniTaskCompletionSource<bool>();
@@ -97,7 +99,9 @@ namespace AutoBattler.Run
                 lifetime.Token.ThrowIfCancellationRequested();
                 GameNavigation.ReportBattleLoading(this,.82f,"전장 불러오는 중...");
                 await assets.LoadBackgroundAsync(GameNavigation.SelectedStage!=null?GameNavigation.SelectedStage:stage,lifetime.Token);
+                await assets.LoadBenchFloorAsync(Stage,lifetime.Token);
                 if(backgroundView!=null) backgroundView.Show(assets.StageBackground);
+                if(benchView!=null) benchView.Show(assets.StageBenchFloor);
                 GameNavigation.ReportBattleLoading(this,.9f,"도전 정보 준비 중...");
                 bool augmentOpen=true;
                 if(GameNavigation.ResumeRequested)
@@ -197,6 +201,7 @@ namespace AutoBattler.Run
                 if(synergies!=null) { synergies.EndBattle(); synergies.Bind(null); }
                 if(units!=null) units.Clear();
                 if(backgroundView!=null) backgroundView.Show(null);
+                if(benchView!=null) benchView.Show(null);
                 if(assets!=null) await assets.ShutdownAsync();
                 lifetime?.Dispose(); completion.TrySetResult();
             }

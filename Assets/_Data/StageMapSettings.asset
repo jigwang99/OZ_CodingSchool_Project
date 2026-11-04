@@ -1,0 +1,93 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 232872381aff1174d8a483446376735e, type: 3}
+  m_Name: StageMapSettings
+  m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Presentation.Battle.StageMapSettings
+  regions:
+  - chapter: 1
+    background:
+      m_AssetGUID: 11086887a763fa54da1df7ca367319aa
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+    nodePositions:
+    - {x: 0.125, y: 0.275}
+    - {x: 0.3, y: 0.64}
+    - {x: 0.495, y: 0.29}
+    - {x: 0.692, y: 0.7}
+    - {x: 0.873, y: 0.412}
+  - chapter: 2
+    background:
+      m_AssetGUID: 6c7f4e7b4d52ccb468995595c95efbba
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+    nodePositions:
+    - {x: 0.12, y: 0.26}
+    - {x: 0.31, y: 0.67}
+    - {x: 0.5, y: 0.31}
+    - {x: 0.69, y: 0.68}
+    - {x: 0.88, y: 0.43}
+  - chapter: 3
+    background:
+      m_AssetGUID: 7f5e84dc1cb91984899b9d356bf2f2de
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+    nodePositions:
+    - {x: 0.12, y: 0.26}
+    - {x: 0.31, y: 0.68}
+    - {x: 0.49, y: 0.31}
+    - {x: 0.68, y: 0.71}
+    - {x: 0.88, y: 0.43}
+  - chapter: 4
+    background:
+      m_AssetGUID: 3742c43e9d0a2534eb1eeb1d54a667d2
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+    nodePositions:
+    - {x: 0.12, y: 0.26}
+    - {x: 0.31, y: 0.68}
+    - {x: 0.5, y: 0.28}
+    - {x: 0.69, y: 0.7}
+    - {x: 0.88, y: 0.42}
+  - chapter: 5
+    background:
+      m_AssetGUID: 0613f3780126d3d488a531b52afae97b
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+    nodePositions:
+    - {x: 0.12, y: 0.25}
+    - {x: 0.31, y: 0.67}
+    - {x: 0.5, y: 0.29}
+    - {x: 0.69, y: 0.7}
+    - {x: 0.88, y: 0.41}
+  - chapter: 6
+    background:
+      m_AssetGUID: 72dcee62dd321f14d8e18adc01d5755a
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+    nodePositions:
+    - {x: 0.12, y: 0.28}
+    - {x: 0.31, y: 0.68}
+    - {x: 0.5, y: 0.34}
+    - {x: 0.69, y: 0.7}
+    - {x: 0.88, y: 0.43}

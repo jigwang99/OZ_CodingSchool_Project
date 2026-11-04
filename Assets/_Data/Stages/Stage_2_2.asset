@@ -26,3 +26,10 @@ MonoBehaviour:
     m_SubObjectType:
     m_SubObjectGUID:
     m_EditorAssetChanged: 0
+  benchFloor:
+    m_AssetGUID: 8d6e0197151cf0e419133545cfd289c1
+    m_SubObjectName: Bench_2_ElvenForest
+    m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    m_SubObjectGUID:
+    m_EditorAssetChanged: 0

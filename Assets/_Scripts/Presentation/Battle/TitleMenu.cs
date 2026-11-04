@@ -94,7 +94,7 @@ namespace AutoBattler.Presentation.Battle
             if(busy || !IsStageSelectionOpen) return;
             selection=stage;
             if(selection==null) { stageNameText.text="스테이지를 선택하세요"; stageDescriptionText.text=""; startButton.interactable=false; return; }
-            stageNameText.text=$"STAGE {selection.DisplayName}";
+            stageNameText.text=$"스테이지 {selection.DisplayName}";
             stageDescriptionText.text=selection.RegionName+" · "+selection.LocationName;
             startButton.interactable=true;
         }

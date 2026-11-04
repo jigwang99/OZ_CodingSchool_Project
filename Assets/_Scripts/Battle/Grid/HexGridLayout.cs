@@ -99,6 +99,9 @@ namespace AutoBattler.Battle.Grid
         /// </summary>
         private void OnDrawGizmos()
         {
+            // 플레이 중 전장 표시는 드래그 상태에 맞춰 BoardOutlineView에서 제어.
+            if (Application.isPlaying) return;
+
             for (int col = 0; col < Columns; col++)
             {
                 Gizmos.color = col < AllyColumns

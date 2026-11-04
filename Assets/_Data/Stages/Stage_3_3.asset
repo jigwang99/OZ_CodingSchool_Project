@@ -26,3 +26,10 @@ MonoBehaviour:
     m_SubObjectType:
     m_SubObjectGUID:
     m_EditorAssetChanged: 0
+  benchFloor:
+    m_AssetGUID: 46e593536d781c04a996130bfae9ff61
+    m_SubObjectName: Bench_3_BeastVillage
+    m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    m_SubObjectGUID:
+    m_EditorAssetChanged: 0

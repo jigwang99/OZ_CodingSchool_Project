@@ -22,6 +22,7 @@ namespace AutoBattler.Managers
         private AssetService assets;
         private AssetService.Lease<TextAsset> snapshot;
         private AssetService.Lease<Sprite> background;
+        private AssetService.Lease<Sprite> benchFloor;
         private readonly Dictionary<int,AssetService.Lease<Sprite>> itemIcons=new Dictionary<int,AssetService.Lease<Sprite>>();
         public int ItemIconHandleCount=>itemIcons.Count;
         public Sprite ItemIcon(int id)=>itemIcons.TryGetValue(id,out AssetService.Lease<Sprite> lease)?lease.Asset:null;
@@ -34,6 +35,7 @@ namespace AutoBattler.Managers
         public BattleVisualService Visuals { get; private set; }
         public int ActiveHandleCount=>assets?.ActiveHandleCount ?? 0;
         public Sprite StageBackground=>background?.Asset;
+        public Sprite StageBenchFloor=>benchFloor?.Asset;
         public void Initialize(AssetCatalog configuration,BattleFlowController phases,HexGridLayout layout,int poolSize)
         {
             if(assets!=null) return;
@@ -83,6 +85,19 @@ namespace AutoBattler.Managers
             }
             catch { lease.Dispose(); throw; }
         }
+        public async UniTask LoadBenchFloorAsync(StageDefinition stage,CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+            if(benchFloor!=null || stage?.BenchFloor==null || !stage.BenchFloor.RuntimeKeyIsValid()) return;
+            AssetService.Lease<Sprite> lease=await assets.AcquireAsync<Sprite>(stage.BenchFloor,token);
+            try
+            {
+                token.ThrowIfCancellationRequested();
+                if(shutdown!=null) throw new ObjectDisposedException(nameof(AssetManager));
+                benchFloor=lease;
+            }
+            catch { lease.Dispose(); throw; }
+        }
         private async UniTask ShutdownCoreAsync(UniTaskCompletionSource completion)
         {
             try
@@ -91,6 +106,7 @@ namespace AutoBattler.Managers
                 if(Units!=null) await Units.DisposeAsync();
                 foreach(AssetService.Lease<Sprite> icon in itemIcons.Values) icon.Dispose(); itemIcons.Clear();
                 background?.Dispose(); background=null;
+                benchFloor?.Dispose(); benchFloor=null;
                 snapshot?.Dispose(); snapshot=null; assets?.Dispose(); Data=null;
                 completion.TrySetResult();
             }

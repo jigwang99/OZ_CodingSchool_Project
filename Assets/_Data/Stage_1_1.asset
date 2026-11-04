@@ -26,3 +26,10 @@ MonoBehaviour:
     m_SubObjectType:
     m_SubObjectGUID:
     m_EditorAssetChanged: 0
+  benchFloor:
+    m_AssetGUID: c58c2a391844ab14da6d1b4552637600
+    m_SubObjectName: Bench_1_VillageSquare
+    m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    m_SubObjectGUID:
+    m_EditorAssetChanged: 0

@@ -5,105 +5,225 @@ using System.Threading;
 using AutoBattler.Assets;
 using AutoBattler.Run;
 using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.UI;
 
 namespace AutoBattler.Presentation.Battle
 {
-    /// <summary>지역별 카드 5개를 재사용하고 현재 지역의 배경 미리보기만 로드.</summary>
+    /// <summary>지역 지도 전환, 경로 위 스테이지 선택과 지도 리소스 수명 관리.</summary>
     public sealed class StageSelectionView : MonoBehaviour
     {
         [SerializeField] private GameNavigationSettings settings;
-        [SerializeField] private Button[] chapterButtons=Array.Empty<Button>();
-        [SerializeField] private TextMeshProUGUI[] chapterLabels=Array.Empty<TextMeshProUGUI>();
-        [SerializeField] private StageSelectionCard[] cards=Array.Empty<StageSelectionCard>();
-        private UnityAction[] chapterActions;
-        private AssetService previews;
-        private CancellationTokenSource previewCancellation;
-        private readonly List<AssetService.Lease<Sprite>> leases=new List<AssetService.Lease<Sprite>>();
-        private int previewVersion;
-        private bool interactable=true;
-        public int Chapter { get; private set; }=1;
+        [SerializeField] private StageMapSettings mapSettings;
+        [SerializeField] private StageSelectionCard[] cards = Array.Empty<StageSelectionCard>();
+        [SerializeField] private Button previousButton;
+        [SerializeField] private Button nextButton;
+        [SerializeField] private Button retryMapButton;
+        [SerializeField] private Image mapImage;
+        [SerializeField] private RectTransform mapContent;
+        [SerializeField] private CanvasGroup mapCanvasGroup;
+        [SerializeField] private RectTransform travelMarker;
+        [SerializeField] private TextMeshProUGUI regionTitle;
+        [SerializeField] private TextMeshProUGUI regionCounter;
+        [SerializeField] private TextMeshProUGUI mapStatus;
+        private AssetService maps;
+        private AssetService.Lease<Sprite> mapLease;
+        private CancellationTokenSource mapCancellation;
+        private int mapVersion;
+        private bool interactable = true;
+        private StageMapRegion currentRegion;
+        private Tween markerTween;
+        public int Chapter { get; private set; } = 1;
         public StageDefinition Selection { get; private set; }
-        public bool IsLoadingPreviews { get; private set; }
-        public int ActivePreviewHandleCount=>previews?.ActiveHandleCount ?? 0;
-        public IReadOnlyList<Button> ChapterButtons=>Array.AsReadOnly(chapterButtons);
-        public IReadOnlyList<StageSelectionCard> Cards=>Array.AsReadOnly(cards);
+        public bool IsLoadingMap { get; private set; }
+        public int ActiveMapHandleCount => maps?.ActiveHandleCount ?? 0;
+        public Sprite CurrentMapSprite => mapImage.sprite;
+        public Button PreviousButton => previousButton;
+        public Button NextButton => nextButton;
+        public RectTransform TravelMarker => travelMarker;
+        public IReadOnlyList<StageSelectionCard> Cards => Array.AsReadOnly(cards);
         public event Action<StageDefinition> Selected;
+
         private void OnEnable()
         {
-            if(!Application.isPlaying) return;
-            chapterActions=new UnityAction[chapterButtons.Length];
-            for(int i=0;i<chapterButtons.Length;i++)
-            {
-                int chapter=i+1;
-                Button chapterButton=chapterButtons[i];
-                chapterActions[i]=()=> { if(chapterButton.IsInteractable()) ShowChapter(chapter); };
-                chapterButtons[i].onClick.AddListener(chapterActions[i]);
-                StageDefinition first=settings.Stages.FirstOrDefault(stage=>stage!=null && stage.Chapter==chapter);
-                chapterLabels[i].text=first?.RegionName ?? chapter.ToString();
-            }
-            foreach(StageSelectionCard card in cards) card.Selected+=Select;
+            if (!Application.isPlaying) return;
+            maps = new AssetService();
+            previousButton.onClick.AddListener(Previous);
+            nextButton.onClick.AddListener(Next);
+            retryMapButton.onClick.AddListener(Retry);
+            foreach (StageSelectionCard card in cards) card.Selected += Select;
         }
         public void Open(int chapter)
         {
-            Selection=null; interactable=true; ShowChapter(chapter);
+            interactable = true;
+            ShowChapter(mapSettings.TryGetRegion(chapter, out _) ? chapter : 1);
         }
+        private void Previous() { if (previousButton.IsInteractable()) ShowChapter(Chapter - 1); }
+        private void Next() { if (nextButton.IsInteractable()) ShowChapter(Chapter + 1); }
+        private void Retry() { if (retryMapButton.IsInteractable()) ShowChapter(Chapter); }
         public void ShowChapter(int chapter)
         {
-            if(!interactable || GameNavigation.IsTransitioning || !isActiveAndEnabled) return;
-            CancelPreviews(); Chapter=chapter; Selection=null;
-            StageDefinition[] stages=settings.Stages.Where(stage=>stage!=null && stage.Chapter==chapter).OrderBy(stage=>stage.Number).ToArray();
-            for(int i=0;i<cards.Length;i++) cards[i].Bind(i<stages.Length?stages[i]:null);
-            for(int i=0;i<chapterButtons.Length;i++)
-                chapterButtons[i].targetGraphic.color=i+1==chapter?new Color(.14f,.42f,.43f):new Color(.12f,.22f,.3f);
+            if (!interactable || GameNavigation.IsTransitioning || !isActiveAndEnabled
+                || !mapSettings.TryGetRegion(chapter, out StageMapRegion region)) return;
+            int direction = chapter.CompareTo(Chapter);
+            CancelMapRequest();
+            Chapter = chapter;
+            Selection = null;
+            currentRegion = null;
+            markerTween?.Kill();
+            travelMarker.gameObject.SetActive(false);
+            foreach (StageSelectionCard card in cards) card.gameObject.SetActive(false);
+            StageDefinition first = settings.Stages.First(stage => stage != null && stage.Chapter == chapter);
+            regionTitle.text = $"{chapter} · {first.RegionName}";
+            regionCounter.text = $"{chapter} / {mapSettings.Regions.Count}";
+            mapStatus.text = "지도 불러오는 중…";
+            retryMapButton.gameObject.SetActive(false);
             Selected?.Invoke(null);
-            previews=new AssetService(); previewCancellation=new CancellationTokenSource();
-            IsLoadingPreviews=true;
-            LoadPreviewsAsync(previews,stages,previewVersion,previewCancellation.Token).Forget();
+            IsLoadingMap = true;
+            UpdateButtons();
+            mapCancellation = new CancellationTokenSource();
+            LoadMapAsync(region, direction, mapVersion, mapCancellation.Token).Forget();
         }
-        private async UniTask LoadPreviewsAsync(AssetService service,StageDefinition[] stages,int version,CancellationToken token)
+        private async UniTask LoadMapAsync(StageMapRegion region, int direction, int version, CancellationToken token)
         {
+            AssetService.Lease<Sprite> pendingLease = null;
             try
             {
-                for(int i=0;i<stages.Length && i<cards.Length;i++)
+                pendingLease = await maps.AcquireAsync<Sprite>(region.Background, token);
+                token.ThrowIfCancellationRequested();
+                if (version != mapVersion) return;
+                if (mapImage.sprite != null)
                 {
-                    AssetService.Lease<Sprite> lease=await service.AcquireAsync<Sprite>(stages[i].BattleBackground,token);
-                    if(token.IsCancellationRequested || version!=previewVersion || !isActiveAndEnabled) { lease.Dispose(); return; }
-                    leases.Add(lease); cards[i].SetPreview(lease.Asset);
+                    _ = mapCanvasGroup.DOFade(0f, .12f).SetUpdate(true);
+                    _ = mapContent.DOAnchorPosX(-direction * mapContent.rect.width * .08f, .12f).SetUpdate(true);
+                    await UniTask.Delay(TimeSpan.FromSeconds(.12), ignoreTimeScale: true, cancellationToken: token);
+                }
+                mapImage.sprite = pendingLease.Asset;
+                mapLease?.Dispose();
+                mapLease = pendingLease;
+                pendingLease = null;
+                currentRegion = region;
+                StageDefinition[] stages = settings.Stages.Where(stage => stage != null && stage.Chapter == Chapter)
+                    .OrderBy(stage => stage.Number).ToArray();
+                for (int i = 0; i < cards.Length; i++) cards[i].Bind(i < stages.Length ? stages[i] : null);
+                PositionNodes();
+                mapStatus.text = "";
+                mapContent.anchoredPosition = new Vector2(direction * mapContent.rect.width * .10f, 0f);
+                mapCanvasGroup.alpha = 0f;
+                _ = mapContent.DOAnchorPosX(0f, .28f).SetEase(Ease.OutCubic).SetUpdate(true);
+                _ = mapCanvasGroup.DOFade(1f, .28f).SetUpdate(true);
+                await UniTask.Delay(TimeSpan.FromSeconds(.28), ignoreTimeScale: true, cancellationToken: token);
+            }
+            catch (OperationCanceledException) { }
+            catch (Exception exception)
+            {
+                if (version == mapVersion && !token.IsCancellationRequested)
+                {
+                    mapImage.sprite = null;
+                    mapLease?.Dispose();
+                    mapLease = null;
+                    mapStatus.text = "지도를 불러오지 못했어요.";
+                    retryMapButton.gameObject.SetActive(true);
+                    Debug.LogWarning("지역 지도 로드 실패: " + exception.Message, this);
                 }
             }
-            catch(OperationCanceledException) { }
-            catch(Exception exception) { if(!token.IsCancellationRequested) Debug.LogWarning("배경 미리보기를 불러오지 못했습니다. "+exception.Message,this); }
-            finally { if(version==previewVersion) IsLoadingPreviews=false; }
+            finally
+            {
+                pendingLease?.Dispose();
+                if (version == mapVersion) { IsLoadingMap = false; UpdateButtons(); }
+            }
         }
         private void Select(StageDefinition stage)
         {
-            if(!interactable || GameNavigation.IsTransitioning || !settings.Contains(stage)) return;
-            Selection=stage;
-            foreach(StageSelectionCard card in cards) card.SetSelected(card.Stage==stage);
+            if (!interactable || IsLoadingMap || GameNavigation.IsTransitioning
+                || stage == null || stage.Chapter != Chapter || !settings.Contains(stage)) return;
+            int previous = Selection == null ? 0 : Selection.Number - 1;
+            Selection = stage;
+            foreach (StageSelectionCard card in cards) card.SetSelected(card.Stage == stage);
+            MoveMarker(previous, stage.Number - 1);
             Selected?.Invoke(stage);
         }
-        public void SetInteractable(bool value)
+        private Vector2 NodePosition(int index)
         {
-            interactable=value;
-            foreach(Button button in chapterButtons) button.interactable=value;
-            foreach(StageSelectionCard card in cards) card.Button.interactable=value && card.Stage!=null;
+            Vector2 normalized = currentRegion.NodePositions[index];
+            return new Vector2((normalized.x - .5f) * mapContent.rect.width,
+                (normalized.y - .5f) * mapContent.rect.height);
         }
-        private void CancelPreviews()
+        private void PositionNodes()
         {
-            previewVersion++; previewCancellation?.Cancel(); previewCancellation?.Dispose(); previewCancellation=null;
-            foreach(StageSelectionCard card in cards) card.SetPreview(null);
-            foreach(AssetService.Lease<Sprite> lease in leases) lease.Dispose(); leases.Clear();
-            previews?.Dispose(); previews=null; IsLoadingPreviews=false;
+            if (currentRegion == null) return;
+            for (int i = 0; i < cards.Length && i < currentRegion.NodePositions.Count; i++)
+            {
+                RectTransform node = cards[i].RectTransform;
+                node.anchorMin = node.anchorMax = currentRegion.NodePositions[i];
+                node.anchoredPosition = Vector2.zero;
+            }
+        }
+        private void MoveMarker(int from, int to)
+        {
+            markerTween?.Kill();
+            Vector2 offset = Vector2.up * 56f;
+            if (!travelMarker.gameObject.activeSelf) travelMarker.anchoredPosition = NodePosition(from) + offset;
+            travelMarker.gameObject.SetActive(true);
+            Sequence route = DOTween.Sequence().SetUpdate(true);
+            int direction = from <= to ? 1 : -1;
+            for (int index = from; ; index += direction)
+            {
+                route.Append(travelMarker.DOAnchorPos(NodePosition(index) + offset, .22f).SetEase(Ease.InOutSine));
+                if (index == to) break;
+            }
+            markerTween = route;
+        }
+        private void OnRectTransformDimensionsChange()
+        {
+            if (mapContent == null || currentRegion == null) return;
+            PositionNodes();
+            if (Selection != null)
+            {
+                markerTween?.Kill();
+                travelMarker.anchoredPosition = NodePosition(Selection.Number - 1) + Vector2.up * 56f;
+            }
+        }
+        public void SetInteractable(bool value) { interactable = value; UpdateButtons(); }
+        private void UpdateButtons()
+        {
+            bool ready = interactable && !IsLoadingMap;
+            previousButton.interactable = ready && mapSettings.TryGetRegion(Chapter - 1, out _);
+            nextButton.interactable = ready && mapSettings.TryGetRegion(Chapter + 1, out _);
+            retryMapButton.interactable = ready;
+            foreach (StageSelectionCard card in cards)
+                card.Button.interactable = ready && currentRegion != null && card.Stage != null;
+        }
+        private void CancelMapRequest()
+        {
+            mapVersion++;
+            mapCancellation?.Cancel();
+            mapCancellation?.Dispose();
+            mapCancellation = null;
+            mapContent.DOKill();
+            mapCanvasGroup.DOKill();
         }
         private void OnDisable()
         {
-            if(chapterActions!=null) for(int i=0;i<chapterActions.Length;i++) chapterButtons[i].onClick.RemoveListener(chapterActions[i]);
-            foreach(StageSelectionCard card in cards) card.Selected-=Select;
-            CancelPreviews();
+            previousButton?.onClick.RemoveListener(Previous);
+            nextButton?.onClick.RemoveListener(Next);
+            retryMapButton?.onClick.RemoveListener(Retry);
+            foreach (StageSelectionCard card in cards) card.Selected -= Select;
+            CancelMapRequest();
+            markerTween?.Kill();
+            travelMarker.gameObject.SetActive(false);
+            mapImage.sprite = null;
+            mapLease?.Dispose();
+            mapLease = null;
+            maps?.Dispose();
+            maps = null;
+            currentRegion = null;
+            Selection = null;
+            IsLoadingMap = false;
+            mapContent.anchoredPosition = Vector2.zero;
+            mapCanvasGroup.alpha = 1f;
         }
     }
 }

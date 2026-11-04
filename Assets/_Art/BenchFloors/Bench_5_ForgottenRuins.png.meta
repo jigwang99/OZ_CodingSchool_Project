@@ -1,0 +1,310 @@
+fileFormatVersion: 2
+guid: d48fbb22880548c44af7d18d07cad45b
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 7528966374902606862
+    second: Bench_5_ForgottenRuins_0
+  - first:
+      213: 5743807516092208437
+    second: Bench_5_ForgottenRuins_1
+  - first:
+      213: 2900875550598798711
+    second: Bench_5_ForgottenRuins_2
+  - first:
+      213: -1253558625077319906
+    second: Bench_5_ForgottenRuins_3
+  - first:
+      213: -7926488607733157224
+    second: Bench_5_ForgottenRuins_4
+  - first:
+      213: -3609080601352130317
+    second: Bench_5_ForgottenRuins_5
+  - first:
+      213: 356228122125671459
+    second: Bench_5_ForgottenRuins_6
+  - first:
+      213: -274643596907508302
+    second: Bench_5_ForgottenRuins_7
+  - first:
+      213: 8767328404672386446
+    second: Bench_5_ForgottenRuins_8
+  - first:
+      213: 219148342812515072
+    second: Bench_5_ForgottenRuins_9
+  - first:
+      213: 4600490072531625368
+    second: Bench_5_ForgottenRuins_10
+  - first:
+      213: -3477155643417345103
+    second: Bench_5_ForgottenRuins_11
+  - first:
+      213: -3196966151020238717
+    second: Bench_5_ForgottenRuins_12
+  - first:
+      213: -1012180658892654086
+    second: Bench_5_ForgottenRuins_13
+  - first:
+      213: 4983397495580389524
+    second: Bench_5_ForgottenRuins_14
+  - first:
+      213: 2239961799332056256
+    second: Bench_5_ForgottenRuins_15
+  - first:
+      213: 5772735570433011713
+    second: Bench_5_ForgottenRuins_16
+  - first:
+      213: -9015608157091918926
+    second: Bench_5_ForgottenRuins_17
+  - first:
+      213: 5826987047409176935
+    second: Bench_5_ForgottenRuins_18
+  - first:
+      213: -5365419294836537918
+    second: Bench_5_ForgottenRuins_19
+  - first:
+      213: -3986739590125595348
+    second: Bench_5_ForgottenRuins_20
+  - first:
+      213: -3215318747085349156
+    second: Bench_5_ForgottenRuins_21
+  - first:
+      213: 2834257627677230929
+    second: Bench_5_ForgottenRuins_22
+  - first:
+      213: 1907398708727595903
+    second: Bench_5_ForgottenRuins_23
+  - first:
+      213: -5960612446700023633
+    second: Bench_5_ForgottenRuins_24
+  - first:
+      213: -3608373927385727846
+    second: Bench_5_ForgottenRuins_25
+  - first:
+      213: 4592482551483991840
+    second: Bench_5_ForgottenRuins_26
+  - first:
+      213: 735094438030804922
+    second: Bench_5_ForgottenRuins_27
+  - first:
+      213: -4017923959640508717
+    second: Bench_5_ForgottenRuins_28
+  - first:
+      213: -2119712615104761420
+    second: Bench_5_ForgottenRuins_29
+  - first:
+      213: 4168235505651129846
+    second: Bench_5_ForgottenRuins_30
+  - first:
+      213: -1307285836799198201
+    second: Bench_5_ForgottenRuins_31
+  - first:
+      213: -6348108779367892161
+    second: Bench_5_ForgottenRuins_32
+  - first:
+      213: -3915133805727760607
+    second: Bench_5_ForgottenRuins_33
+  - first:
+      213: 3713019877355810573
+    second: Bench_5_ForgottenRuins_34
+  - first:
+      213: -4364109865096564718
+    second: Bench_5_ForgottenRuins_35
+  - first:
+      213: 6342674067067731348
+    second: Bench_5_ForgottenRuins_36
+  - first:
+      213: 3551281253553293756
+    second: Bench_5_ForgottenRuins_37
+  - first:
+      213: -7817807345965068775
+    second: Bench_5_ForgottenRuins_38
+  - first:
+      213: 4391761346520830577
+    second: Bench_5_ForgottenRuins_39
+  - first:
+      213: -4441652256390371670
+    second: Bench_5_ForgottenRuins_40
+  - first:
+      213: -2816282010757288333
+    second: Bench_5_ForgottenRuins_41
+  - first:
+      213: -1019410282743822912
+    second: Bench_5_ForgottenRuins_42
+  - first:
+      213: 8511767224876384787
+    second: Bench_5_ForgottenRuins_43
+  - first:
+      213: -5243247069190571974
+    second: Bench_5_ForgottenRuins_44
+  - first:
+      213: 6668367334336615598
+    second: Bench_5_ForgottenRuins_45
+  - first:
+      213: 3392662781981174237
+    second: Bench_5_ForgottenRuins_46
+  - first:
+      213: -87697721735068897
+    second: Bench_5_ForgottenRuins_47
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 128
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 128
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WindowsStoreApps
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Bench_5_ForgottenRuins
+      rect:
+        serializedVersion: 2
+        x: 99
+        y: 100
+        width: 1057
+        height: 1036
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6cdfb5d38f958ea409c1975978c914dd
+      internalID: -841971823
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    outline: []
+    customData:
+    physicsShape: []
+    bones: []
+    spriteID: 205301a165b79654d8378fdbc587b0e0
+    internalID: 0
+    vertices: []
+    indices:
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Bench_5_ForgottenRuins: -841971823
+  mipmapLimitGroupName:
+  pSDRemoveMatte: 0
+  userData:
+  assetBundleName:
+  assetBundleVariant:

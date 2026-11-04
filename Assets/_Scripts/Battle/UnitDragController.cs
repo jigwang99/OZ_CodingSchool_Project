@@ -34,6 +34,7 @@ namespace AutoBattler.Battle.Grid
         private bool isDragging;
         private bool itemDragging;
         private bool resultTrading;
+        public bool CanPlaceUnits=>battleFlow!=null && battleFlow.CanPlaceUnits;
         public bool CanInspectUnits => battleFlow!=null && (battleFlow.CanInspectUnits
             || resultTrading && battleFlow.CurrentPhase==BattlePhase.Result);
         public void SetResultTrading(bool allowed)

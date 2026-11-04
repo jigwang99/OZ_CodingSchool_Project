@@ -26,3 +26,10 @@ MonoBehaviour:
     m_SubObjectType:
     m_SubObjectGUID:
     m_EditorAssetChanged: 0
+  benchFloor:
+    m_AssetGUID: cb82e6586c35bde48ab8076f26c29eaf
+    m_SubObjectName: Bench_6_RiverOfDead
+    m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    m_SubObjectGUID:
+    m_EditorAssetChanged: 0

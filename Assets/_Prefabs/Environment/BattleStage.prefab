@@ -459,6 +459,7 @@ MonoBehaviour:
   bench: {fileID: 5518458100415036460}
   stage: {fileID: 11400000, guid: 654c4bc2f32190b41a4b2292cdc456de, type: 2}
   backgroundView: {fileID: 1616312568835322952}
+  benchView: {fileID: 3730797370927507153}
   seed: 20261012
   unitPoolSize: 5
   assets: {fileID: 8729715954513264476}
@@ -687,6 +688,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Board
       objectReference: {fileID: 0}
+    - target: {fileID: 7802547367969394242, guid: fa6007111fe9da44284cd012698fa09c, type: 3}
+      propertyPath: dragController
+      value:
+      objectReference: {fileID: 4061401408873610498}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -703,6 +708,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 905da7a0561da4b4c92b35a0b5142485, type: 3}
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Battle.Grid.HexGridLayout
+--- !u!114 &3730797370927507153 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1136531439941262430, guid: fa6007111fe9da44284cd012698fa09c, type: 3}
+  m_PrefabInstance: {fileID: 4324494833350310543}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1985ed956e60a7478c80d1fd74d42f6, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Presentation.Battle.BenchFloorView
 --- !u!114 &5518458100415036460 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8112725951072568995, guid: fa6007111fe9da44284cd012698fa09c, type: 3}

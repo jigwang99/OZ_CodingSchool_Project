@@ -16,6 +16,7 @@ namespace AutoBattler.Run
         [SerializeField,TextArea] private string description;
         [SerializeField] private int sceneBuildIndex=1;
         [SerializeField] private AssetReferenceSprite battleBackground;
+        [SerializeField] private AssetReferenceSprite benchFloor;
         public int Id=>id;
         public string DisplayName=>displayName;
         public int Chapter=>chapter;
@@ -25,5 +26,6 @@ namespace AutoBattler.Run
         public string Description=>description;
         public int SceneBuildIndex=>sceneBuildIndex;
         public AssetReferenceSprite BattleBackground=>battleBackground;
+        public AssetReferenceSprite BenchFloor=>benchFloor;
     }
 }

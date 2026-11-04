@@ -26,3 +26,10 @@ MonoBehaviour:
     m_SubObjectType:
     m_SubObjectGUID:
     m_EditorAssetChanged: 0
+  benchFloor:
+    m_AssetGUID: 9b0f4f5585be9c143886a46f7b108608
+    m_SubObjectName: Bench_4_OrcFortress
+    m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    m_SubObjectGUID:
+    m_EditorAssetChanged: 0
