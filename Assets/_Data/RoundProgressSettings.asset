@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8755a6977575d55408dbd97dcd6aced1, type: 3}
+  m_Name: RoundProgressSettings
+  m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Presentation.Battle.RoundProgressSettings
+  combat:
+    pending: {fileID: 21300000, guid: 7f4c332ca7ffbe34c8c425198529ce1e, type: 3}
+    current: {fileID: 21300000, guid: c01547028a605644a9368681fe3fb963, type: 3}
+    win: {fileID: 21300000, guid: 488de8728e17db94ab7f785be5874e7d, type: 3}
+    loss: {fileID: 21300000, guid: 940522b041e945240abd21c50f31fc1e, type: 3}
+  boss:
+    pending: {fileID: 21300000, guid: 938c7856bfc29054891912e4207758ba, type: 3}
+    current: {fileID: 21300000, guid: 342fd6d7e160a7644981a5bf3172a12a, type: 3}
+    win: {fileID: 21300000, guid: a5cbef2aca0b1bb4a845741f0f01df2d, type: 3}
+    loss: {fileID: 21300000, guid: 3277ec5dc1971b247803a037d2dd9488, type: 3}

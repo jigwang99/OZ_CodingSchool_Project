@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 6,
-  "dataVersion": "2026-10-23-google-canonical",
+  "schemaVersion": 7,
+  "dataVersion": "2026-11-05-item-fusion",
   "units": [
     {
       "unitId": 1001,
@@ -232,7 +232,7 @@
     },
     {
       "unitId": 1013,
-      "name": "검무사",
+      "name": "엘프검사",
       "cost": 2,
       "originId": 2,
       "classId": 1,
@@ -1729,6 +1729,102 @@
       "secondaryValue": 0.3,
       "duration": 0,
       "threshold": 0
+    },
+    {
+      "traitId": 4005,
+      "name": "수인",
+      "category": 0,
+      "groupId": 5,
+      "requiredCount": 2,
+      "effect": 6,
+      "value": 0.15,
+      "secondaryValue": 0,
+      "duration": 0,
+      "threshold": 0
+    },
+    {
+      "traitId": 4015,
+      "name": "수인",
+      "category": 0,
+      "groupId": 5,
+      "requiredCount": 3,
+      "effect": 6,
+      "value": 0.25,
+      "secondaryValue": 0,
+      "duration": 0,
+      "threshold": 0
+    },
+    {
+      "traitId": 4006,
+      "name": "유령",
+      "category": 0,
+      "groupId": 6,
+      "requiredCount": 2,
+      "effect": 9,
+      "value": 0.1,
+      "secondaryValue": 0,
+      "duration": 0,
+      "threshold": 0
+    },
+    {
+      "traitId": 4016,
+      "name": "유령",
+      "category": 0,
+      "groupId": 6,
+      "requiredCount": 3,
+      "effect": 9,
+      "value": 0.2,
+      "secondaryValue": 0,
+      "duration": 0,
+      "threshold": 0
+    },
+    {
+      "traitId": 4105,
+      "name": "격투가",
+      "category": 1,
+      "groupId": 5,
+      "requiredCount": 2,
+      "effect": 8,
+      "value": 0.2,
+      "secondaryValue": 0,
+      "duration": 0,
+      "threshold": 0
+    },
+    {
+      "traitId": 4115,
+      "name": "격투가",
+      "category": 1,
+      "groupId": 5,
+      "requiredCount": 4,
+      "effect": 8,
+      "value": 0.4,
+      "secondaryValue": 0,
+      "duration": 0,
+      "threshold": 0
+    },
+    {
+      "traitId": 4106,
+      "name": "창병",
+      "category": 1,
+      "groupId": 6,
+      "requiredCount": 2,
+      "effect": 10,
+      "value": 0.15,
+      "secondaryValue": 0,
+      "duration": 0,
+      "threshold": 0
+    },
+    {
+      "traitId": 4116,
+      "name": "창병",
+      "category": 1,
+      "groupId": 6,
+      "requiredCount": 4,
+      "effect": 10,
+      "value": 0.3,
+      "secondaryValue": 0,
+      "duration": 0,
+      "threshold": 0
     }
   ],
   "augments": [
@@ -1817,28 +1913,28 @@
     {
       "itemId": 6001,
       "name": "가죽 투구",
-      "description": "튼튼한 투구로 받는 피해를 줄입니다.",
+      "description": "받는 피해를 줄이는 합성 재료.",
       "iconId": 34,
       "dropWeight": 1
     },
     {
       "itemId": 6002,
       "name": "가죽 갑옷",
-      "description": "두꺼운 갑옷으로 생존력을 높입니다.",
+      "description": "최대 체력을 높이는 합성 재료.",
       "iconId": 36,
       "dropWeight": 1
     },
     {
       "itemId": 6003,
       "name": "가죽 장갑",
-      "description": "힘을 실어 적을 공격합니다.",
+      "description": "공격력을 높이는 합성 재료.",
       "iconId": 44,
       "dropWeight": 1
     },
     {
       "itemId": 6004,
       "name": "가죽 장화",
-      "description": "가벼운 발걸음으로 빠르게 싸웁니다.",
+      "description": "공격 속도를 높이는 합성 재료.",
       "iconId": 42,
       "dropWeight": 1
     },
@@ -1847,14 +1943,126 @@
       "name": "가죽 로브",
       "description": "마력이 깃든 옷으로 스킬을 강화합니다.",
       "iconId": 38,
-      "dropWeight": 1
+      "dropWeight": 0
     },
     {
       "itemId": 6006,
       "name": "가죽 바지",
       "description": "적의 빈틈을 정확하게 노립니다.",
       "iconId": 40,
+      "dropWeight": 0
+    },
+    {
+      "itemId": 6007,
+      "name": "마나 반지",
+      "description": "장착 시 MP 증가.",
+      "iconId": 9001,
       "dropWeight": 1
+    },
+    {
+      "itemId": 6101,
+      "name": "수호자의 투구",
+      "description": "두 재료를 합성한 상위 장비.",
+      "iconId": 33,
+      "dropWeight": 0
+    },
+    {
+      "itemId": 6102,
+      "name": "성기사의 갑옷",
+      "description": "두 재료를 합성한 상위 장비.",
+      "iconId": 35,
+      "dropWeight": 0
+    },
+    {
+      "itemId": 6103,
+      "name": "강철 장화",
+      "description": "두 재료를 합성한 상위 장비.",
+      "iconId": 41,
+      "dropWeight": 0
+    },
+    {
+      "itemId": 6104,
+      "name": "분쇄자의 건틀릿",
+      "description": "두 재료를 합성한 상위 장비.",
+      "iconId": 43,
+      "dropWeight": 0
+    },
+    {
+      "itemId": 6105,
+      "name": "수호의 펜던트",
+      "description": "두 재료를 합성한 상위 장비.",
+      "iconId": 47,
+      "dropWeight": 0
+    },
+    {
+      "itemId": 6106,
+      "name": "거인의 갑옷",
+      "description": "두 재료를 합성한 상위 장비.",
+      "iconId": 9002,
+      "dropWeight": 0
+    },
+    {
+      "itemId": 6107,
+      "name": "선봉대의 장화",
+      "description": "두 재료를 합성한 상위 장비.",
+      "iconId": 9003,
+      "dropWeight": 0
+    },
+    {
+      "itemId": 6108,
+      "name": "광전사의 갑옷",
+      "description": "두 재료를 합성한 상위 장비.",
+      "iconId": 9004,
+      "dropWeight": 0
+    },
+    {
+      "itemId": 6109,
+      "name": "생명의 목걸이",
+      "description": "두 재료를 합성한 상위 장비.",
+      "iconId": 46,
+      "dropWeight": 0
+    },
+    {
+      "itemId": 6110,
+      "name": "질풍의 장화",
+      "description": "두 재료를 합성한 상위 장비.",
+      "iconId": 9005,
+      "dropWeight": 0
+    },
+    {
+      "itemId": 6111,
+      "name": "속공의 건틀릿",
+      "description": "두 재료를 합성한 상위 장비.",
+      "iconId": 9006,
+      "dropWeight": 0
+    },
+    {
+      "itemId": 6112,
+      "name": "순환의 반지",
+      "description": "두 재료를 합성한 상위 장비.",
+      "iconId": 48,
+      "dropWeight": 0
+    },
+    {
+      "itemId": 6113,
+      "name": "파괴자의 건틀릿",
+      "description": "두 재료를 합성한 상위 장비.",
+      "iconId": 9007,
+      "dropWeight": 0
+    },
+    {
+      "itemId": 6114,
+      "name": "전투마도 반지",
+      "description": "두 재료를 합성한 상위 장비.",
+      "iconId": 45,
+      "dropWeight": 0
+    },
+    {
+      "itemId": 6115,
+      "name": "새벽의 반지",
+      "description": "두 재료를 합성한 상위 장비.",
+      "iconId": 9008,
+      "dropWeight": 0
     }
   ],
   "itemStats": [
@@ -1874,24 +2082,24 @@
     },
     {
       "entryId": 3,
+      "itemId": 6004,
+      "stat": 3,
+      "operation": 1,
+      "value": 0.15
+    },
+    {
+      "entryId": 4,
       "itemId": 6003,
       "stat": 1,
       "operation": 0,
       "value": 12
     },
     {
-      "entryId": 4,
-      "itemId": 6004,
-      "stat": 4,
-      "operation": 1,
-      "value": 0.15
-    },
-    {
       "entryId": 5,
-      "itemId": 6004,
-      "stat": 3,
-      "operation": 1,
-      "value": 0.08
+      "itemId": 6007,
+      "stat": 9,
+      "operation": 0,
+      "value": 15
     },
     {
       "entryId": 6,
@@ -1906,6 +2114,181 @@
       "stat": 6,
       "operation": 0,
       "value": 0.1
+    },
+    {
+      "entryId": 8,
+      "itemId": 6101,
+      "stat": 2,
+      "operation": 0,
+      "value": 20
+    },
+    {
+      "entryId": 9,
+      "itemId": 6102,
+      "stat": 2,
+      "operation": 0,
+      "value": 10
+    },
+    {
+      "entryId": 10,
+      "itemId": 6102,
+      "stat": 0,
+      "operation": 0,
+      "value": 150
+    },
+    {
+      "entryId": 11,
+      "itemId": 6103,
+      "stat": 2,
+      "operation": 0,
+      "value": 10
+    },
+    {
+      "entryId": 12,
+      "itemId": 6103,
+      "stat": 3,
+      "operation": 1,
+      "value": 0.2
+    },
+    {
+      "entryId": 13,
+      "itemId": 6104,
+      "stat": 2,
+      "operation": 0,
+      "value": 10
+    },
+    {
+      "entryId": 14,
+      "itemId": 6104,
+      "stat": 1,
+      "operation": 0,
+      "value": 15
+    },
+    {
+      "entryId": 15,
+      "itemId": 6105,
+      "stat": 2,
+      "operation": 0,
+      "value": 10
+    },
+    {
+      "entryId": 16,
+      "itemId": 6105,
+      "stat": 9,
+      "operation": 0,
+      "value": 20
+    },
+    {
+      "entryId": 17,
+      "itemId": 6106,
+      "stat": 0,
+      "operation": 0,
+      "value": 300
+    },
+    {
+      "entryId": 18,
+      "itemId": 6107,
+      "stat": 0,
+      "operation": 0,
+      "value": 150
+    },
+    {
+      "entryId": 19,
+      "itemId": 6107,
+      "stat": 3,
+      "operation": 1,
+      "value": 0.2
+    },
+    {
+      "entryId": 20,
+      "itemId": 6108,
+      "stat": 0,
+      "operation": 0,
+      "value": 150
+    },
+    {
+      "entryId": 21,
+      "itemId": 6108,
+      "stat": 1,
+      "operation": 0,
+      "value": 15
+    },
+    {
+      "entryId": 22,
+      "itemId": 6109,
+      "stat": 0,
+      "operation": 0,
+      "value": 150
+    },
+    {
+      "entryId": 23,
+      "itemId": 6109,
+      "stat": 9,
+      "operation": 0,
+      "value": 20
+    },
+    {
+      "entryId": 24,
+      "itemId": 6110,
+      "stat": 3,
+      "operation": 1,
+      "value": 0.35
+    },
+    {
+      "entryId": 25,
+      "itemId": 6111,
+      "stat": 3,
+      "operation": 1,
+      "value": 0.2
+    },
+    {
+      "entryId": 26,
+      "itemId": 6111,
+      "stat": 1,
+      "operation": 0,
+      "value": 15
+    },
+    {
+      "entryId": 27,
+      "itemId": 6112,
+      "stat": 3,
+      "operation": 1,
+      "value": 0.2
+    },
+    {
+      "entryId": 28,
+      "itemId": 6112,
+      "stat": 9,
+      "operation": 0,
+      "value": 20
+    },
+    {
+      "entryId": 29,
+      "itemId": 6113,
+      "stat": 1,
+      "operation": 0,
+      "value": 30
+    },
+    {
+      "entryId": 30,
+      "itemId": 6114,
+      "stat": 1,
+      "operation": 0,
+      "value": 15
+    },
+    {
+      "entryId": 31,
+      "itemId": 6114,
+      "stat": 9,
+      "operation": 0,
+      "value": 20
+    },
+    {
+      "entryId": 32,
+      "itemId": 6115,
+      "stat": 9,
+      "operation": 0,
+      "value": 35
     }
   ],
   "skillRules": [
@@ -2196,6 +2579,99 @@
       "effectLowHpThreshold": 0,
       "effectLowHpMultiplier": 1,
       "shieldMaxHpRatio": 0
+    }
+  ],
+  "previousDataVersion": "2026-10-23-google-canonical",
+  "itemRecipes": [
+    {
+      "recipeId": 1,
+      "firstItemId": 6001,
+      "secondItemId": 6001,
+      "resultItemId": 6101
+    },
+    {
+      "recipeId": 2,
+      "firstItemId": 6001,
+      "secondItemId": 6002,
+      "resultItemId": 6102
+    },
+    {
+      "recipeId": 3,
+      "firstItemId": 6001,
+      "secondItemId": 6004,
+      "resultItemId": 6103
+    },
+    {
+      "recipeId": 4,
+      "firstItemId": 6001,
+      "secondItemId": 6003,
+      "resultItemId": 6104
+    },
+    {
+      "recipeId": 5,
+      "firstItemId": 6001,
+      "secondItemId": 6007,
+      "resultItemId": 6105
+    },
+    {
+      "recipeId": 6,
+      "firstItemId": 6002,
+      "secondItemId": 6002,
+      "resultItemId": 6106
+    },
+    {
+      "recipeId": 7,
+      "firstItemId": 6002,
+      "secondItemId": 6004,
+      "resultItemId": 6107
+    },
+    {
+      "recipeId": 8,
+      "firstItemId": 6002,
+      "secondItemId": 6003,
+      "resultItemId": 6108
+    },
+    {
+      "recipeId": 9,
+      "firstItemId": 6002,
+      "secondItemId": 6007,
+      "resultItemId": 6109
+    },
+    {
+      "recipeId": 10,
+      "firstItemId": 6004,
+      "secondItemId": 6004,
+      "resultItemId": 6110
+    },
+    {
+      "recipeId": 11,
+      "firstItemId": 6004,
+      "secondItemId": 6003,
+      "resultItemId": 6111
+    },
+    {
+      "recipeId": 12,
+      "firstItemId": 6004,
+      "secondItemId": 6007,
+      "resultItemId": 6112
+    },
+    {
+      "recipeId": 13,
+      "firstItemId": 6003,
+      "secondItemId": 6003,
+      "resultItemId": 6113
+    },
+    {
+      "recipeId": 14,
+      "firstItemId": 6003,
+      "secondItemId": 6007,
+      "resultItemId": 6114
+    },
+    {
+      "recipeId": 15,
+      "firstItemId": 6007,
+      "secondItemId": 6007,
+      "resultItemId": 6115
     }
   ]
 }

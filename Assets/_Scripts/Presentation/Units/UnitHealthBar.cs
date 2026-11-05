@@ -8,7 +8,7 @@ using UnityEngine.UI;
 
 namespace AutoBattler.Presentation.Units
 {
-    /// <summary>부모 유닛의 성급·체력·보호막과 생존 상태를 표시하는 공통 월드 UI.</summary>
+    /// <summary>부모 유닛의 체력·마나·보호막과 장비 표시. 장비가 있으면 표시 묶음을 위로 이동.</summary>
     [DisallowMultipleComponent]
     public sealed class UnitHealthBar : MonoBehaviour
     {
@@ -20,6 +20,7 @@ namespace AutoBattler.Presentation.Units
         [SerializeField] private RectTransform healthRoot;
         [SerializeField] private RectTransform manaRoot;
         [SerializeField] private RectTransform equipmentRoot;
+        [SerializeField, Min(0f)] private float equipmentLift = 52f;
         public RectTransform EquipmentRoot=>equipmentRoot;
         [SerializeField] private Color allyColor = new Color(0.2f, 0.9f, 0.35f);
         [SerializeField] private Color enemyColor = new Color(1f, 0.35f, 0.35f);
@@ -27,6 +28,11 @@ namespace AutoBattler.Presentation.Units
         private Unit owner;
         private UnitHealth boundHealth;
         private UnitEffects boundEffects;
+        private Vector2 healthPosition;
+        private Vector2 manaPosition;
+        private Vector2 equipmentPosition;
+        private bool layoutCaptured;
+        private bool equipmentLayout;
 
         public Canvas HealthCanvas => healthCanvas;
         public Image FillImage => fillImage;
@@ -37,6 +43,7 @@ namespace AutoBattler.Presentation.Units
 
         public void Bind(Unit unit)
         {
+            CaptureLayout();
             Unbind();
             owner = unit;
             boundHealth = owner != null ? owner.GetComponent<UnitHealth>() : null;
@@ -72,7 +79,8 @@ namespace AutoBattler.Presentation.Units
         {
             bool initialized=boundHealth!=null && boundHealth.IsInitialized;
             int shield=boundEffects?.Shield ?? 0;
-            starText.text=initialized && owner!=null ? new string('★',owner.Star) : string.Empty;
+            starText.text=string.Empty;
+            starText.gameObject.SetActive(false);
             segments.SetValues(initialized ? boundHealth.CurrentHp : 0,initialized ? boundHealth.MaxHp : 1,shield,animate);
         }
 
@@ -87,11 +95,32 @@ namespace AutoBattler.Presentation.Units
             bool onBoard = alive && owner.IsOnBoard;
             bool onBench = alive && owner.View != null && owner.View.State != null
                 && owner.View.State.Location.Kind == UnitLocationKind.Bench;
-            healthCanvas.enabled = onBoard || onBench;
-            // 대기석에서는 성급만 표시하고 전장에 배치되면 HP·MP 표시 복원.
+            bool equipped = alive && owner.Equipment != null && owner.Equipment.Count > 0;
+            healthCanvas.enabled = onBoard || onBench && equipped;
+            SetEquipmentLayout(equipped);
+            // 대기석에서는 장비만 표시하고 전장에 배치되면 HP·MP 표시 복원.
             SetVisible(healthRoot, onBoard);
             SetVisible(manaRoot, onBoard);
-            SetVisible(equipmentRoot,(onBoard || onBench) && owner.Equipment!=null && owner.Equipment.Count>0);
+            SetVisible(equipmentRoot,(onBoard || onBench) && equipped);
+        }
+
+        private void CaptureLayout()
+        {
+            if (layoutCaptured) return;
+            healthPosition = healthRoot.anchoredPosition;
+            manaPosition = manaRoot.anchoredPosition;
+            equipmentPosition = equipmentRoot.anchoredPosition;
+            layoutCaptured = true;
+        }
+
+        private void SetEquipmentLayout(bool equipped)
+        {
+            if (!layoutCaptured || equipmentLayout == equipped) return;
+            equipmentLayout = equipped;
+            Vector2 offset = equipped ? Vector2.up * equipmentLift : Vector2.zero;
+            healthRoot.anchoredPosition = healthPosition + offset;
+            manaRoot.anchoredPosition = manaPosition + offset;
+            equipmentRoot.anchoredPosition = equipmentPosition + offset;
         }
 
         private static void SetVisible(RectTransform root, bool visible)
@@ -110,6 +139,7 @@ namespace AutoBattler.Presentation.Units
             if(boundEffects!=null) boundEffects.Changed-=OnEffectsChanged;
             boundEffects=null;
             owner = null;
+            SetEquipmentLayout(false);
             if(segments!=null) segments.Clear();
             if (fillImage != null)
                 fillImage.rectTransform.DOKill();

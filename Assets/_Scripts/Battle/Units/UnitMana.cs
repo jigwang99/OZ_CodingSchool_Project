@@ -11,12 +11,15 @@ namespace AutoBattler.Battle.Units
         public int Current { get; private set; }
         public int Maximum { get; private set; }=100;
         private int baseStarting;
+        private UnitStats stats;
+        private void Awake()=>stats=GetComponent<UnitStats>();
         private readonly Dictionary<ModifierSource,int> startingBonuses=new Dictionary<ModifierSource,int>();
         public int Starting
         {
             get
             {
                 long value=baseStarting;
+                if(stats!=null) value+=Mathf.RoundToInt(stats.ManaBonus);
                 foreach(int bonus in startingBonuses.Values) value+=bonus;
                 return (int)Math.Max(0,Math.Min(Maximum,value));
             }

@@ -92,8 +92,8 @@ namespace AutoBattler.Presentation.Battle
             unit.Effects.Changed+=RefreshDetails;
             unit.Equipment.Changed += RefreshEquipment;
             gameObject.SetActive(true);
-            nameText.text=BattleText.UnitName(unit.Definition);
-            identityText.text=$"{(unit.Team==UnitTeam.Ally ? "아군" : "적군")}   {new string('*', unit.Star)}   비용 {unit.Definition.Cost}G";
+            nameText.text=$"{BattleText.UnitName(unit.Definition)} <color=#FFD159>{new string('★', unit.Star)}</color>";
+            identityText.text=$"{(unit.Team==UnitTeam.Ally ? "아군" : "적군")}   비용 {unit.Definition.Cost}G";
             traitsText.text=$"{TraitName(TraitCategory.Origin, unit.Definition.OriginId)} / {TraitName(TraitCategory.Class, unit.Definition.ClassId)}"
                 +$"   |   {(unit.Definition.IsRanged ? "원거리" : "근거리")}";
             teamAccent.color=unit.Team==UnitTeam.Ally ? new Color(.2f,.85f,.85f) : new Color(1f,.35f,.4f);
@@ -159,7 +159,7 @@ namespace AutoBattler.Presentation.Battle
             StringBuilder description=new StringBuilder();
             description.Append($"{target}  |  {skill.ManaCost} MP\n시전 준비 {skill.Windup:0.##}초  /  재사용 {skill.Cooldown:0.##}초\n");
             description.Append($"사거리 {skill.CastRange}칸  /  반경 {skill.Radius}칸\n");
-            float starScale=boundUnit.Star==2 && data!=null ? data.Rule(EconomyRule.StarMultiplier) : 1f;
+            float starScale=data!=null ? UnitStarRules.StatMultiplier(boundUnit.Star,data.Rule(EconomyRule.StarMultiplier)) : 1f;
             float power=boundUnit.StatModifiers.SkillPower;
             if (skill.BaseDamage>0 || skill.AttackRatio>0)
             {

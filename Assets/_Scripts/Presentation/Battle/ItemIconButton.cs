@@ -13,6 +13,10 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private Image icon;
         [SerializeField] private TextMeshProUGUI label;
         [SerializeField] private Image background;
+        [SerializeField] private Color selectedColor = new Color(.15f, .42f, .45f);
+        [SerializeField] private Color normalColor = new Color(.1f, .16f, .23f);
+        [SerializeField] private Color fusionColor = new Color(.2f, .55f, .35f);
+        private bool isSelected,dropHighlighted;
         private int itemId;
         public event Action<int> Pressed;
         public event Action<ItemIconButton, PointerEventData> DragBegan, DragMoved, DragEnded;
@@ -33,9 +37,11 @@ namespace AutoBattler.Presentation.Battle
         {
             itemId = id; icon.sprite = sprite; icon.enabled = sprite != null;
             label.text = name; button.interactable = interactable && id != 0;
-            background.color = selected ? new Color(.15f, .42f, .45f) : new Color(.1f, .16f, .23f);
+            isSelected=selected; RefreshColor();
         }
-        private void OnDisable() => DragCancelled?.Invoke(this);
+        public void SetDropHighlighted(bool highlighted) { dropHighlighted=highlighted; RefreshColor(); }
+        private void RefreshColor()=>background.color=dropHighlighted?fusionColor:isSelected?selectedColor:normalColor;
+        private void OnDisable() { dropHighlighted=false; DragCancelled?.Invoke(this); }
         private void OnDestroy() => button.onClick.RemoveListener(Request);
     }
 }

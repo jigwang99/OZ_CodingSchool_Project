@@ -31,6 +31,9 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private TextMeshProUGUI experienceText;
         [SerializeField] private TextMeshProUGUI deploymentText;
         [SerializeField] private TextMeshProUGUI messageText;
+        [SerializeField] private GameObject timerRoot;
+        [SerializeField] private TextMeshProUGUI timeText;
+        [SerializeField] private RoundProgressView roundProgress;
 
         [Header("준비 화면")]
         [SerializeField] private CanvasGroup preparationPanel;
@@ -70,6 +73,8 @@ namespace AutoBattler.Presentation.Battle
         public TextMeshProUGUI ExperienceText => experienceText;
         public TextMeshProUGUI DeploymentText => deploymentText;
         public TextMeshProUGUI MessageText => messageText;
+        public TextMeshProUGUI TimeText => timeText;
+        public RoundProgressView RoundProgress => roundProgress;
         public CanvasGroup PreparationPanel => preparationPanel;
         public RectTransform ShopContainer => shopContainer;
         public IReadOnlyList<ShopItem> ShopItems => System.Array.AsReadOnly(shopItems);
@@ -185,11 +190,24 @@ namespace AutoBattler.Presentation.Battle
         {
             if (!isBound)
                 return;
+            RefreshTime();
             if (run.IsReady && run.Flow.CurrentPhase == BattlePhase.Combat)
-                messageText.text = $"전투 중   남은 시간 {Mathf.CeilToInt(run.RemainingSeconds)}초";
+                messageText.text = "전투 중";
             if(run.IsReady && run.Flow.CurrentPhase==BattlePhase.Result && (!run.State.IsOver || run.State.HasPendingRoundReward))
-                resultPanel.ShowCountdown(run.Battle.NextPreparationSeconds,run.State.IsOver);
+                resultPanel.ShowCountdown();
             RefreshSelection();
+        }
+
+        private void RefreshTime()
+        {
+            if (timerRoot == null || timeText == null) return;
+            bool ready = run != null && run.IsReady;
+            timerRoot.SetActive(ready);
+            if (!ready) return;
+            timeText.text = run.Flow.CurrentPhase == BattlePhase.Combat
+                ? $"{Mathf.CeilToInt(run.RemainingSeconds)}"
+                : run.Flow.CurrentPhase == BattlePhase.Result && (!run.State.IsOver || run.State.HasPendingRoundReward)
+                    ? $"{Mathf.CeilToInt(run.Battle.NextPreparationSeconds)}" : "--";
         }
 
         private void RefreshSelection()
@@ -213,13 +231,16 @@ namespace AutoBattler.Presentation.Battle
             bool canManage = prepare || canBuy;
             if(synergyPanel!=null) synergyPanel.Show(ready?run.AllySynergies:null,ready,run.Flow.CurrentPhase);
             messageText.text = run.Message;
-            roundText.text = ready ? $"스테이지 {run.Stage.DisplayName} · {run.State.Round}/{run.State.Data.Rounds.Count}" : "스테이지 --";
-            goldText.text = ready ? $"골드 {run.State.Gold}" : "골드 --";
-            livesText.text = ready ? $"목숨 {run.State.Lives}" : "목숨 --";
-            levelText.text = ready ? $"레벨 {run.State.Level}" : "레벨 --";
+            messageText.gameObject.SetActive(!ready);
+            roundProgress.Show(ready ? run.State : null, ready ? run.Stage.DisplayName : "--");
+            roundText.text = ready ? run.Stage.RegionName : "--";
+            goldText.text = ready ? run.State.Gold.ToString() : "--";
+            RefreshTime();
+            livesText.text = ready ? run.State.Lives.ToString() : "--";
+            levelText.text = ready ? run.State.Level.ToString() : "--";
             experienceText.text = ready
-                ? run.State.Level == 10 ? "경험치 최대" : $"경험치 {run.State.Xp}/{run.State.Data.RequiredXp(run.State.Level)}"
-                : "경험치 --";
+                ? run.State.Level == 10 ? "MAX" : $"{run.State.Xp}/{run.State.Data.RequiredXp(run.State.Level)}"
+                : "--";
             deploymentText.text = ready ? $"배치 {run.State.Board.DeployedCount}/{run.State.Level}" : "배치 --";
 
             for (int i = 0; i < shopItems.Length; i++)
@@ -242,21 +263,16 @@ namespace AutoBattler.Presentation.Battle
             preparationPanel.interactable = canManage;
             RefreshSelection();
 
-            if (ready && run.State.IsOver)
-                messageText.text = run.State.WonRun ? "도전 성공!" : "도전 종료";
+            if (ready && run.Flow.CurrentPhase == BattlePhase.Result)
+                messageText.text = string.Empty;
 
             bool showResult = ready && run.Flow.CurrentPhase == BattlePhase.Result;
             bool phaseChanged = !hasDisplayedPhase || displayedPhase != run.Flow.CurrentPhase;
             bool animate = hasDisplayedPhase && phaseChanged;
             if (showResult)
             {
-                string title = run.State.IsOver
-                    ? run.State.WonRun ? "도전 성공!" : "도전 종료"
-                    : "전투 결과";
-                resultPanel.Show(title, run.State.LastResult, !run.State.IsOver || run.State.HasPendingRoundReward, hasDisplayedPhase);
-                OwnedItem reward=run.State.Items.Find(run.State.Items.LastRewardInstanceId);
-                if(reward!=null) resultPanel.ShowItemReward(run.State.Data.Items[reward.DefinitionId].Name);
-                if(!run.State.IsOver || run.State.HasPendingRoundReward) resultPanel.ShowCountdown(run.Battle.NextPreparationSeconds,run.State.IsOver);
+                resultPanel.Show(run.State.LastBattleWon, !run.State.IsOver || run.State.HasPendingRoundReward, hasDisplayedPhase);
+                if(!run.State.IsOver || run.State.HasPendingRoundReward) resultPanel.ShowCountdown();
             }
             else
                 resultPanel.Hide();

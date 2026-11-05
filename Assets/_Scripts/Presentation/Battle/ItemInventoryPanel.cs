@@ -32,10 +32,12 @@ namespace AutoBattler.Presentation.Battle
         private int selectedItem, draggedItem, pointerId, page;
         private Vector2 pointer;
         private Unit target;
+        private ItemIconButton storedTarget;
         private int targetVersion;
         public bool IsOpen { get; private set; }
         public bool IsDraggingItem => draggedItem != 0;
         public Unit DropUnit => target;
+        public int DropStoredItemId=>storedTarget!=null?storedTarget.ItemId:0;
         public Button OpenButton => openButton;
         public Button CloseButton => closeButton;
         public CanvasGroup Modal => modal;
@@ -122,10 +124,12 @@ namespace AutoBattler.Presentation.Battle
             pointer = eventData.position;
             if (CanDrag) UpdateTarget();
             Unit recipient = CanDrag ? target : null;
+            int otherItemId=CanDrag?DropStoredItemId:0;
             int itemId = draggedItem;
             // 장착 콜백에서 배치·풀 상태가 바뀌기 전에 대상 크기와 입력 복원.
             CancelItemDrag();
-            if (recipient != null && run.EquipItem(itemId, recipient.InstanceId))
+            if(otherItemId!=0 && run.FuseItems(itemId,otherItemId)) selectedItem=0;
+            else if (recipient != null && run.EquipItem(itemId, recipient.InstanceId))
             { selectedItem = 0; run.Drag.Inspect(recipient); }
             Refresh();
         }
@@ -133,40 +137,62 @@ namespace AutoBattler.Presentation.Battle
         public void CancelItemDrag()
         {
             SetTarget(null);
+            SetStoredTarget(null);
             draggedItem = 0; dragSource = null;
             if (run != null) run.Drag.SetItemDragging(false);
             if (dragPreview != null) dragPreview.gameObject.SetActive(false);
             if (dragIcon != null) dragIcon.sprite = null;
+            if(IsOpen) RefreshHint(null);
         }
         private Camera UICamera => canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
         private void UpdateTarget()
         {
+            uiHits.Clear();
+            if(EventSystem.current!=null)
+                EventSystem.current.RaycastAll(new PointerEventData(EventSystem.current) {position=pointer,pointerId=pointerId},uiHits);
+            // 드래그 아이콘의 Rect 변경과 무관하게 연결된 보관 슬롯의 표시 범위로 판정.
+            ItemIconButton hovered=storedSlots.FirstOrDefault(slot=>slot.gameObject.activeInHierarchy
+                && RectTransformUtility.RectangleContainsScreenPoint((RectTransform)slot.transform,pointer,UICamera));
+            ItemDefinition fusion=hovered!=null
+                ?run.State.Items.FusionResult(draggedItem,hovered.ItemId):null;
+            SetStoredTarget(fusion!=null?hovered:null);
+            bool overInventory=RectTransformUtility.RectangleContainsScreenPoint((RectTransform)modal.transform,pointer,UICamera);
+            SetTarget(!overInventory && uiHits.Count==0?FindTarget():null);
+            if(target!=null && run.State.Items.TryGetEquipFusion(draggedItem,target.InstanceId,out _,out ItemDefinition equippedFusion)) fusion=equippedFusion;
+            OwnedItem dragged=run.State.Items.Find(draggedItem);
+            if(dragged!=null) dragIcon.sprite=run.ItemIcon(fusion!=null?fusion.IconId:run.State.Data.Items[dragged.DefinitionId].IconId);
+            dragIcon.color = target != null || storedTarget!=null ? Color.white : new Color(1f, 1f, 1f, .65f);
+            RefreshHint(fusion);
             if (RectTransformUtility.ScreenPointToLocalPointInRectangle((RectTransform)dragPreview.parent,
                 pointer, UICamera, out Vector2 local)) dragPreview.anchoredPosition = local;
-            SetTarget(FindTarget());
-            dragIcon.color = target != null ? Color.white : new Color(1f, 1f, 1f, .65f);
         }
         private Unit FindTarget()
         {
             if (!CanDrag) return null;
-            if (EventSystem.current != null)
-            {
-                uiHits.Clear();
-                EventSystem.current.RaycastAll(new PointerEventData(EventSystem.current)
-                    { position = pointer, pointerId = pointerId }, uiHits);
-                if (uiHits.Count > 0) return null;
-            }
             Vector3 world = ScreenPositionUtility.ScreenToWorld(run.Drag.BoardCamera, pointer, run.Grid.transform.position.z);
             foreach (Collider2D hit in Physics2D.OverlapPointAll(world))
             {
                 Unit unit = hit.GetComponentInParent<Unit>();
                 if (unit == null || unit.Team != UnitTeam.Ally || !unit.isActiveAndEnabled || !unit.Health.IsAlive
                     || !run.Units.Allies.Contains(unit)) continue;
-                if (run.State.Items.Equipped(unit.InstanceId).Count() >= ItemInventoryState.EquipmentCapacity)
+                if (!run.State.Items.CanEquip(draggedItem,unit.InstanceId))
                     continue;
                 return unit;
             }
             return null;
+        }
+        private void SetStoredTarget(ItemIconButton next)
+        {
+            if(storedTarget==next) return;
+            if(storedTarget!=null) storedTarget.SetDropHighlighted(false);
+            storedTarget=next;
+            if(storedTarget!=null) storedTarget.SetDropHighlighted(true);
+        }
+        private void RefreshHint(ItemDefinition fusion)
+        {
+            if(fusion!=null) hintLabel.text=$"{fusion.Name}\n{ItemText.Stats(fusion)}";
+            else hintLabel.text=run!=null && run.IsReady && run.Equipment.CanEquip
+                ?"아이템을 아군에게 드래그하여 장착\n다른 재료 위에 놓으면 합성":"현재 아이템을 장착할 수 없습니다";
         }
         private void SetTarget(Unit next)
         {
@@ -180,7 +206,8 @@ namespace AutoBattler.Presentation.Battle
         private void Refresh()
         {
             bool ready = run != null && run.IsReady;
-            openLabel.text = ready ? $"인벤토리 ({run.State.Items.Stored.Count()})" : "인벤토리";
+            openLabel.text = string.Empty;
+            openLabel.gameObject.SetActive(false);
             if (!IsOpen) return;
             if (!ready || !CanOpen) { Close(); return; }
             OwnedItem[] stored = run.State.Items.Stored.ToArray();
@@ -198,9 +225,9 @@ namespace AutoBattler.Presentation.Battle
             }
             OwnedItem selection = run.State.Items.Find(selectedItem);
             if (selection == null || selection.OwnerUnitId != 0) { selectedItem = 0; selection = null; }
-            detailLabel.text = selection == null ? (stored.Length == 0 ? "전투 승리 시 아이템 획득" : "아이템을 클릭하면 효과 표시")
-                : $"{run.State.Data.Items[selection.DefinitionId].Name}\n{run.State.Data.Items[selection.DefinitionId].Description}\n{ItemText.Stats(run.State.Data.Items[selection.DefinitionId])}";
-            hintLabel.text = run.Equipment.CanEquip ? "아이템을 아군에게 드래그하여 장착" : "현재 아이템을 장착할 수 없습니다";
+            detailLabel.text = selection == null ? string.Empty
+                : $"{run.State.Data.Items[selection.DefinitionId].Name}\n{ItemText.Stats(run.State.Data.Items[selection.DefinitionId])}";
+            RefreshHint(null);
         }
         private void ClearIcons()
         { foreach (ItemIconButton slot in storedSlots) slot.Show(0, null, "빈 슬롯", false, false); }
@@ -228,7 +255,7 @@ namespace AutoBattler.Presentation.Battle
         {
             StatType.MaxHp=>"최대 체력",StatType.AttackDamage=>"공격력",StatType.Defense=>"방어력",StatType.AttackSpeed=>"공격 속도",
             StatType.MoveSpeed=>"이동 속도",StatType.SkillPower=>"스킬 위력",StatType.CritChance=>"치명타 확률",
-            StatType.CritMultiplier=>"치명타 배율",StatType.BasicAttackPower=>"기본 공격 위력",_=>stat.ToString()
+            StatType.CritMultiplier=>"치명타 배율",StatType.BasicAttackPower=>"기본 공격 위력",StatType.Mana=>"MP",StatType.BasicArmorIgnore=>"기본 공격 방어 관통",_=>stat.ToString()
         };
     }
 }

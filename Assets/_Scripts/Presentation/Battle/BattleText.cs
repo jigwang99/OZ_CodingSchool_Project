@@ -44,6 +44,7 @@ namespace AutoBattler.Presentation.Battle
                 case StatType.AttackSpeed:return "공격 속도";case StatType.MoveSpeed:return "이동 속도";
                 case StatType.SkillPower:return "스킬 위력";case StatType.CritChance:return "치명타 확률";
                 case StatType.CritMultiplier:return "치명타 배율";case StatType.BasicAttackPower:return "기본 공격 피해";
+                case StatType.Mana:return "MP";case StatType.BasicArmorIgnore:return "기본 공격 방어 관통";
                 default:return string.Empty;
             }
         }

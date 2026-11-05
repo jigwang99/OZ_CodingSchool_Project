@@ -15,23 +15,8 @@ MonoBehaviour:
   m_GroupName: ItemIcons
   m_GUID: 3e558febbb122e941a237b7f330dff89
   m_SerializeEntries:
-  - m_GUID: 37b71ed93499e4b0983c5c39955c9bd1
-    m_Address: Assets/SPUM/Retro UI Set/1_UI_Images/Theme2/04_Equipment/Spum_Icon34.png
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: fcc28d702bdce45e58f839942f514737
-    m_Address: Assets/SPUM/Retro UI Set/1_UI_Images/Theme2/04_Equipment/Spum_Icon44.png
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 4d8e1b675292f433492d6bd54a1779ee
-    m_Address: Assets/SPUM/Retro UI Set/1_UI_Images/Theme2/04_Equipment/Spum_Icon36.png
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 794eeef0b92aa4cbdb11f1b0ec4bab51
-    m_Address: Assets/SPUM/Retro UI Set/1_UI_Images/Theme2/04_Equipment/Spum_Icon40.png
+  - m_GUID: 0017858006d224e73ac97bfa41fbec2f
+    m_Address: item-icon/33
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -40,8 +25,103 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 100771225322a2a4ea35e7ba6819259a
+    m_Address: item-icon/9006
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 134dfec216addbc47a3afdcb2ff25e1a
+    m_Address: item-icon/9008
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2d9042d4d37aead4cbce34200de0edeb
+    m_Address: item-icon/9001
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 346f1071f21804c1d813459f9ab1cd87
+    m_Address: item-icon/43
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 37b71ed93499e4b0983c5c39955c9bd1
+    m_Address: Assets/SPUM/Retro UI Set/1_UI_Images/Theme2/04_Equipment/Spum_Icon34.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4d8e1b675292f433492d6bd54a1779ee
+    m_Address: Assets/SPUM/Retro UI Set/1_UI_Images/Theme2/04_Equipment/Spum_Icon36.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 63633a75aa4fcc54fb5e8a0ebe5ebe35
+    m_Address: item-icon/9002
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6671428c7b33144589af3bdaa7e1651f
+    m_Address: item-icon/45
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6a3e125cc163448aba89bf81a3921cda
+    m_Address: item-icon/35
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 794eeef0b92aa4cbdb11f1b0ec4bab51
+    m_Address: Assets/SPUM/Retro UI Set/1_UI_Images/Theme2/04_Equipment/Spum_Icon40.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8e8b52ca1720c9a44bce8be30e3f5a3c
+    m_Address: item-icon/9005
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d0aeb01d1848e4189b2cc7ce5ab98ba7
     m_Address: Assets/SPUM/Retro UI Set/1_UI_Images/Theme2/04_Equipment/Spum_Icon38.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d98f884f1fee24b44ba26e58da513b3d
+    m_Address: item-icon/9007
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e2413ab71ff76446b81c94dd48d1a03c
+    m_Address: item-icon/48
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e3633761255324372929c98ffb8b72ee
+    m_Address: item-icon/41
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f5c13a6452add6c43a92cea26cc47391
+    m_Address: item-icon/9004
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f9366f12f32b74e0794f68dbd8b90b1e
+    m_Address: item-icon/46
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fae8dcf4a317c4bb1a70453bff13b806
+    m_Address: item-icon/47
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fcc28d702bdce45e58f839942f514737
+    m_Address: Assets/SPUM/Retro UI Set/1_UI_Images/Theme2/04_Equipment/Spum_Icon44.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fff5e0440beb54f4898efb6b1abdb00d
+    m_Address: item-icon/9003
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

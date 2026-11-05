@@ -19,6 +19,8 @@ namespace AutoBattler.Battle.Units
         public float CritMultiplier { get; private set; }=1.5f;
         public float SkillPower { get; private set; }=1f;
         public float BasicAttackPower { get; private set; }=1f;
+        public float ManaBonus { get; private set; }
+        public float BasicArmorIgnore { get; private set; }
         public int ModifierCount=>modifiers.Count;
         public bool IsInitialized=>Base!=null;
         public IReadOnlyList<StatModifier> Modifiers=>Array.AsReadOnly(modifiers.Values.ToArray());
@@ -70,6 +72,15 @@ namespace AutoBattler.Battle.Units
             if(modifiers.Count==0) return;
             modifiers.Clear(); Recalculate();
         }
+        public void ReplaceSources(ModifierSourceKind kind,IReadOnlyDictionary<ModifierSource,StatModifierSpec[]> replacements)
+        {
+            foreach(ModifierHandle handle in modifiers.Values.Where(modifier=>modifier.Source.Kind==kind).Select(modifier=>modifier.Handle).ToArray())
+                modifiers.Remove(handle);
+            foreach(KeyValuePair<ModifierSource,StatModifierSpec[]> replacement in replacements)
+                foreach(StatModifierSpec spec in replacement.Value) Add(replacement.Key,spec);
+            // 장비 합성 중 재료 제거와 결과 적용 사이의 체력 감소 방지.
+            Recalculate();
+        }
         private float Calculate(StatType type,float value)
         {
             double flat=0,percent=0;
@@ -94,6 +105,8 @@ namespace AutoBattler.Battle.Units
             CritMultiplier=Mathf.Max(1f,Calculate(StatType.CritMultiplier,baseCritMultiplier));
             SkillPower=Mathf.Max(0f,Calculate(StatType.SkillPower,1f));
             BasicAttackPower=Mathf.Max(0f,Calculate(StatType.BasicAttackPower,1f));
+            ManaBonus=Mathf.Max(0f,Calculate(StatType.Mana,0f));
+            BasicArmorIgnore=Mathf.Clamp01(Calculate(StatType.BasicArmorIgnore,0f));
             Changed?.Invoke();
         }
     }

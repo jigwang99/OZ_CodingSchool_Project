@@ -19,7 +19,7 @@ namespace AutoBattler.Battle.Skills
             SkillDefinition skill=context.Definition; Unit caster=context.Caster;
             CombatUnitReference owner=new CombatUnitReference(caster);
             HexCoord origin=caster.CurrentCell.Value;
-            double starScale=caster.Star==2?data.Rule(EconomyRule.StarMultiplier):1d;
+            double starScale=UnitStarRules.StatMultiplier(caster.Star,data.Rule(EconomyRule.StarMultiplier));
             float damage=(float)Math.Max(0,Math.Min(float.MaxValue,skill.BaseDamage*starScale+caster.Stats.AttackDamage*skill.AttackRatio));
             float power=caster.StatModifiers.SkillPower,maxHp=caster.Stats.MaxHp;
             float effectMultiplier=skill.EffectLowHpThreshold>0 && (double)caster.Health.CurrentHp/caster.Health.MaxHp<=skill.EffectLowHpThreshold

@@ -5,6 +5,7 @@ using AutoBattler.Data.Snapshot;
 using AutoBattler.Battle.Grid;
 using AutoBattler.Battle.Placement;
 using AutoBattler.Data.Augments;
+using AutoBattler.Battle.Units;
 
 namespace AutoBattler.Run
 {
@@ -34,6 +35,7 @@ namespace AutoBattler.Run
         public bool CanManageRoster => !IsOver && !Augments.HasPending && (CanPrepare || !IsSettled);
         public string LastError { get; private set; }
         public string LastResult { get; private set; }
+        public bool LastBattleWon => IsSettled && WinStreak > 0;
         public IReadOnlyList<OwnedUnit> Units => owned.AsReadOnly();
         public IReadOnlyList<int> Shop => Array.AsReadOnly(shop);
         public event Action Changed;
@@ -43,10 +45,12 @@ namespace AutoBattler.Run
         private readonly RunRandom random;
         private int nextId=1, settledRound;
         private bool pendingRoundWon;
+        private readonly Dictionary<int,bool> roundOutcomes=new Dictionary<int,bool>();
+        public bool TryGetRoundOutcome(int roundId,out bool won)=>roundOutcomes.TryGetValue(roundId,out won);
         public RunState(DataRepository data,int seed,int stageId=1)
             :this(data,new RunRandom(seed),new AugmentState(data.Augments,seed))
         {
-            Items=new ItemInventoryState(data.Items,stageId,seed^0x59B17);
+            Items=new ItemInventoryState(data.Items,stageId,seed^0x59B17,data.ItemRecipes);
             Gold=data.IntRule(EconomyRule.StartGold); Lives=data.IntRule(EconomyRule.StartLives);
             foreach(UnitDefinition unit in data.Units.Values) stock.Add(unit.Id,data.PoolCopies(unit.Cost));
             int starter=Draw(new int[]{100,0,0,0,0});
@@ -58,7 +62,7 @@ namespace AutoBattler.Run
         }
         private RunState(DataRepository data,RunRandom random,AugmentState augments)
         { Data=data; this.random=random; Augments=augments; Placement=new PlacementService(Board);
-            Items=new ItemInventoryState(data.Items,1,random.Seed^0x59B17); }
+            Items=new ItemInventoryState(data.Items,1,random.Seed^0x59B17,data.ItemRecipes); }
 
         public RunSaveData Capture(int stageId,bool augmentWindowOpen,bool replayCombat=false)
         {
@@ -83,13 +87,14 @@ namespace AutoBattler.Run
                         location=unit.Placement.Location.Kind,col=col,row=row,benchSlot=unit.Placement.Location.BenchSlot};
                 }).ToArray(),
                 augments=Augments.Capture(),items=Items.Capture(),
-                hasPendingRoundReward=HasPendingRoundReward,pendingRoundWon=pendingRoundWon
+                hasPendingRoundReward=HasPendingRoundReward,pendingRoundWon=pendingRoundWon,
+                roundOutcomes=roundOutcomes.OrderBy(pair=>pair.Key).Select(pair=>new SavedRoundOutcome {roundId=pair.Key,won=pair.Value}).ToArray()
             };
         }
 
         public static RunState Restore(DataRepository data,RunSaveData saved)
         {
-            if(saved==null || saved.saveVersion!=1 || saved.gridLayoutVersion!=1 || saved.dataVersion!=data.Version
+            if(saved==null || saved.saveVersion!=1 || saved.gridLayoutVersion!=1 || !data.IsSaveCompatible(saved.dataVersion)
                 || !data.Rounds.ContainsKey(saved.round) || saved.level<1 || saved.level>10
                 || saved.gold<0 || saved.lives<0 || saved.lives>data.IntRule(EconomyRule.StartLives)
                 || saved.xp<0 || saved.level==10 && saved.xp!=0
@@ -114,6 +119,24 @@ namespace AutoBattler.Run
                 HasPendingRoundReward=saved.hasPendingRoundReward,pendingRoundWon=saved.pendingRoundWon
             };
             state.Placement.SetPlayerLevel(state.Level);
+            int lastCompleted=saved.phase==RunSavePhase.Result?saved.round:saved.round-1;
+            if(saved.roundOutcomes!=null)
+            {
+                foreach(SavedRoundOutcome outcome in saved.roundOutcomes)
+                {
+                    if(outcome==null || !data.Rounds.ContainsKey(outcome.roundId) || outcome.roundId>lastCompleted
+                        || state.roundOutcomes.ContainsKey(outcome.roundId)) throw new ArgumentException("저장된 전투 승패 이력이 올바르지 않습니다.");
+                    state.roundOutcomes.Add(outcome.roundId,outcome.won);
+                }
+            }
+            else if(lastCompleted>0)
+            {
+                // 이전 저장은 확실한 마지막 연승·패배만 복원하고 나머지는 미확인으로 유지.
+                if(saved.winStreak==0) state.roundOutcomes.Add(lastCompleted,false);
+                else for(int id=Math.Max(1,lastCompleted-saved.winStreak+1);id<=lastCompleted;id++) state.roundOutcomes.Add(id,true);
+            }
+            if(state.roundOutcomes.TryGetValue(lastCompleted,out bool lastWon) && lastWon!=(saved.winStreak>0))
+                throw new ArgumentException("저장된 마지막 승패와 연승 정보가 일치하지 않습니다.");
             foreach(SavedStock entry in saved.stock)
             {
                 if(entry==null || !data.Units.ContainsKey(entry.definitionId) || entry.available<0
@@ -131,7 +154,7 @@ namespace AutoBattler.Run
             foreach(SavedUnit entry in saved.units)
             {
                 if(entry==null || !data.Units.ContainsKey(entry.definitionId) || entry.instanceId<=0 || entry.instanceId>=state.nextId
-                    || state.owned.Any(unit=>unit.Placement.InstanceId==entry.instanceId) || entry.star!=1 && entry.star!=2
+                    || state.owned.Any(unit=>unit.Placement.InstanceId==entry.instanceId) || entry.star<1 || entry.star>UnitStarRules.Maximum
                     || entry.location!=UnitLocationKind.Board && entry.location!=UnitLocationKind.Bench)
                     throw new ArgumentException("저장된 유닛 정보가 올바르지 않습니다.");
                 OwnedUnit unit=new OwnedUnit(entry.definitionId,entry.instanceId) { Star=entry.star };
@@ -141,7 +164,7 @@ namespace AutoBattler.Run
             }
             foreach(UnitDefinition definition in data.Units.Values)
                 if(state.stock[definition.Id]+state.shop.Count(id=>id==definition.Id)
-                    +state.owned.Where(unit=>unit.DefinitionId==definition.Id).Sum(unit=>unit.Star==2?3:1)!=data.PoolCopies(definition.Cost))
+                    +state.owned.Where(unit=>unit.DefinitionId==definition.Id).Sum(unit=>UnitStarRules.Copies(unit.Star))!=data.PoolCopies(definition.Cost))
                     throw new ArgumentException("기물 재고와 상점 예약·보유 수가 일치하지 않습니다.");
             int[] completed=saved.augments.completedRounds;
             if(completed.Any(round=>!data.Rounds.ContainsKey(round) || !data.Rounds[round].OffersAugment || round>state.Round)
@@ -152,14 +175,19 @@ namespace AutoBattler.Run
                 || saved.augments.randomSeed!=(saved.randomSeed^0x41A96B))
                 throw new ArgumentException("저장된 증강 진행 이력이 일치하지 않습니다.");
             state.Items=ItemInventoryState.Restore(data.Items,saved.items,saved.stageId,saved.randomSeed^0x59B17,
-                state.owned.Select(unit=>unit.Placement.InstanceId).ToArray(),saved.round);
+                state.owned.Select(unit=>unit.Placement.InstanceId).ToArray(),saved.round,data.ItemRecipes);
             if(state.CanPrepare) state.MergePendingUnits();
             return state;
         }
         public bool TryEquipItem(int itemInstanceId,int unitInstanceId)
         {
             if(!CanManageRoster || !owned.Any(unit=>unit.Placement.InstanceId==unitInstanceId)
-                || !Items.TryEquip(itemInstanceId,unitInstanceId)) return Fail("아군에게 빈 장착 칸이 필요합니다.");
+                || !Items.TryEquip(itemInstanceId,unitInstanceId)) return Fail("빈 장착 칸 또는 합성 가능한 장비가 필요합니다.");
+            Notify(); return true;
+        }
+        public bool TryFuseItems(int firstItemId,int secondItemId)
+        {
+            if(!CanManageRoster || !Items.TryFuse(firstItemId,secondItemId,out _)) return Fail("합성 가능한 보관 아이템 두 개가 필요합니다.");
             Notify(); return true;
         }
         public bool TryUnequipItem(int itemInstanceId)
@@ -207,7 +235,7 @@ namespace AutoBattler.Run
                 if(!Placement.TryRegisterUnit(unit.Placement,UnitLocation.OnBench(free))) return Fail("구매한 기물을 배치할 수 없습니다.");
                 nextId++; owned.Add(unit);
             }
-            shop[slot]=0; Gold-=cost; Notify(); return true;
+            shop[slot]=0; Gold-=cost; MergeUnitsOfType(id); Notify(); return true;
         }
         private static int PositionOrder(UnitLocation location)
         {
@@ -221,7 +249,7 @@ namespace AutoBattler.Run
             if(unit==null) return Fail("판매할 기물을 선택해 주세요.");
             if(!CanPrepare && !IsSettled && unit.Placement.Location.Kind!=UnitLocationKind.Bench)
                 return Fail("전투 중에는 대기석 유닛만 판매할 수 있습니다.");
-            int copies=unit.Star==2?3:1, price=SalePrice(instanceId);
+            int copies=UnitStarRules.Copies(unit.Star), price=SalePrice(instanceId);
             if(!Board.TryUnregister(unit.Placement)) return Fail("기물의 배치 정보를 찾을 수 없습니다.");
             Items.ReturnFromUnit(instanceId);
             owned.Remove(unit); stock[unit.DefinitionId]+=copies; Gold+=price;
@@ -232,7 +260,7 @@ namespace AutoBattler.Run
             OwnedUnit unit=owned.FirstOrDefault(value=>value.Placement.InstanceId==instanceId);
             if(unit==null) return 0;
             int cost=Data.Units[unit.DefinitionId].Cost;
-            return unit.Star==2 ? cost*3-1 : cost;
+            return UnitStarRules.SalePrice(cost,unit.Star);
         }
         public bool TryBuyXp()
         {
@@ -253,6 +281,7 @@ namespace AutoBattler.Run
         {
             if(IsOver || settledRound==Round || CanPrepare || Augments.HasPending) return false;
             settledRound=Round; WinStreak=won?WinStreak+1:0;
+            roundOutcomes[Round]=won;
             AddXp(Data.IntRule(EconomyRule.RoundXp));
             if(!won) Lives--;
             Items.ClearResult();
@@ -285,11 +314,16 @@ namespace AutoBattler.Run
         }
         private void MergePendingUnits()
         {
-            foreach(int definition in owned.Where(unit=>unit.Star==1).Select(unit=>unit.DefinitionId).Distinct().ToArray())
+            foreach(int definition in owned.Select(unit=>unit.DefinitionId).Distinct().ToArray()) MergeUnitsOfType(definition);
+        }
+        private void MergeUnitsOfType(int definition)
+        {
+            for(int star=1;star<UnitStarRules.Maximum;star++)
             {
                 while(true)
                 {
-                    OwnedUnit[] matches=owned.Where(unit=>unit.DefinitionId==definition && unit.Star==1)
+                    OwnedUnit[] matches=owned.Where(unit=>unit.DefinitionId==definition && unit.Star==star
+                            && (CanPrepare || IsSettled || unit.Placement.Location.Kind==UnitLocationKind.Bench))
                         .OrderBy(unit=>unit.Placement.Location.Kind==UnitLocationKind.Board?0:1)
                         .ThenBy(unit=>PositionOrder(unit.Placement.Location)).ThenBy(unit=>unit.Placement.InstanceId).Take(3).ToArray();
                     if(matches.Length<3) break;
@@ -299,7 +333,7 @@ namespace AutoBattler.Run
                         Items.MergeUnits(survivor.Placement.InstanceId,consumed.Placement.InstanceId);
                         Board.TryUnregister(consumed.Placement); owned.Remove(consumed);
                     }
-                    survivor.Star=2;
+                    survivor.Star=star+1;
                 }
             }
         }

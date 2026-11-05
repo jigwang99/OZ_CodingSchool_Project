@@ -14,7 +14,6 @@ namespace AutoBattler.Battle.Units
     {
         private readonly int[] instances=new int[ItemInventoryState.EquipmentCapacity];
         private readonly Sprite[] icons=new Sprite[ItemInventoryState.EquipmentCapacity];
-        private readonly List<ModifierSource> sources=new List<ModifierSource>();
         private Unit unit;
         private UnitStats stats;
         private int version=-1;
@@ -28,25 +27,28 @@ namespace AutoBattler.Battle.Units
             int[] current=new int[ItemInventoryState.EquipmentCapacity];
             foreach(OwnedItem item in equipped) current[item.Slot]=item.InstanceId;
             if(version==unit.SpawnVersion && current.SequenceEqual(instances)) return;
-            if(version!=unit.SpawnVersion) ClearSources();
-            // 유지 중인 장비를 제거하지 않아 전투 중 최대 HP의 중간 감소 방지.
-            foreach(ModifierSource source in sources.ToArray())
-            {
-                if(equipped.Any(item=>item.InstanceId==source.CasterInstanceId)) continue;
-                stats.RemoveSource(source); sources.Remove(source);
-            }
+            int previousMana=Mathf.RoundToInt(stats.ManaBonus);
+            Dictionary<ModifierSource,StatModifierSpec[]> replacements=new Dictionary<ModifierSource,StatModifierSpec[]>();
             Array.Clear(instances,0,instances.Length); Array.Clear(icons,0,icons.Length);
             foreach(OwnedItem item in equipped)
             {
                 ItemDefinition definition=data.Items[item.DefinitionId];
                 ModifierSource source=new ModifierSource(ModifierSourceKind.Equipment,definition.Id,item.InstanceId);
-                if(!sources.Contains(source)) { stats.ReplaceSource(source,definition.Modifiers); sources.Add(source); }
+                replacements.Add(source,definition.Modifiers);
                 instances[item.Slot]=item.InstanceId; icons[item.Slot]=iconProvider(definition.IconId);
             }
+            stats.ReplaceSources(ModifierSourceKind.Equipment,replacements);
+            if(unit.IsInCombat)
+            {
+                // 같은 장비 재적용은 지급하지 않고 합성·교체로 증가한 MP만 즉시 반영.
+                int addedMana=Mathf.Max(0,Mathf.RoundToInt(stats.ManaBonus)-previousMana);
+                if(addedMana>0) unit.Mana.Add(addedMana);
+            }
+            else unit.Mana.ResetForRound();
             version=unit.SpawnVersion; Changed?.Invoke();
         }
         private void ClearSources()
-        { if(stats!=null) foreach(ModifierSource source in sources) stats.RemoveSource(source); sources.Clear(); }
+        { if(stats!=null) stats.ReplaceSources(ModifierSourceKind.Equipment,new Dictionary<ModifierSource,StatModifierSpec[]>()); }
         public void Clear()
         {
             ClearSources(); version=-1;

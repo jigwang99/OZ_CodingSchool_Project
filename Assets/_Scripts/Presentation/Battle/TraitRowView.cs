@@ -86,6 +86,9 @@ namespace AutoBattler.Presentation.Battle
                 case TraitEffect.SkillPower: return $"스킬 피해·회복·보호막 +{Percent(trait.Value)}";
                 case TraitEffect.AttackSpeed: return $"공격 속도 +{Percent(trait.Value)}";
                 case TraitEffect.Critical: return $"치명타 확률 +{Number(trait.Value*100f)}%p, 배율 +{Number(trait.SecondaryValue)}";
+                case TraitEffect.MaxHealth: return $"최대 체력 +{Percent(trait.Value)}";
+                case TraitEffect.DamageLifeSteal: return $"가한 체력 피해의 {Percent(trait.Value)} 회복";
+                case TraitEffect.BasicArmorIgnore: return $"기본 공격 방어력 {Percent(trait.Value)} 무시";
                 default: return "";
             }
         }

@@ -1,5 +1,111 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7075663170531988967
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5441854254173790727}
+  - component: {fileID: 5140553157916437628}
+  - component: {fileID: 2285527927278248033}
+  - component: {fileID: 1571682605134548745}
+  m_Layer: 0
+  m_Name: StarOutline
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5441854254173790727
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7075663170531988967}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 136269772455467270}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &5140553157916437628
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7075663170531988967}
+  m_Mesh: {fileID: 0}
+--- !u!23 &2285527927278248033
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7075663170531988967}
+  m_Enabled: 0
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 0
+  m_ReflectionProbeUsage: 0
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 012c9bc8a8cf9fc4795f113e08921fe3, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: -1
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &1571682605134548745
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7075663170531988967}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e61d6bd5e98d644ebda1a4232761279, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Presentation.Units.SpriteOutlineView
+  source: {fileID: 202379526392516610}
+  meshFilter: {fileID: 5140553157916437628}
+  outlineRenderer: {fileID: 2285527927278248033}
 --- !u!1001 &4701170837777007891
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -10,11 +116,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4109314771721422105, guid: 871280fa7bed29543bd2c3c149ac3db8, type: 3}
       propertyPath: m_LocalScale.x
-      value: 1.4
+      value: 1.54
       objectReference: {fileID: 0}
     - target: {fileID: 4109314771721422105, guid: 871280fa7bed29543bd2c3c149ac3db8, type: 3}
       propertyPath: m_LocalScale.y
-      value: 1.4
+      value: 1.54
       objectReference: {fileID: 0}
     - target: {fileID: 6015199461961956536, guid: 871280fa7bed29543bd2c3c149ac3db8, type: 3}
       propertyPath: m_LocalPosition.x
@@ -73,6 +179,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6015199461961956536, guid: 871280fa7bed29543bd2c3c149ac3db8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2523709385775772289}
+    - targetCorrespondingSourceObject: {fileID: 4672987480025930773, guid: 871280fa7bed29543bd2c3c149ac3db8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5441854254173790727}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 9124615137018379464, guid: 871280fa7bed29543bd2c3c149ac3db8, type: 3}
       insertIndex: -1
@@ -122,7 +231,15 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 9124615137018379464, guid: 871280fa7bed29543bd2c3c149ac3db8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4557888094766536850}
+    - targetCorrespondingSourceObject: {fileID: 9124615137018379464, guid: 871280fa7bed29543bd2c3c149ac3db8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4527824413213810054}
   m_SourcePrefab: {fileID: 100100000, guid: 871280fa7bed29543bd2c3c149ac3db8, type: 3}
+--- !u!4 &136269772455467270 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4672987480025930773, guid: 871280fa7bed29543bd2c3c149ac3db8, type: 3}
+  m_PrefabInstance: {fileID: 4701170837777007891}
+  m_PrefabAsset: {fileID: 0}
 --- !u!212 &202379526392516610 stripped
 SpriteRenderer:
   m_CorrespondingSourceObject: {fileID: 4896282386015180049, guid: 871280fa7bed29543bd2c3c149ac3db8, type: 3}
@@ -148,7 +265,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2ce98a8d1a4b4e9c92d6e9c557b7ae4c, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Battle.Units.UnitHealth
 --- !u!114 &3728788075507722869
 MonoBehaviour:
@@ -160,7 +277,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b935982c4471a1f49948fc9de29cfb82, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Presentation.Units.UnitView
 --- !u!114 &4206199350449977814
 MonoBehaviour:
@@ -172,7 +289,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3015e3cc82cbef04cb93d8b595d7479e, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Battle.Units.UnitStats
 --- !u!114 &6016011682249255128
 MonoBehaviour:
@@ -184,7 +301,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 68cac7db5e2f2414d94c62f4927e84ed, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Battle.Units.UnitEffects
 --- !u!114 &8426038230005225570
 MonoBehaviour:
@@ -196,7 +313,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cd2925d6f8e8443499893f84176618ad, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Battle.Units.UnitMana
 --- !u!114 &3585860234929254890
 MonoBehaviour:
@@ -208,7 +325,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e44c763a6f7ea5940a217933ebc7e9dd, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Battle.Units.UnitSkill
 --- !u!114 &225438513111167660
 MonoBehaviour:
@@ -220,7 +337,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cdccd8d02b49c5d44bb66bc27898ff64, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Battle.Units.UnitEquipment
 --- !u!114 &3533053308965760488
 MonoBehaviour:
@@ -232,13 +349,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2f84d275d17f471aa11071b3c132de08, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Battle.Units.Unit
   battleFlow: {fileID: 0}
   gridLayout: {fileID: 0}
   benchLayout: {fileID: 0}
   identity: {fileID: 6755935475760362371}
   dropFeedback: {fileID: 4557888094766536850}
+  starView: {fileID: 4527824413213810054}
 --- !u!114 &8723948139708483200
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -249,7 +367,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8fa90fdb5dda4a43b21091556e4ce157, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Battle.Units.UnitMove
   jumpSeconds: 0.35
   jumpHeight: 0.8
@@ -263,7 +381,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2bd6723e8ff1494391ee79488d47868a, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Battle.Units.UnitCombat
   manaOnDamage: 10
 --- !u!61 &8384634489241029033
@@ -322,7 +440,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 482e92b338420ae4585a3a08382b00e3, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Presentation.Units.UnitFacingView
   spriteRenderers:
   - {fileID: 202379526392516610}
@@ -337,7 +455,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d3a3700b51bfc45409b5760825196a82, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Presentation.Units.UnitSkillView
 --- !u!114 &6755935475760362371
 MonoBehaviour:
@@ -349,7 +467,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 39178d7bedeea134a9f23935301773ca, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Presentation.Battle.UnitIdentityView
   label: {fileID: 6665990022143783068}
   health: {fileID: 4374583332197527866}
@@ -363,7 +481,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 597ccc25bbc9860469e5613dc81388d0, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Presentation.Units.UnitAnimationView
 --- !u!114 &4557888094766536850
 MonoBehaviour:
@@ -375,8 +493,30 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3fdca8d8c3c23a143a77819a399e4fd3, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Presentation.Units.UnitDropFeedback
+--- !u!114 &4527824413213810054
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4583763814947633627}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2351f66edc598d842af719dd133c6b31, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Presentation.Units.UnitStarView
+  settings: {fileID: 11400000, guid: 5346275c66ba7644786fb01c721c1a6d, type: 2}
+  model: {fileID: 8663467710520705034}
+  healthBar: {fileID: 3999205392880614065}
+  outlines:
+  - {fileID: 1571682605134548745}
+--- !u!4 &8663467710520705034 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4109314771721422105, guid: 871280fa7bed29543bd2c3c149ac3db8, type: 3}
+  m_PrefabInstance: {fileID: 4701170837777007891}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &5327036828149137685
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -455,7 +595,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9110051802094074788, guid: b999a7218cc3c0748b54488abeaa4ef7, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 1.3
+      value: 1.43
       objectReference: {fileID: 0}
     - target: {fileID: 9110051802094074788, guid: b999a7218cc3c0748b54488abeaa4ef7, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -590,5 +730,5 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI

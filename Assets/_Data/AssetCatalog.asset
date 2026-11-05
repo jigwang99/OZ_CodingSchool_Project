@@ -14,221 +14,341 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Assets.AssetCatalog
   snapshot:
     m_AssetGUID: ac6202fb8e4ec1c49b788d9a47226591
-    m_SubObjectName:
-    m_SubObjectType:
-    m_SubObjectGUID:
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
     m_EditorAssetChanged: 0
   visuals:
   - id: 1
     prefab:
       m_AssetGUID: 0d284b187b0649fe85cf1122b1265be8
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
   - id: 2
     prefab:
       m_AssetGUID: 2257c3a94f3894e409f3e4a5964d35d4
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
   - id: 3
     prefab:
       m_AssetGUID: 222a56cfaa3bc664f9a9b044948c1756
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
   - id: 4
     prefab:
       m_AssetGUID: cd581fb5918cff6408977e308552aaa1
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
   - id: 5
     prefab:
       m_AssetGUID: a44073807669e2b4289edeb6f08ccf40
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
   - id: 6
     prefab:
       m_AssetGUID: 836c766561f67f14d95368073c4fda23
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
   - id: 7
     prefab:
       m_AssetGUID: 7633ebcea3b9ddb43ac357d549f3e530
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
   - id: 8
     prefab:
       m_AssetGUID: 45f1b072a5127b5469473c05d3e35d5a
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
   - id: 9
     prefab:
       m_AssetGUID: 6e2a60b6f41152a43aa91062e1adb0b5
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
   - id: 10
     prefab:
       m_AssetGUID: d840e37e6b8af0b4ba93385d4b96d6dc
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
   - id: 11
     prefab:
       m_AssetGUID: 54570fd8e7b2061439d9a0844d0ed3f5
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
   - id: 12
     prefab:
       m_AssetGUID: 101be1481f3e77541b2905d3e4da209b
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
   - id: 13
     prefab:
       m_AssetGUID: 459c92ea6229ef549998c2cde66237cc
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
   - id: 14
     prefab:
       m_AssetGUID: cc1a8322ddb343e4b9f5937d68044f6c
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
   - id: 15
     prefab:
       m_AssetGUID: 0e0e17db1985bc44e95c9fdc7fa2d093
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
   - id: 16
     prefab:
       m_AssetGUID: a05c00b092d3e3c4e9bc01108539e3ca
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
   - id: 17
     prefab:
       m_AssetGUID: 29e697f6d11424545915b10909db4384
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
   - id: 18
     prefab:
       m_AssetGUID: d50f965517945fd41bba7b4ffc10aa8d
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
   - id: 19
     prefab:
       m_AssetGUID: 6ad484d081a6aba4b8d6ba415be550d5
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
   - id: 20
     prefab:
       m_AssetGUID: b22e1826348c2954f832daa381f5e260
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
   - id: 21
     prefab:
       m_AssetGUID: 2a929b3c7a5a0f0498e17ef07eb99c3b
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
   - id: 22
     prefab:
       m_AssetGUID: ae15ac580880b104bb8824b373fda6ce
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
   - id: 23
     prefab:
       m_AssetGUID: fd097e84f3af5d040b317ad03ea0423c
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
   - id: 24
     prefab:
       m_AssetGUID: fb0a801aa36249747963361adcad145c
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
   itemIcons:
   - id: 34
     sprite:
       m_AssetGUID: 37b71ed93499e4b0983c5c39955c9bd1
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
   - id: 36
     sprite:
       m_AssetGUID: 4d8e1b675292f433492d6bd54a1779ee
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
   - id: 44
     sprite:
       m_AssetGUID: fcc28d702bdce45e58f839942f514737
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
   - id: 42
     sprite:
       m_AssetGUID: 04c2e35ebbb1d4476b4c73ce0f2d7b2c
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
   - id: 38
     sprite:
       m_AssetGUID: d0aeb01d1848e4189b2cc7ce5ab98ba7
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
   - id: 40
     sprite:
       m_AssetGUID: 794eeef0b92aa4cbdb11f1b0ec4bab51
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - id: 9001
+    sprite:
+      m_AssetGUID: 2d9042d4d37aead4cbce34200de0edeb
+      m_SubObjectName: Base_ManaRing
+      m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - id: 9002
+    sprite:
+      m_AssetGUID: 63633a75aa4fcc54fb5e8a0ebe5ebe35
+      m_SubObjectName: GiantArmor
+      m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - id: 9003
+    sprite:
+      m_AssetGUID: fff5e0440beb54f4898efb6b1abdb00d
+      m_SubObjectName: VanguardBoots
+      m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - id: 9004
+    sprite:
+      m_AssetGUID: f5c13a6452add6c43a92cea26cc47391
+      m_SubObjectName: BerserkerArmor
+      m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - id: 9005
+    sprite:
+      m_AssetGUID: 8e8b52ca1720c9a44bce8be30e3f5a3c
+      m_SubObjectName: GaleBoots
+      m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - id: 9006
+    sprite:
+      m_AssetGUID: 100771225322a2a4ea35e7ba6819259a
+      m_SubObjectName: SwiftGauntlet
+      m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - id: 9007
+    sprite:
+      m_AssetGUID: d98f884f1fee24b44ba26e58da513b3d
+      m_SubObjectName: DestroyerGauntlet
+      m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - id: 9008
+    sprite:
+      m_AssetGUID: 134dfec216addbc47a3afdcb2ff25e1a
+      m_SubObjectName: DawnRing
+      m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - id: 33
+    sprite:
+      m_AssetGUID: 0017858006d224e73ac97bfa41fbec2f
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - id: 35
+    sprite:
+      m_AssetGUID: 6a3e125cc163448aba89bf81a3921cda
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - id: 41
+    sprite:
+      m_AssetGUID: e3633761255324372929c98ffb8b72ee
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - id: 43
+    sprite:
+      m_AssetGUID: 346f1071f21804c1d813459f9ab1cd87
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - id: 45
+    sprite:
+      m_AssetGUID: 6671428c7b33144589af3bdaa7e1651f
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - id: 46
+    sprite:
+      m_AssetGUID: f9366f12f32b74e0794f68dbd8b90b1e
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - id: 47
+    sprite:
+      m_AssetGUID: fae8dcf4a317c4bb1a70453bff13b806
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - id: 48
+    sprite:
+      m_AssetGUID: e2413ab71ff76446b81c94dd48d1a03c
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
   battleVisuals: {fileID: 11400000, guid: f6d543aa2f7e115429c4fa6849845736, type: 2}
   icons:

@@ -70,6 +70,7 @@ namespace AutoBattler.Battle.Units
                 if(generation!=roundGeneration || !CanFight || unit.Effects.IsStunned || !targetReference.IsAlive || target==null || !target.CanFight || !IsInAttackRange(target)) return;
                 int attack=unit.Stats.AttackDamage;
                 float multiplier=unit.StatModifiers.BasicAttackPower;
+                float armorIgnore=unit.StatModifiers.BasicArmorIgnore;
                 bool critical=UnityEngine.Random.value<unit.StatModifiers.CritChance;
                 if(critical)
                     multiplier*=unit.StatModifiers.CritMultiplier;
@@ -82,7 +83,7 @@ namespace AutoBattler.Battle.Units
                     await UniTask.Delay(TimeSpan.FromSeconds(seconds),cancellationToken:token);
                 }
                 if(generation==roundGeneration && CanFight && targetReference.IsAlive && target!=null && target.CanFight)
-                    target.ReceiveAttack(context,attack,multiplier);
+                    target.ReceiveAttack(context,attack,multiplier,armorIgnore);
             }
             catch(OperationCanceledException) { }
             finally
@@ -92,6 +93,6 @@ namespace AutoBattler.Battle.Units
             }
         }
         public int ReceiveAttack(int attackDamage,float multiplier=1f)=>CanFight?health.TakeDamage(attackDamage,multiplier):0;
-        public int ReceiveAttack(DamageContext context,int attackDamage,float multiplier=1f)=>CanFight?health.TakeDamage(context,attackDamage,multiplier):0;
+        public int ReceiveAttack(DamageContext context,int attackDamage,float multiplier=1f,float armorIgnore=0f)=>CanFight?health.TakeDamage(context,attackDamage,multiplier,armorIgnore):0;
     }
 }

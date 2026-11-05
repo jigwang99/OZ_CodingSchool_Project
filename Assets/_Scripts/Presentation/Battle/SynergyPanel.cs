@@ -4,6 +4,7 @@ using AutoBattler.Battle.Traits;
 using AutoBattler.Data.Traits;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace AutoBattler.Presentation.Battle
 {
@@ -18,6 +19,8 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private RectTransform originsTitle;
         [SerializeField] private RectTransform classesTitle;
         [SerializeField] private RectTransform rules;
+        [SerializeField] private ScrollRect scroll;
+        [SerializeField,Min(148f)] private float maximumHeight=710f;
         private TraitSnapshot displayed;
         private BattlePhase displayedPhase;
         private bool hasShown,wasReady;
@@ -46,10 +49,17 @@ namespace AutoBattler.Presentation.Battle
             }
             emptyText.gameObject.SetActive(!anyVisible);
             if(available && !anyVisible) emptyText.text="기물을 배치하면 시너지 표시.";
-            float top=52f;
+            float top=scroll!=null?0f:52f;
             LayoutGroup(TraitCategory.Origin,originsTitle,available,ref top);
             LayoutGroup(TraitCategory.Class,classesTitle,available,ref top);
-            ((RectTransform)transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,anyVisible?top+8f:148f);
+            float height=anyVisible?top+8f+(scroll!=null?52f:0f):148f;
+            ((RectTransform)transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,scroll!=null?Mathf.Min(height,maximumHeight):height);
+            if(scroll!=null)
+            {
+                scroll.content.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,top+8f);
+                scroll.vertical=height>maximumHeight;
+                if(!scroll.vertical) {scroll.StopMovement(); scroll.verticalNormalizedPosition=1f;}
+            }
         }
         private void LayoutGroup(TraitCategory category,RectTransform title,bool available,ref float top)
         {

@@ -49,7 +49,7 @@ namespace AutoBattler.Battle.Traits
             public void ApplyPersistent()
             {
                 if(!CanApply) return;
-                unit.Health.HealthChanged+=OnHealthChanged; unit.Combat.Killed+=OnKilled; bound=true;
+                unit.Health.HealthChanged+=OnHealthChanged; unit.Combat.Killed+=OnKilled; unit.Combat.DamageDealt+=OnDamageDealt; bound=true;
                 foreach(TraitDefinition trait in traits)
                 {
                     switch(trait.Effect)
@@ -58,6 +58,10 @@ namespace AutoBattler.Battle.Traits
                         case TraitEffect.BasicAttackPower: Set(trait,StatType.BasicAttackPower); break;
                         case TraitEffect.SkillPower: Set(trait,StatType.SkillPower); break;
                         case TraitEffect.AttackSpeed: Set(trait,StatType.AttackSpeed); break;
+                        case TraitEffect.MaxHealth: Set(trait,StatType.MaxHp); break;
+                        case TraitEffect.BasicArmorIgnore:
+                            unit.StatModifiers.ReplaceSource(trait.Source,new StatModifierSpec(StatType.BasicArmorIgnore,ModifierOperation.Flat,trait.Value));
+                            break;
                         case TraitEffect.Critical:
                             unit.StatModifiers.ReplaceSource(trait.Source,
                                 new StatModifierSpec(StatType.CritChance,ModifierOperation.Flat,trait.Value),
@@ -72,6 +76,8 @@ namespace AutoBattler.Battle.Traits
             public void ApplyStart()
             {
                 if(!CanApply) return;
+                // 전투 시작에 늘어난 최대 체력까지 채운 뒤 보호막 등 시작 효과 적용.
+                if(traits.Any(trait=>trait.Effect==TraitEffect.MaxHealth)) unit.Health.Heal(unit.Health.MaxHp-unit.Health.CurrentHp);
                 unit.Mana.ResetForRound();
                 foreach(TraitDefinition trait in traits)
                     if(trait.Effect==TraitEffect.ShieldAtStart)
@@ -96,10 +102,18 @@ namespace AutoBattler.Battle.Traits
                     if(trait.Effect==TraitEffect.HealOnKill)
                         unit.Health.Heal(Mathf.FloorToInt(unit.Health.MaxHp*trait.Value));
             }
+            private void OnDamageDealt(DamageResult result)
+            {
+                if(!bound || !CanApply || result.HealthDamage<=0 || result.Context.Attacker.Unit!=unit
+                    || !result.Target.HasIdentity || result.Target.Team==unit.Team) return;
+                foreach(TraitDefinition trait in traits)
+                    if(trait.Effect==TraitEffect.DamageLifeSteal)
+                        unit.Health.Heal(Mathf.FloorToInt(result.HealthDamage*trait.Value));
+            }
             public void Dispose()
             {
                 if(bound && unit!=null)
-                { unit.Health.HealthChanged-=OnHealthChanged; unit.Combat.Killed-=OnKilled; }
+                { unit.Health.HealthChanged-=OnHealthChanged; unit.Combat.Killed-=OnKilled; unit.Combat.DamageDealt-=OnDamageDealt; }
                 bound=false;
                 if(!reference.IsCurrent) return;
                 foreach(TraitDefinition trait in traits)

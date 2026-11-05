@@ -31,6 +31,8 @@ namespace AutoBattler.Battle.Units
         public UnitEquipment Equipment { get; private set; }
         [SerializeField] private UnitDropFeedback dropFeedback;
         public UnitDropFeedback DropFeedback => dropFeedback;
+        [SerializeField] private UnitStarView starView;
+        public UnitStarView StarView=>starView;
         public int SpawnVersion { get; private set; }
         public UnitDefinition Definition { get; private set; }
         public UnitTeam Team { get; private set; }
@@ -70,7 +72,7 @@ namespace AutoBattler.Battle.Units
             battleFlow=flow; gridLayout=grid; benchLayout=bench; enemyCell=enemyPosition; combatCell=null;
             MoveSeconds=data.Rule(EconomyRule.MoveSeconds); WindupSeconds=data.Rule(EconomyRule.WindupSeconds);
             ProjectileSpeed=data.Rule(EconomyRule.ProjectileSpeed);
-            float multiplier=star==2?data.Rule(EconomyRule.StarMultiplier):1f;
+            float multiplier=UnitStarRules.StatMultiplier(star,data.Rule(EconomyRule.StarMultiplier));
             float bossHp=bossProfile==3?2.5f:bossProfile>0?2f:1f;
             UnitStat baseStats=new UnitStat(Mathf.FloorToInt(definition.Hp*multiplier*bossHp),
                 Mathf.FloorToInt(definition.Attack*multiplier*(bossProfile>0?1.2f:1f)),definition.Armor,
@@ -84,6 +86,7 @@ namespace AutoBattler.Battle.Units
             int layer=team==UnitTeam.Ally?LayerMask.NameToLayer("AllyUnit"):0;
             gameObject.layer=layer<0?0:layer;
             gameObject.name=$"{team}_{definition.Name}_{star}Star_{instanceId}";
+            if(starView!=null) starView.Apply(star);
         }
         public void BeginBattle() { ClearActions(); Skill.ResetForRound(); Move.Stop(); Effects.Clear(); combatCell=enemyCell ?? View?.State?.Cell; Health.RestoreFullHealth(); Mana.ResetForRound(); Combat.ResetForRound(); }
         public void RestorePreparation()

@@ -159,6 +159,7 @@ namespace AutoBattler.Run
         public bool SelectAugment(int id)=>IsReady && SaveAfter(augments.Select(id));
         public bool EquipItem(int itemId,int unitId)=>IsReady && SaveAfter(equipment.Equip(itemId,unitId));
         public bool UnequipItem(int itemId)=>IsReady && SaveAfter(equipment.Unequip(itemId));
+        public bool FuseItems(int firstItemId,int secondItemId)=>IsReady && SaveAfter(equipment.FuseStored(firstItemId,secondItemId));
         public bool StartBattle()
         {
             if(!IsReady) return false;

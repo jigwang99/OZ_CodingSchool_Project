@@ -15,6 +15,7 @@ namespace AutoBattler.Data.Snapshot
     {
         public int schemaVersion;
         public string dataVersion;
+        public string previousDataVersion;
         public UnitRow[] units;
         public RoundRow[] rounds;
         public RoundUnitRow[] roundUnits;
@@ -29,6 +30,7 @@ namespace AutoBattler.Data.Snapshot
         public AugmentRow[] augments;
         public ItemRow[] items;
         public ItemStatRow[] itemStats;
+        public ItemRecipeRow[] itemRecipes;
     }
     [Serializable] public sealed class UnitRow
     {
@@ -79,6 +81,8 @@ namespace AutoBattler.Data.Snapshot
     public sealed class DataRepository
     {
         public string Version { get; }
+        private readonly string previousVersion;
+        public bool IsSaveCompatible(string version)=>version==Version || !string.IsNullOrEmpty(previousVersion) && version==previousVersion;
         public IReadOnlyDictionary<int, UnitDefinition> Units { get; }
         public IReadOnlyDictionary<int, RoundDefinition> Rounds { get; }
         public IReadOnlyDictionary<int,SkillDefinition> Skills { get; }
@@ -86,13 +90,15 @@ namespace AutoBattler.Data.Snapshot
         public IReadOnlyList<TraitDefinition> Traits { get; }
         public IReadOnlyDictionary<int,AugmentDefinition> Augments { get; }
         public IReadOnlyDictionary<int,ItemDefinition> Items { get; }
+        public IReadOnlyList<ItemRecipeDefinition> ItemRecipes { get; }
         private readonly Dictionary<int,int> levelXp, pool;
         private readonly Dictionary<int,int[]> rates;
         private readonly Dictionary<int,float> rules;
         public DataRepository(GameSnapshot data)
         {
-            if(data==null || data.schemaVersion<1 || data.schemaVersion>6) throw new ArgumentException("지원하지 않는 데이터 스키마.");
+            if(data==null || data.schemaVersion<1 || data.schemaVersion>7) throw new ArgumentException("지원하지 않는 데이터 스키마.");
             Version=data.dataVersion;
+            previousVersion=data.previousDataVersion;
             if(data.schemaVersion>=5 && (data.items==null || data.itemStats==null))
                 throw new ArgumentException("아이템 정의 또는 능력치 표 없음.");
             ItemRow[] itemRows=data.items ?? Array.Empty<ItemRow>();
@@ -100,11 +106,23 @@ namespace AutoBattler.Data.Snapshot
             if(itemRows.Any(item=>item==null || item.itemId<=0 || item.iconId<=0 || item.dropWeight<0 || string.IsNullOrWhiteSpace(item.name))
                 || itemRows.Sum(item=>(long)item.dropWeight)>int.MaxValue
                 || itemStats.Any(stat=>stat==null || stat.entryId<=0 || !itemRows.Any(item=>item.itemId==stat.itemId) || !Enum.IsDefined(typeof(StatType),stat.stat)
-                    || !Enum.IsDefined(typeof(ModifierOperation),stat.operation) || float.IsNaN(stat.value) || float.IsInfinity(stat.value)))
+                    || !Enum.IsDefined(typeof(ModifierOperation),stat.operation) || float.IsNaN(stat.value) || float.IsInfinity(stat.value)
+                    || stat.stat==StatType.Mana && (stat.operation!=ModifierOperation.Flat || stat.value<0 || stat.value>100 || stat.value!=(int)stat.value)))
                 throw new ArgumentException("아이템 정의 또는 능력치 참조 오류.");
             Items=new ReadOnlyDictionary<int,ItemDefinition>(itemRows.ToDictionary(item=>item.itemId,item=>new ItemDefinition(item,
                 itemStats.Where(stat=>stat.itemId==item.itemId).OrderBy(stat=>stat.entryId)
                     .Select(stat=>new StatModifierSpec(stat.stat,stat.operation,stat.value)).ToArray())));
+            ItemRecipeRow[] recipeRows=data.schemaVersion>=7
+                ? data.itemRecipes ?? throw new ArgumentException("아이템 합성 조합표 없음.") : Array.Empty<ItemRecipeRow>();
+            HashSet<int> recipeIds=new HashSet<int>();
+            HashSet<(int,int)> recipePairs=new HashSet<(int,int)>();
+            foreach(ItemRecipeRow recipe in recipeRows)
+                if(recipe==null || recipe.recipeId<=0 || !recipeIds.Add(recipe.recipeId)
+                    || !Items.ContainsKey(recipe.firstItemId) || !Items.ContainsKey(recipe.secondItemId) || !Items.ContainsKey(recipe.resultItemId)
+                    || recipe.resultItemId==recipe.firstItemId || recipe.resultItemId==recipe.secondItemId
+                    || !recipePairs.Add(ItemRecipeDefinition.Key(recipe.firstItemId,recipe.secondItemId)))
+                    throw new ArgumentException("아이템 합성 조합 또는 참조 오류.");
+            ItemRecipes=Array.AsReadOnly(recipeRows.OrderBy(recipe=>recipe.recipeId).Select(recipe=>new ItemRecipeDefinition(recipe)).ToArray());
             Augments=new ReadOnlyDictionary<int,AugmentDefinition>((data.schemaVersion>=4
                 ? data.augments ?? throw new ArgumentException("강화 정의 없음.") : Array.Empty<AugmentRow>())
                 .ToDictionary(row=>row.augmentId,row=>new AugmentDefinition(row)));

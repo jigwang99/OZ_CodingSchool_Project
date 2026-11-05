@@ -25,7 +25,11 @@ namespace AutoBattler.Run
         public SavedAugments augments;
         public SavedItemInventory items;
         public bool hasPendingRoundReward, pendingRoundWon;
+        public SavedRoundOutcome[] roundOutcomes;
     }
+
+    [Serializable]
+    public sealed class SavedRoundOutcome { public int roundId; public bool won; }
 
     [Serializable]
     public sealed class SavedUnit

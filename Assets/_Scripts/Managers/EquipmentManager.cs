@@ -29,6 +29,7 @@ namespace AutoBattler.Managers
             return Execute(()=>state.TryEquipItem(itemId,unitId));
         }
         public bool Unequip(int itemId)=>CanUnequip && Execute(()=>state.TryUnequipItem(itemId));
+        public bool FuseStored(int firstItemId,int secondItemId)=>CanEquip && Execute(()=>state.TryFuseItems(firstItemId,secondItemId));
         private bool Execute(Func<bool> command)
         {
             if(!CanEquip) return false;
