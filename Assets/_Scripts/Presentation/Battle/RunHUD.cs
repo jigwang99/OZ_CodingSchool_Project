@@ -55,6 +55,8 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private ItemInventoryPanel inventory;
         [SerializeField] private ItemHoverTooltip itemTooltip;
         [SerializeField] private GoldIncomeHover goldIncome;
+        [SerializeField] private DeckPlannerPanel deckPlanner;
+        public DeckPlannerPanel DeckPlanner=>deckPlanner;
         public ItemInventoryPanel Inventory=>inventory;
         public ItemHoverTooltip ItemTooltip => itemTooltip;
         public GoldIncomeHover GoldIncome => goldIncome;
@@ -136,6 +138,7 @@ namespace AutoBattler.Presentation.Battle
             if(unitInfo!=null) unitInfo.BindRun(run);
             itemTooltip.Bind(run, interactionRoot, inventory, inventory.StoredSlots.Concat(unitInfo.EquipmentSlots));
             goldIncome.Bind(run, interactionRoot, inventory);
+            deckPlanner.Bind(run,interactionRoot,inventory);
             if(augmentPanel!=null) { augmentPanel.Selected+=SelectAugment; augmentPanel.ToggleRequested+=ToggleAugments; }
             isBound = true;
             hasDisplayedPhase = false;
@@ -324,6 +327,7 @@ namespace AutoBattler.Presentation.Battle
 
         private void Unbind()
         {
+            if(deckPlanner!=null) deckPlanner.Bind(null,null,null);
             if (goldIncome != null) goldIncome.Bind(null, null, null);
             if (itemTooltip != null) itemTooltip.Bind(null, null, null, null);
             if(inventory!=null) inventory.Bind(null,null);

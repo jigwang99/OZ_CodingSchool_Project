@@ -92,7 +92,7 @@ namespace AutoBattler.Presentation.Battle
             RefreshFrameRate(manager.CurrentFrameRate);
         }
 
-        private bool CanOpen => underlying!=null && !GameNavigation.IsTransitioning
+        private bool CanOpen => underlying!=null && underlying.interactable && !GameNavigation.IsTransitioning
             && (run==null || run.IsReady && !run.IsShuttingDown && !run.Flow.IsAugmentWindowOpen);
         private bool CanOpenStageSelection=>IsOpen && !navigating && !GameNavigation.IsTransitioning && navigation!=null;
 

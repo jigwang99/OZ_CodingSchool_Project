@@ -24,8 +24,12 @@ namespace AutoBattler.Managers
         private AssetService.Lease<Sprite> background;
         private AssetService.Lease<Sprite> benchFloor;
         private readonly Dictionary<int,AssetService.Lease<Sprite>> itemIcons=new Dictionary<int,AssetService.Lease<Sprite>>();
+        private readonly Dictionary<int,AssetService.Lease<Sprite>> unitPortraits=new Dictionary<int,AssetService.Lease<Sprite>>();
         public int ItemIconHandleCount=>itemIcons.Count;
         public Sprite ItemIcon(int id)=>itemIcons.TryGetValue(id,out AssetService.Lease<Sprite> lease)?lease.Asset:null;
+        public int UnitPortraitHandleCount=>unitPortraits.Count;
+        public bool IsLoadingUnitPortraits { get; private set; }
+        public Sprite UnitPortrait(int visualId)=>unitPortraits.TryGetValue(visualId,out AssetService.Lease<Sprite> lease)?lease.Asset:null;
         private AssetCatalog catalog;
         private BattleFlowController flow;
         private HexGridLayout grid;
@@ -65,6 +69,29 @@ namespace AutoBattler.Managers
                 if(!itemIcons.ContainsKey(iconId)) itemIcons.Add(iconId,await assets.AcquireAsync<Sprite>(catalog.ItemIconReference(iconId),token));
                 progress?.Report(.6f+.15f*(i+1)/icons.Length);
             }
+            // 배치툴을 처음 열기 전에 모든 유닛 모습을 준비하고 도전 종료까지 캐시 유지.
+            int[] visualIds=repository.Units.Values.Select(unit=>unit.VisualId).Distinct().OrderBy(id=>id).ToArray();
+            IsLoadingUnitPortraits=true;
+            try
+            {
+                for(int index=0;index<visualIds.Length;index++)
+                {
+                    int visualId=visualIds[index];
+                    if(!unitPortraits.ContainsKey(visualId))
+                    {
+                        AssetService.Lease<Sprite> lease=await assets.AcquireAsync<Sprite>(catalog.PortraitReference(visualId),token);
+                        try
+                        {
+                            token.ThrowIfCancellationRequested();
+                            if(shutdown!=null) throw new ObjectDisposedException(nameof(AssetManager));
+                            unitPortraits.Add(visualId,lease);
+                        }
+                        catch {lease.Dispose();throw;}
+                    }
+                    progress?.Report(.75f+.15f*(index+1)/visualIds.Length);
+                }
+            }
+            finally {IsLoadingUnitPortraits=false;}
             if(Visuals==null) Visuals=new BattleVisualService(assets,catalog.BattleVisuals,transform,flow,grid);
             await Visuals.PreloadAsync(token); token.ThrowIfCancellationRequested(); Data=repository; progress?.Report(1f);
         }
@@ -106,6 +133,7 @@ namespace AutoBattler.Managers
                 if(Visuals!=null) await Visuals.DisposeAsync();
                 if(Units!=null) await Units.DisposeAsync();
                 foreach(AssetService.Lease<Sprite> icon in itemIcons.Values) icon.Dispose(); itemIcons.Clear();
+                foreach(AssetService.Lease<Sprite> portrait in unitPortraits.Values) portrait.Dispose(); unitPortraits.Clear();
                 background?.Dispose(); background=null;
                 benchFloor?.Dispose(); benchFloor=null;
                 snapshot?.Dispose(); snapshot=null; assets?.Dispose(); Data=null;
