@@ -25,6 +25,7 @@ namespace AutoBattler.EditorTools.Sheets
             }
         }
         public bool IsEmpty(int row)=>Rows[row].TrueForAll(string.IsNullOrWhiteSpace);
+        public bool HasColumn(string column)=>columns.ContainsKey(column);
         public string Get(int row,string column)
         {
             if(!columns.TryGetValue(column,out int index)) throw Error(row,column,"필수 열 없음.");

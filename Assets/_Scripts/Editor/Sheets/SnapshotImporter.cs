@@ -75,7 +75,9 @@ namespace AutoBattler.EditorTools.Sheets
             data.augments=schema<4?Array.Empty<AugmentRow>():Read(tables["Augments"],(t,r)=>new AugmentRow {
                 augmentId=t.Int(r,"augment_id"),name=t.Get(r,"name"),description=t.Get(r,"description"),
                 effect=ReadEnum<AugmentEffect>(t,r,"effect"),stat=ReadEnum<StatType>(t,r,"stat"),
-                operation=ReadEnum<ModifierOperation>(t,r,"operation"),value=t.Float(r,"value"),duration=t.Float(r,"duration") });
+                operation=ReadEnum<ModifierOperation>(t,r,"operation"),value=t.Float(r,"value"),duration=t.Float(r,"duration"),
+                secondaryValue=t.HasColumn("secondary_value")?t.Float(r,"secondary_value"):0f,
+                threshold=t.HasColumn("threshold")?t.Float(r,"threshold"):0f });
             data.items=schema<5?Array.Empty<ItemRow>():Read(tables["Items"],(t,r)=>new ItemRow {
                 itemId=t.Int(r,"item_id"),name=t.Get(r,"name"),description=t.Get(r,"description"),
                 iconId=t.Int(r,"icon_id"),dropWeight=t.Int(r,"drop_weight") });
@@ -114,12 +116,16 @@ namespace AutoBattler.EditorTools.Sheets
             if(schema>=4)
             {
                 CsvTable t=tables["Augments"]; CheckIds(data.augments,x=>x.augmentId,t);
-                if(data.augments.Length!=8) throw new FormatException("Augments: 공통 강화 8종 필요.");
+                if(data.augments.Length<5) throw new FormatException("Augments: 중복 없이 세 번 선택할 수 있는 후보 5종 이상 필요.");
                 foreach(AugmentRow augment in data.augments)
                 {
                     int r=FindRow(t,"augment_id",augment.augmentId);
                     if(string.IsNullOrWhiteSpace(augment.name) || string.IsNullOrWhiteSpace(augment.description) || augment.value<=0 || augment.duration<0
+                        || augment.secondaryValue<0 || augment.threshold<0 || augment.threshold>1
                         || (augment.effect==AugmentEffect.StartingShield && augment.duration<=0)
+                        || (augment.effect==AugmentEffect.EmergencyShield && (augment.duration<=0 || augment.threshold<=0))
+                        || (augment.effect==AugmentEffect.EchoSpell && (augment.duration<=0 || augment.value>1))
+                        || (augment.effect==AugmentEffect.MaterialSupply && (augment.value!=(int)augment.value || augment.value>10))
                         || (augment.effect==AugmentEffect.StartingMana && (augment.value>100 || augment.value!=(int)augment.value))
                         || ((augment.effect==AugmentEffect.ImmediateGold || augment.effect==AugmentEffect.VictoryGold) && augment.value!=(int)augment.value))
                         throw t.Error(r,"value/duration","강화 수치·설명 범위 오류.");

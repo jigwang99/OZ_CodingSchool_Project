@@ -10,7 +10,7 @@ namespace AutoBattler.Battle.Units
     {
         public static void ApplyPersistent(Unit unit,IEnumerable<AugmentDefinition> augments)
         {
-            if(unit.Team!=UnitTeam.Ally) return;
+            if(unit.Team!=UnitTeam.Ally || unit.IsSummon) return;
             foreach(AugmentDefinition augment in augments)
             {
                 if(augment.Effect==AugmentEffect.StatModifier)
@@ -24,7 +24,7 @@ namespace AutoBattler.Battle.Units
         public static void ApplyBattleStart(IEnumerable<Unit> units,IEnumerable<AugmentDefinition> augments)
         {
             foreach(Unit unit in units)
-                if(unit.Team==UnitTeam.Ally && unit.Health.IsAlive && unit.IsInCombat)
+                if(unit.Team==UnitTeam.Ally && !unit.IsSummon && unit.Health.IsAlive && unit.IsInCombat)
                     foreach(AugmentDefinition augment in augments)
                         if(augment.Effect==AugmentEffect.StartingShield)
                             unit.Effects.Apply(new EffectDefinition(augment.Id,EffectKind.Shield,

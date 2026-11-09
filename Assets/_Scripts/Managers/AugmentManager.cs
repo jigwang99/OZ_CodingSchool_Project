@@ -5,6 +5,7 @@ using AutoBattler.Battle.Flow;
 using AutoBattler.Battle.Grid;
 using AutoBattler.Battle.Units;
 using AutoBattler.Run;
+using AutoBattler.Battle.Traits;
 using AutoBattler.Utility;
 using UnityEngine;
 
@@ -18,9 +19,10 @@ namespace AutoBattler.Managers
         private BattleFlowController flow;
         private UnitDragController drag;
         private Action<string> publish;
+        private AugmentBattleSession session;
         public void Initialize(BattleFlowController phases,UnitDragController input,Action<string> message)
         { flow=phases; drag=input; publish=message; }
-        public void Bind(RunState current)=>state=current;
+        public void Bind(RunState current) { EndBattle(); state=current; }
         public void EnterPreparation(bool windowOpen=true)
         {
             if(state==null) return;
@@ -43,7 +45,15 @@ namespace AutoBattler.Managers
             if(!state.TrySelectAugment(id)) return false;
             flow.TryFinishAugmentSelection(); drag.enabled=true; publish("준비"); SoundManager.PlayEffect(SoundId.Augment); return true;
         }
-        public void ApplyBattleStart(IEnumerable<Unit> units)
-        { if(state!=null) AugmentApplicator.ApplyBattleStart(units,state.Augments.Selected); }
+        public void ApplyBattleStart(IEnumerable<Unit> units,TraitSnapshot traits)
+        {
+            EndBattle();
+            if(state==null) return;
+            session=new AugmentBattleSession(units,state.Augments.Selected,state.Data,state.Placement.PlayerLevel,traits.Active.Count);
+            session.Start();
+            AugmentApplicator.ApplyBattleStart(units,state.Augments.Selected);
+        }
+        public void EndBattle() { session?.Dispose(); session=null; }
+        protected override void OnDestroy() { EndBattle(); base.OnDestroy(); }
     }
 }

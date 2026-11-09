@@ -19,7 +19,7 @@ namespace AutoBattler.Battle.Units
         public bool IsAttacking { get; private set; }
         public int Mana=>unit.Mana.Current;
         public bool CanFight=>isActiveAndEnabled && unit!=null && unit.IsInCombat && health!=null && health.IsAlive;
-        public bool CanAttack=>CanFight && !unit.Effects.IsStunned && !IsAttacking && !unit.Skill.IsCasting && Time.time>=nextAttackTime && !unit.Move.IsMoving;
+        public bool CanAttack=>CanFight && unit.CanAct && !unit.Effects.IsStunned && !IsAttacking && !unit.Skill.IsCasting && Time.time>=nextAttackTime && !unit.Move.IsMoving;
         public event Action<UnitCombat> AttackStarted;
         public event Action<UnitCombat,float> ProjectileReleased;
         public event Action<DamageResult> DamageDealt;

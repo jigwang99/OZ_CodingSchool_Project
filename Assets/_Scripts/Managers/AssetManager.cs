@@ -51,6 +51,7 @@ namespace AutoBattler.Managers
             DataRepository repository=new DataRepository(JsonUtility.FromJson<GameSnapshot>(snapshot.Asset.text),stageId);
             progress?.Report(.1f);
             AssetReferenceGameObject[] prefabs=repository.Units.Values.Select(unit=>catalog.VisualPrefab(unit.VisualId))
+                .Concat(new[]{catalog.TrainingDummy})
                 .GroupBy(reference=>reference.RuntimeKey).Select(group=>group.First()).ToArray();
             for(int i=0;i<prefabs.Length;i++)
             {

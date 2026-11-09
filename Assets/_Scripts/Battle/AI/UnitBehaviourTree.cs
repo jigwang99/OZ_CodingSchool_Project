@@ -50,7 +50,7 @@ namespace AutoBattler.Battle.AI
             States.Die();
             return BehaviourStatus.Success;
         }
-        private bool IsWaiting()=>Blackboard.Unit.Effects.IsStunned || States.IsBusy;
+        private bool IsWaiting()=>!Blackboard.Unit.CanAct || Blackboard.Unit.Effects.IsStunned || States.IsBusy;
         private BehaviourStatus WaitForCurrentAction()
         {
             Unit unit=Blackboard.Unit;

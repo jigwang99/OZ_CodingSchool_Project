@@ -3,7 +3,12 @@ using AutoBattler.Battle.Units;
 
 namespace AutoBattler.Data.Augments
 {
-    public enum AugmentEffect { StatModifier, StartingShield, StartingMana, ImmediateGold, VictoryGold }
+    public enum AugmentEffect
+    {
+        StatModifier, StartingShield, StartingMana, ImmediateGold, VictoryGold,
+        TrainingDummy, IsolatedShield, Comrades, EliteArmy, LastStand, HealOnKill,
+        EmergencyShield, ManaCycle, EchoSpell, Unarmed, FullyEquipped, MaterialSupply, ActiveTraitPower
+    }
     [Serializable]
     public sealed class AugmentRow
     {
@@ -12,7 +17,7 @@ namespace AutoBattler.Data.Augments
         public AugmentEffect effect;
         public StatType stat;
         public ModifierOperation operation;
-        public float value,duration;
+        public float value,duration,secondaryValue,threshold;
     }
     /// <summary>도전 동안 고정한 강화 정의. 실행 상태와 분리.</summary>
     public sealed class AugmentDefinition
@@ -25,8 +30,14 @@ namespace AutoBattler.Data.Augments
         public ModifierOperation Operation { get; }
         public float Value { get; }
         public float Duration { get; }
+        public float SecondaryValue { get; }
+        public float Threshold { get; }
         public ModifierSource Source=>new ModifierSource(ModifierSourceKind.Augment,Id);
         public AugmentDefinition(AugmentRow row)
-        { Id=row.augmentId; Name=row.name; Description=row.description; Effect=row.effect; Stat=row.stat; Operation=row.operation; Value=row.value; Duration=row.duration; }
+        {
+            Id=row.augmentId; Name=row.name; Description=row.description; Effect=row.effect;
+            Stat=row.stat; Operation=row.operation; Value=row.value; Duration=row.duration;
+            SecondaryValue=row.secondaryValue; Threshold=row.threshold;
+        }
     }
 }

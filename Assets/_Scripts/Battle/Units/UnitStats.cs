@@ -18,6 +18,7 @@ namespace AutoBattler.Battle.Units
         public float BasicAttackPower=>state.BasicAttackPower;
         public float ManaBonus=>state.ManaBonus;
         public float BasicArmorIgnore=>state.BasicArmorIgnore;
+        public float DamageReduction=>state.DamageReduction;
         public event Action Changed { add=>state.Changed+=value; remove=>state.Changed-=value; }
         public void Initialize(UnitStat stats,float critChance=.1f,float critMultiplier=1.5f)=>state.Initialize(stats,critChance,critMultiplier);
         public ModifierHandle AddModifier(ModifierSource source,StatType stat,ModifierOperation operation,float value)

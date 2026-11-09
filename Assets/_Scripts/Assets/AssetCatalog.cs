@@ -14,6 +14,9 @@ namespace AutoBattler.Assets
     {
         [SerializeField] private AssetReferenceT<TextAsset> snapshot;
         public AssetReferenceT<TextAsset> Snapshot => snapshot;
+        [Header("증강 소환 유닛")]
+        [SerializeField] private AssetReferenceGameObject trainingDummy;
+        public AssetReferenceGameObject TrainingDummy=>trainingDummy;
         [SerializeField] private UnitPortraitEntry[] portraits=Array.Empty<UnitPortraitEntry>();
         public IReadOnlyList<UnitPortraitEntry> Portraits=>Array.AsReadOnly(portraits);
         public AssetReferenceSprite PortraitReference(int visualId)

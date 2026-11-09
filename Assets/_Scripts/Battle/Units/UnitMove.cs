@@ -18,7 +18,7 @@ namespace AutoBattler.Battle.Units
         public bool IsMoving { get; private set; }
         public bool IsJumping { get; private set; }
         public event Action<Vector3> MoveStarted;
-        public bool CanMove => isActiveAndEnabled && unit != null && unit.IsInCombat
+        public bool CanMove => isActiveAndEnabled && unit != null && unit.CanAct && unit.IsInCombat
             && health != null && health.isActiveAndEnabled && health.IsAlive
             && !unit.Effects.IsStunned && unit.Effects.SlowRate<1f
             && !unit.Skill.IsCasting

@@ -46,7 +46,7 @@ namespace AutoBattler.Battle.Traits
                 .Select(definition=>new TraitStatus(definition,kinds.Count(definition.Matches))).ToArray());
         }
         public static TraitSnapshot CountTeam(IEnumerable<Unit> roster,UnitTeam team,IEnumerable<TraitDefinition> definitions)
-            =>Count(roster.Where(unit=>unit!=null && unit.isActiveAndEnabled && unit.Team==team && unit.IsOnBoard)
+            =>Count(roster.Where(unit=>unit!=null && !unit.IsSummon && unit.isActiveAndEnabled && unit.Team==team && unit.IsOnBoard)
                 .Select(unit=>unit.Definition),definitions);
     }
 }

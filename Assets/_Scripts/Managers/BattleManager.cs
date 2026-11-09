@@ -52,14 +52,14 @@ namespace AutoBattler.Managers
             if(stopping || state==null || operation!=null || flow.CurrentPhase!=BattlePhase.Preparation || state.IsOver || state.Augments.HasPending) return false;
             drag.CancelDrag();
             if(state.Board.DeployedCount==0) { publish("기물을 배치해 주세요."); return false; }
-            synergies.Refresh(); Unit[] participants=units.Combatants;
+            synergies.Refresh(); units.CreateBattleSummons(); Unit[] participants=units.Combatants;
             foreach(Unit unit in participants) unit.BeginBattle();
             AutoBattleController battle=new AutoBattleController(participants);
-            if(!flow.TryStartCombat()) return false;
+            if(!flow.TryStartCombat()) { units.ReturnBattleSummons(); return false; }
             state.CanPrepare=false; drag.enabled=true;
             if(SoundManager.TryGetExisting(out SoundManager sound)) sound.BeginBattle(participants);
             SoundManager.PlayEffect(SoundId.BattleStart);
-            assets.Visuals.BeginBattle(participants); synergies.BeginBattle(participants); augments.ApplyBattleStart(participants);
+            assets.Visuals.BeginBattle(participants); synergies.BeginBattle(participants); augments.ApplyBattleStart(participants,synergies.Allies);
             operation=CancellationTokenSource.CreateLinkedTokenSource(lifetime);
             battleCompletion=new UniTaskCompletionSource(); deadline=Time.time+state.Data.Rule(EconomyRule.CombatSeconds);
             publish("전투 중"); ExecuteAsync(battle,operation,battleCompletion).Forget(); return true;
@@ -70,7 +70,7 @@ namespace AutoBattler.Managers
             {
                 bool won=await battle.RunAsync(state.Data.Rule(EconomyRule.CombatSeconds),current.Token);
                 if(stopping || !flow.TryFinishCombat()) return;
-                current.Cancel(); synergies.EndBattle(); units.StopCombat();
+                current.Cancel(); augments.EndBattle(); synergies.EndBattle(); units.StopCombat(); units.ReturnBattleSummons();
                 if(SoundManager.TryGetExisting(out SoundManager sound)) sound.EndBattle();
                 if(state.TrySettle(won))
                 { publish(state.LastResult); SoundManager.PlayEffect(won?SoundId.Victory:SoundId.Defeat); }
@@ -78,13 +78,13 @@ namespace AutoBattler.Managers
             catch(OperationCanceledException) { }
             catch(Exception exception)
             {
-                current.Cancel(); synergies.EndBattle(); Debug.LogException(exception,this);
+                current.Cancel(); augments.EndBattle(); synergies.EndBattle(); units.ReturnBattleSummons(); Debug.LogException(exception,this);
                 if(!stopping)
                 { if(flow.TryFinishCombat()) state.TrySettle(false); publish("전투 오류가 발생했습니다."); }
             }
             finally
             {
-                synergies.EndBattle();
+                augments.EndBattle(); synergies.EndBattle(); units.ReturnBattleSummons();
                 if(SoundManager.TryGetExisting(out SoundManager sound)) sound.EndBattle();
                 if(ReferenceEquals(operation,current)) operation=null;
                 current.Dispose(); completion.TrySetResult();
@@ -146,7 +146,7 @@ namespace AutoBattler.Managers
         public UniTask StopAsync()
         {
             if(SoundManager.TryGetExisting(out SoundManager sound)) sound.EndBattle();
-            stopping=true; CancelPreparationDelay(); operation?.Cancel(); synergies?.EndBattle(); units?.StopCombat();
+            stopping=true; CancelPreparationDelay(); operation?.Cancel(); augments?.EndBattle(); synergies?.EndBattle(); units?.StopCombat(); units?.ReturnBattleSummons();
             return UniTask.WhenAll(battleCompletion!=null?battleCompletion.Task:UniTask.CompletedTask,
                 preparationCompletion!=null?preparationCompletion.Task:UniTask.CompletedTask);
         }

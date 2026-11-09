@@ -186,7 +186,7 @@ namespace AutoBattler.Run
                 || saved.augments.randomSeed!=(saved.randomSeed^0x41A96B))
                 throw new ArgumentException("저장된 증강 진행 이력이 일치하지 않습니다.");
             state.Items=ItemInventoryState.Restore(data.Items,saved.items,saved.stageId,saved.randomSeed^0x59B17,
-                state.owned.Select(unit=>unit.Placement.InstanceId).ToArray(),saved.round,data.ItemRecipes);
+                state.owned.Select(unit=>unit.Placement.InstanceId).ToArray(),saved.round,data.ItemRecipes,state.Augments.Selected);
             if(state.CanPrepare) state.MergePendingUnits();
             // 이전 저장의 보유 기물은 유지하고, 잠긴 상점 예약만 반환 후 다시 추첨.
             for(int slot=0;slot<state.shop.Length;slot++)
@@ -216,6 +216,7 @@ namespace AutoBattler.Run
         {
             if(!CanPrepare || IsOver || !Augments.TrySelect(Round,id,out AugmentDefinition definition)) return false;
             if(definition.Effect==AugmentEffect.ImmediateGold) Gold+=(int)definition.Value;
+            else if(definition.Effect==AugmentEffect.MaterialSupply) Items.GrantMaterials(definition);
             Notify(); return true;
         }
         private bool Fail(string message) { LastError=message; return false; }

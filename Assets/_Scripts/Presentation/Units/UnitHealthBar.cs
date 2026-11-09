@@ -100,7 +100,7 @@ namespace AutoBattler.Presentation.Units
             SetEquipmentLayout(equipped);
             // 대기석에서는 장비만 표시하고 전장에 배치되면 HP·MP 표시 복원.
             SetVisible(healthRoot, onBoard);
-            SetVisible(manaRoot, onBoard);
+            SetVisible(manaRoot, onBoard && !owner.IsSummon);
             SetVisible(equipmentRoot,(onBoard || onBench) && equipped);
         }
 

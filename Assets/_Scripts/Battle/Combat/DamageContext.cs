@@ -17,6 +17,7 @@ namespace AutoBattler.Battle.Combat
         public int OriginId { get; }
         public int ClassId { get; }
         public UnitTeam Team { get; }
+        public bool IsSummon { get; }
         public bool HasIdentity => InstanceId > 0;
         public bool IsCurrent => unit != null && unit.InstanceId == InstanceId
             && unit.SpawnVersion == SpawnVersion && unit.Health != null && unit.Health.LifeVersion == LifeVersion;
@@ -33,6 +34,7 @@ namespace AutoBattler.Battle.Combat
             OriginId=value!=null && value.Definition!=null?value.Definition.OriginId:0;
             ClassId=value!=null && value.Definition!=null?value.Definition.ClassId:0;
             Team=value!=null?value.Team:default;
+            IsSummon=value!=null && value.IsSummon;
         }
     }
 
@@ -71,7 +73,7 @@ namespace AutoBattler.Battle.Combat
         public DamageResult Damage { get; }
         public CombatUnitReference Killer => Damage.Context.Attacker;
         public CombatUnitReference Victim => Damage.Target;
-        public bool IsCredited => Damage.IsLethal && Killer.HasIdentity && Victim.HasIdentity && Killer.Team!=Victim.Team;
+        public bool IsCredited => Damage.IsLethal && Killer.HasIdentity && Victim.HasIdentity && Killer.Team!=Victim.Team && !Victim.IsSummon;
         internal KillEvent(DamageResult damage) { Damage=damage; }
     }
 

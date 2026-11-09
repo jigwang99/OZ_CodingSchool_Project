@@ -50,6 +50,12 @@ namespace AutoBattler.Battle.Units
         private int ApplyDamage(DamageContext context,int damage)
         {
             if(!IsAlive || isApplyingDamage || damage<=0) return 0;
+            // 방어력 계산 이후, 보호막 흡수 이전에 받는 피해 감소 적용.
+            if(stats!=null && stats.IsInitialized)
+            {
+                float reduced=damage*(1f-stats.DamageReduction);
+                damage=(int)System.Math.Max(1,System.Math.Min(int.MaxValue,System.Math.Floor(reduced)));
+            }
             UnitHealthState damagedState=state;
             CombatUnitReference target=new CombatUnitReference(owner);
             int version=LifeVersion, resolved=damage;

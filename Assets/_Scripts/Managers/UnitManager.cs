@@ -1,4 +1,5 @@
 using AutoBattler.Data.Snapshot;
+using AutoBattler.Data.Augments;
 using System.Collections.Generic;
 using System.Linq;
 using AutoBattler.Assets;
@@ -20,6 +21,7 @@ namespace AutoBattler.Managers
     {
         private readonly Dictionary<int,Unit> allies=new Dictionary<int,Unit>();
         private readonly List<Unit> enemies=new List<Unit>();
+        private readonly List<Unit> summons=new List<Unit>();
         private UnitPrefabPool pool;
         private AssetCatalog catalog;
         private BattleFlowController flow;
@@ -32,8 +34,9 @@ namespace AutoBattler.Managers
 
         public IReadOnlyCollection<Unit> Allies=>allies.Values;
         public IReadOnlyCollection<Unit> Enemies=>enemies.AsReadOnly();
+        public IReadOnlyList<Unit> Summons=>summons.AsReadOnly();
         public Unit[] Combatants=>allies.Values.Where(unit=>unit.IsOnBoard)
-            .Concat(enemies).OrderBy(unit=>unit.InstanceId).ToArray();
+            .Concat(enemies).Concat(summons).OrderBy(unit=>unit.InstanceId).ToArray();
 
         public void Initialize(UnitPrefabPool unitPool,AssetCatalog assetsCatalog,BattleFlowController phases,
             UnitDragController input,HexGridLayout layout,BenchLayout seats)
@@ -96,6 +99,37 @@ namespace AutoBattler.Managers
             unit.Identity.Apply(unit);
         }
 
+        public void CreateBattleSummons()
+        {
+            ReturnBattleSummons();
+            AugmentDefinition augment=state.Augments.Selected.FirstOrDefault(selected=>selected.Effect==AugmentEffect.TrainingDummy);
+            if(augment==null) return;
+            HashSet<HexCoord> occupied=new HashSet<HexCoord>(Combatants.Where(unit=>unit.CurrentCell.HasValue).Select(unit=>unit.CurrentCell.Value));
+            // 적과 가까운 열부터 중앙에 가까운 빈 칸 선택. 로스터 보드에는 등록하지 않음.
+            for(int col=HexGridLayout.AllyColumns-1;col>=0;col--)
+                foreach(int row in Enumerable.Range(0,HexGridLayout.Rows).OrderBy(value=>Mathf.Abs(value-(HexGridLayout.Rows-1)*.5f)))
+                {
+                    HexCoord cell=HexCoord.FromOffset(col,row);
+                    if(occupied.Contains(cell)) continue;
+                    UnitDefinition definition=new UnitDefinition(new UnitRow {
+                        unitId=9001,name="훈련용 허수아비",hp=Mathf.FloorToInt(augment.Value+augment.SecondaryValue*state.Level),
+                        attack=0,armor=20,attackRange=1,attackInterval=1f,critMultiplier=1f,attackType="Melee"
+                    });
+                    Unit unit=pool.Rent(catalog.TrainingDummy);
+                    unit.Configure(definition,1,200000,UnitTeam.Ally,state.Data,flow,grid,bench,cell,0,true,false);
+                    unit.View.Bind(new UnitState(unit.InstanceId) {Location=UnitLocation.OnBoard(cell)},null);
+                    unit.transform.position=grid.CellToWorld(cell);
+                    unit.gameObject.SetActive(true); summons.Add(unit);
+                    return;
+                }
+        }
+
+        public void ReturnBattleSummons()
+        {
+            foreach(Unit unit in summons) pool?.Return(unit);
+            summons.Clear();
+        }
+
         public void RestorePreparation()
         {
             foreach(Unit unit in allies.Values) unit.RestorePreparation();
@@ -103,7 +137,7 @@ namespace AutoBattler.Managers
 
         public void StopCombat()
         {
-            foreach(Unit unit in allies.Values.Concat(enemies))
+            foreach(Unit unit in allies.Values.Concat(enemies).Concat(summons))
             {
                 unit.Move.Stop(); unit.Combat.ResetForRound();
             }
@@ -113,6 +147,7 @@ namespace AutoBattler.Managers
         {
             foreach(Unit unit in allies.Values) pool?.Return(unit);
             foreach(Unit unit in enemies) pool?.Return(unit);
+            ReturnBattleSummons();
             allies.Clear(); enemies.Clear(); state=null;
         }
     }

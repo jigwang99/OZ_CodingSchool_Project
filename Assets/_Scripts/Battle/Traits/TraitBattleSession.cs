@@ -16,7 +16,7 @@ namespace AutoBattler.Battle.Traits
         private bool started,disposed;
         public TraitBattleSession(IEnumerable<Unit> roster,TraitSnapshot allies,TraitSnapshot enemies)
         {
-            bindings=roster.Where(unit=>unit!=null && unit.isActiveAndEnabled && unit.IsOnBoard && unit.Health.IsAlive)
+            bindings=roster.Where(unit=>unit!=null && !unit.IsSummon && unit.isActiveAndEnabled && unit.IsOnBoard && unit.Health.IsAlive)
                 .OrderBy(unit=>unit.InstanceId)
                 .Select(unit=>new Binding(unit,(unit.Team==UnitTeam.Ally?allies:enemies).Active.Where(definition=>definition.Matches(unit.Definition)).ToArray()))
                 .ToArray();

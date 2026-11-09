@@ -38,6 +38,8 @@ namespace AutoBattler.Battle.Units
         public UnitTeam Team { get; private set; }
         public int InstanceId { get; private set; }
         public int Star { get; private set; }
+        public bool IsSummon { get; private set; }
+        public bool CanAct { get; private set; }=true;
         public float MoveSeconds { get; private set; }=.5f;
         public float WindupSeconds { get; private set; }=.2f;
         public float ProjectileSpeed { get; private set; }=8f;
@@ -48,7 +50,7 @@ namespace AutoBattler.Battle.Units
         public UnitStateController Actions { get; private set; }
         public HexGridLayout GridLayout=>gridLayout;
         public BattleFlowController BattleFlow=>battleFlow;
-        public bool IsOnBoard=>Team==UnitTeam.Enemy || (View!=null && View.State!=null && View.State.Location.Kind==UnitLocationKind.Board);
+        public bool IsOnBoard=>IsSummon || Team==UnitTeam.Enemy || (View!=null && View.State!=null && View.State.Location.Kind==UnitLocationKind.Board);
         public bool IsInCombat=>isActiveAndEnabled && Stats!=null && IsOnBoard && battleFlow!=null
             && battleFlow.isActiveAndEnabled && battleFlow.CurrentPhase==BattlePhase.Combat;
         private HexCoord? combatCell, enemyCell;
@@ -63,12 +65,14 @@ namespace AutoBattler.Battle.Units
             Skill.BindUnit(this);
         }
         public void Configure(UnitDefinition definition,int star,int instanceId,UnitTeam team,
-            DataRepository data,BattleFlowController flow,HexGridLayout grid,BenchLayout bench,HexCoord? enemyPosition=null,int bossProfile=0)
+            DataRepository data,BattleFlowController flow,HexGridLayout grid,BenchLayout bench,HexCoord? enemyPosition=null,int bossProfile=0,
+            bool isSummon=false,bool canAct=true)
         {
             ClearActions();
             Skill.ResetForRound(); SpawnVersion++;
             Effects.Clear();
             Definition=definition; Star=star; InstanceId=instanceId; Team=team;
+            IsSummon=isSummon; CanAct=canAct;
             battleFlow=flow; gridLayout=grid; benchLayout=bench; enemyCell=enemyPosition; combatCell=null;
             MoveSeconds=data.Rule(EconomyRule.MoveSeconds); WindupSeconds=data.Rule(EconomyRule.WindupSeconds);
             ProjectileSpeed=data.Rule(EconomyRule.ProjectileSpeed);
@@ -83,7 +87,7 @@ namespace AutoBattler.Battle.Units
             Mana.Initialize(100,bossProfile>0?100:0);
             Skill.Initialize(data,definition.SkillId);
             Combat.ResetForRound();
-            int layer=team==UnitTeam.Ally?LayerMask.NameToLayer("AllyUnit"):0;
+            int layer=team==UnitTeam.Ally && !isSummon?LayerMask.NameToLayer("AllyUnit"):0;
             gameObject.layer=layer<0?0:layer;
             gameObject.name=$"{team}_{definition.Name}_{star}Star_{instanceId}";
             if(starView!=null) starView.Apply(star);

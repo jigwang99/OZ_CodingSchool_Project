@@ -21,6 +21,7 @@ namespace AutoBattler.Battle.Units
         public float BasicAttackPower { get; private set; }=1f;
         public float ManaBonus { get; private set; }
         public float BasicArmorIgnore { get; private set; }
+        public float DamageReduction { get; private set; }
         public int ModifierCount=>modifiers.Count;
         public bool IsInitialized=>Base!=null;
         public IReadOnlyList<StatModifier> Modifiers=>Array.AsReadOnly(modifiers.Values.ToArray());
@@ -107,6 +108,7 @@ namespace AutoBattler.Battle.Units
             BasicAttackPower=Mathf.Max(0f,Calculate(StatType.BasicAttackPower,1f));
             ManaBonus=Mathf.Max(0f,Calculate(StatType.Mana,0f));
             BasicArmorIgnore=Mathf.Clamp01(Calculate(StatType.BasicArmorIgnore,0f));
+            DamageReduction=Mathf.Clamp(Calculate(StatType.DamageReduction,0f),0f,.9f);
             Changed?.Invoke();
         }
     }

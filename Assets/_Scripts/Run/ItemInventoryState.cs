@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using AutoBattler.Data.Items;
+using AutoBattler.Data.Augments;
 
 namespace AutoBattler.Run
 {
@@ -23,6 +24,7 @@ namespace AutoBattler.Run
         private readonly Dictionary<(int,int),ItemRecipeDefinition> recipes;
         private readonly List<OwnedItem> owned=new List<OwnedItem>();
         private readonly HashSet<int> rewardedRounds=new HashSet<int>();
+        private readonly HashSet<int> grantedAugments=new HashSet<int>();
         private RunRandom random;
         private int nextId=1;
         public int StageId { get; }
@@ -41,6 +43,17 @@ namespace AutoBattler.Run
         {
             if(round<1 || !rewardedRounds.Add(round)) return null;
             LastRewardInstanceId=0;
+            OwnedItem reward=DrawMaterial();
+            if(reward!=null) LastRewardInstanceId=reward.InstanceId;
+            return reward;
+        }
+        public void GrantMaterials(AugmentDefinition augment)
+        {
+            if(augment.Effect!=AugmentEffect.MaterialSupply || !grantedAugments.Add(augment.Id)) return;
+            for(int index=0;index<(int)augment.Value;index++) DrawMaterial();
+        }
+        private OwnedItem DrawMaterial()
+        {
             int total=definitions.Values.Sum(item=>item.DropWeight);
             if(total==0) return null;
             int pick=random.Next(total);
@@ -49,7 +62,7 @@ namespace AutoBattler.Run
                 pick-=definition.DropWeight;
                 if(pick>=0) continue;
                 OwnedItem reward=new OwnedItem(nextId++,definition.Id,StageId);
-                owned.Add(reward); LastRewardInstanceId=reward.InstanceId; return reward;
+                owned.Add(reward); return reward;
             }
             return null;
         }
@@ -125,18 +138,26 @@ namespace AutoBattler.Run
         public SavedItemInventory Capture()=>new SavedItemInventory {
             stageId=StageId,nextInstanceId=nextId,randomSeed=random.Seed,randomDrawCount=random.DrawCount,
             lastRewardInstanceId=LastRewardInstanceId,rewardedRounds=rewardedRounds.OrderBy(round=>round).ToArray(),
+            grantedAugments=grantedAugments.OrderBy(id=>id).ToArray(),
             owned=owned.Select(item=>new SavedItem {instanceId=item.InstanceId,definitionId=item.DefinitionId,
                 stageId=item.StageId,ownerUnitId=item.OwnerUnitId,slot=item.Slot}).ToArray()
         };
         public static ItemInventoryState Restore(IReadOnlyDictionary<int,ItemDefinition> definitions,SavedItemInventory saved,
-            int stageId,int seed,IReadOnlyCollection<int> unitIds,int round,IEnumerable<ItemRecipeDefinition> recipes=null)
+            int stageId,int seed,IReadOnlyCollection<int> unitIds,int round,IEnumerable<ItemRecipeDefinition> recipes=null,
+            IEnumerable<AugmentDefinition> selectedAugments=null)
         {
             ItemInventoryState result=new ItemInventoryState(definitions,stageId,seed,recipes);
             // 아이템 기능 추가 전의 저장은 빈 인벤토리로 이어하기.
             if(saved==null) return result;
+            AugmentDefinition[] supplies=(selectedAugments ?? Array.Empty<AugmentDefinition>())
+                .Where(augment=>augment.Effect==AugmentEffect.MaterialSupply).ToArray();
+            int[] granted=saved.grantedAugments ?? Array.Empty<int>();
+            if(granted.Distinct().Count()!=granted.Length || !granted.OrderBy(id=>id).SequenceEqual(supplies.Select(augment=>augment.Id).OrderBy(id=>id)))
+                throw new ArgumentException("저장된 증강 아이템 지급 이력 불일치.");
+            int extraItems=supplies.Sum(augment=>(int)augment.Value);
             if(saved.stageId!=stageId || saved.randomSeed!=seed || saved.nextInstanceId<1 || saved.owned==null
-                || saved.rewardedRounds==null || saved.randomDrawCount<0 || saved.owned.Length>round
-                || saved.owned.Length>saved.rewardedRounds.Length
+                || saved.rewardedRounds==null || saved.randomDrawCount<0
+                || saved.owned.Length>saved.rewardedRounds.Length+extraItems
                 || saved.rewardedRounds.Any(value=>value<1 || value>round)
                 || saved.rewardedRounds.Distinct().Count()!=saved.rewardedRounds.Length)
                 throw new ArgumentException("저장된 스테이지 아이템 정보가 올바르지 않습니다.");
@@ -153,6 +174,7 @@ namespace AutoBattler.Run
                 throw new ArgumentException("저장된 아이템 보상 참조가 올바르지 않습니다.");
             result.nextId=saved.nextInstanceId; result.LastRewardInstanceId=saved.lastRewardInstanceId;
             result.rewardedRounds.UnionWith(saved.rewardedRounds);
+            result.grantedAugments.UnionWith(granted);
             result.random=new RunRandom(seed,saved.randomDrawCount);
             return result;
         }

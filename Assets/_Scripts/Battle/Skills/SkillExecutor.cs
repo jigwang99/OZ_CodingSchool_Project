@@ -21,12 +21,12 @@ namespace AutoBattler.Battle.Skills
             HexCoord origin=caster.CurrentCell.Value;
             double starScale=UnitStarRules.StatMultiplier(caster.Star,data.Rule(EconomyRule.StarMultiplier));
             float damage=(float)Math.Max(0,Math.Min(float.MaxValue,skill.BaseDamage*starScale+caster.Stats.AttackDamage*skill.AttackRatio));
-            float power=caster.StatModifiers.SkillPower,maxHp=caster.Stats.MaxHp;
+            float power=caster.StatModifiers.SkillPower*context.PowerMultiplier,maxHp=caster.Stats.MaxHp;
             float effectMultiplier=skill.EffectLowHpThreshold>0 && (double)caster.Health.CurrentHp/caster.Health.MaxHp<=skill.EffectLowHpThreshold
                 ?skill.EffectLowHpMultiplier:1f;
             data.Effects.TryGetValue(skill.EffectId,out EffectDefinition effect);
             data.Effects.TryGetValue(skill.SecondaryEffectId,out EffectDefinition secondary);
-            ModifierSource source=new ModifierSource(ModifierSourceKind.Skill,skill.Id,caster.InstanceId);
+            ModifierSource source=context.EffectSourceOverride ?? new ModifierSource(ModifierSourceKind.Skill,skill.Id,caster.InstanceId);
             DamageContext damageContext=DamageContext.Skill(caster,skill.Id);
             UnitTeam team=caster.Team;
             for(int hit=0;hit<skill.HitCount;hit++)

@@ -31,10 +31,11 @@ namespace AutoBattler.Battle.Units
         private float nextCastTime;
         public SkillDefinition Definition { get; private set; }
         public bool IsCasting=>current!=null;
-        public bool CanCast=>isActiveAndEnabled && Definition!=null && unit!=null && unit.IsInCombat && unit.Health.IsAlive
+        public bool CanCast=>isActiveAndEnabled && Definition!=null && unit!=null && unit.CanAct && unit.IsInCombat && unit.Health.IsAlive
             && !unit.Effects.IsStunned && !unit.Move.IsMoving && !unit.Combat.IsAttacking && !IsCasting
             && Time.time>=nextCastTime && unit.Mana.Current>=Definition.ManaCost;
         public event Action<SkillCastContext> CastStarted;
+        public event Action<SkillCastContext> CastReleased;
         public event Action<SkillCastContext> EffectReleased;
         public event Action<SkillCastContext> EffectApplied;
         internal void NotifyEffectApplied(SkillCastContext context)=>AutoBattler.Battle.Combat.CombatEventDispatcher.Publish(EffectApplied,context);
@@ -94,6 +95,7 @@ namespace AutoBattler.Battle.Units
                 }
                 op.Released=true; nextCastTime=Time.time+Definition.Cooldown;
                 context.Center=Definition.CenterOnCaster?unit.CurrentCell.Value:context.Target.Unit.CurrentCell.Value;
+                AutoBattler.Battle.Combat.CombatEventDispatcher.Publish(CastReleased,context);
                 AutoBattler.Battle.Combat.CombatEventDispatcher.Publish(EffectReleased,context);
                 await SkillExecutor.ExecuteAsync(context,data,op.Cancellation.Token);
             }

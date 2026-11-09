@@ -18,6 +18,12 @@ MonoBehaviour:
     m_SubObjectType: 
     m_SubObjectGUID: 
     m_EditorAssetChanged: 0
+  trainingDummy:
+    m_AssetGUID: b8ff9c02e9a69df4faa79abcfa2cb290
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
   portraits:
   - visualId: 1
     sprite:

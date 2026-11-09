@@ -41,7 +41,7 @@ namespace AutoBattler.Battle.Combat
                 while(true)
                 {
                     token.ThrowIfCancellationRequested();
-                    bool allies=trees.Any(tree=>tree.Blackboard.Unit.Team==UnitTeam.Ally && tree.Blackboard.Unit.Health.IsAlive);
+                    bool allies=trees.Any(tree=>tree.Blackboard.Unit.Team==UnitTeam.Ally && !tree.Blackboard.Unit.IsSummon && tree.Blackboard.Unit.Health.IsAlive);
                     bool enemies=trees.Any(tree=>tree.Blackboard.Unit.Team==UnitTeam.Enemy && tree.Blackboard.Unit.Health.IsAlive);
                     if(!allies || !enemies || Time.time>=deadline) return allies && !enemies;
                     foreach(UnitBehaviourTree tree in trees) tree.Tick(token);

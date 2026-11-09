@@ -51,6 +51,7 @@ namespace AutoBattler.Run
     {
         public int stageId,nextInstanceId,randomSeed,randomDrawCount,lastRewardInstanceId;
         public int[] rewardedRounds;
+        public int[] grantedAugments;
         public SavedItem[] owned;
     }
 

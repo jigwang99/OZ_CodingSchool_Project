@@ -2,7 +2,7 @@ using System;
 
 namespace AutoBattler.Battle.Units
 {
-    public enum StatType { MaxHp, AttackDamage, Defense, AttackSpeed, MoveSpeed, SkillPower, CritChance, CritMultiplier, BasicAttackPower, Mana, BasicArmorIgnore }
+    public enum StatType { MaxHp, AttackDamage, Defense, AttackSpeed, MoveSpeed, SkillPower, CritChance, CritMultiplier, BasicAttackPower, Mana, BasicArmorIgnore, DamageReduction }
     public enum ModifierOperation { Flat, Percent }
     public enum ModifierSourceKind { System, Skill, OriginTrait, ClassTrait, Augment, Equipment }
 
