@@ -135,3 +135,21 @@ InitTestScene*.unity*
 # Leohpaz 원본 에셋과 폴더 메타 파일 제외
 /Assets/Leohpaz/
 /Assets/Leohpaz.meta
+
+# 추가된 BGM·FX 원본 에셋과 폴더 메타 파일 제외
+/Assets/25 Rpg Game Tracks/
+/Assets/25 Rpg Game Tracks.meta
+/Assets/2D_PFX/
+/Assets/2D_PFX.meta
+/Assets/PixelAttackFx/
+/Assets/PixelAttackFx.meta
+/Assets/PoisonEffect/
+/Assets/PoisonEffect.meta
+/Assets/StateEffect/
+/Assets/StateEffect.meta
+/Assets/_Art/
+/Assets/_Art.meta
+/Assets/_Prefabs/Units/
+/Assets/_Prefabs/Units.meta
+/Assets/_Prefabs/VFX/UnitFx/
+/Assets/_Prefabs/VFX/UnitFx.meta

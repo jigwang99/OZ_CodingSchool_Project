@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using AutoBattler.Battle.Flow;
 using AutoBattler.Battle.Traits;
 using AutoBattler.Data.Traits;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -21,6 +22,12 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private RectTransform rules;
         [SerializeField] private ScrollRect scroll;
         [SerializeField,Min(148f)] private float maximumHeight=710f;
+        [Header("시너지 호버 설명")]
+        [SerializeField] private CanvasGroup tooltip;
+        [SerializeField] private TextMeshProUGUI tooltipText;
+        private readonly Vector3[] tooltipCorners=new Vector3[4];
+        private Canvas tooltipCanvas;
+        private TraitRowView hoveredRow;
         private TraitSnapshot displayed;
         private BattlePhase displayedPhase;
         private bool hasShown,wasReady;
@@ -29,12 +36,16 @@ namespace AutoBattler.Presentation.Battle
         public TextMeshProUGUI EmptyText=>emptyText;
         public TraitSnapshot DisplayedSnapshot=>displayed;
         public bool IsDataAvailable=>content.activeSelf;
+        public CanvasGroup Tooltip=>tooltip;
+        public TextMeshProUGUI TooltipText=>tooltipText;
+        private void Awake()=>tooltipCanvas=GetComponentInParent<Canvas>()?.rootCanvas;
         public void Show(TraitSnapshot snapshot,bool ready,BattlePhase phase)
         {
             snapshot=snapshot ?? TraitSnapshot.Empty;
             if(hasShown && ReferenceEquals(displayed,snapshot) && wasReady==ready && displayedPhase==phase) return;
             displayed=snapshot; displayedPhase=phase; wasReady=ready; hasShown=true;
             bool available=ready && snapshot.Statuses.Count>0;
+            if(!available) ClearTooltip();
             content.SetActive(available);
             emptyText.text=ready?"시너지 정보가 없음.":"시너지 불러오는 중...";
             statusText.text=string.Empty;
@@ -61,6 +72,53 @@ namespace AutoBattler.Presentation.Battle
                 if(!scroll.vertical) {scroll.StopMovement(); scroll.verticalNormalizedPosition=1f;}
             }
         }
+        public void ShowTooltip(TraitRowView row)
+        {
+            if(tooltip==null || !isActiveAndEnabled || !row.isActiveAndEnabled || row.Count==0) return;
+            bool opening=hoveredRow!=row || !tooltip.gameObject.activeSelf;
+            hoveredRow=row;
+            tooltipText.text=$"<b>{row.NameText.text}</b>\n{row.TooltipDescription}";
+            float width=((RectTransform)tooltip.transform).rect.width-32f;
+            float height=tooltipText.GetPreferredValues(tooltipText.text,width,Mathf.Infinity).y;
+            tooltipText.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,height);
+            ((RectTransform)tooltip.transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,height+32f);
+            tooltip.gameObject.SetActive(true);
+            tooltip.transform.SetAsLastSibling();
+            PositionTooltip();
+            if(opening)
+            {
+                tooltip.DOKill(); tooltip.alpha=0f;
+                tooltip.DOFade(1f,.1f).SetUpdate(true);
+            }
+        }
+        public void RefreshTooltip(TraitRowView row)
+        { if(hoveredRow==row) ShowTooltip(row); }
+        public void HideTooltip(TraitRowView row)
+        { if(hoveredRow==row) ClearTooltip(); }
+        private void ClearTooltip()
+        {
+            hoveredRow=null;
+            if(tooltip==null) return;
+            tooltip.DOKill(); tooltip.alpha=0f; tooltip.gameObject.SetActive(false);
+        }
+        private void LateUpdate()
+        { if(hoveredRow!=null) PositionTooltip(); }
+        private void PositionTooltip()
+        {
+            RectTransform row=(RectTransform)hoveredRow.transform;
+            RectTransform popup=(RectTransform)tooltip.transform;
+            RectTransform panel=(RectTransform)transform;
+            Vector3 top=panel.InverseTransformPoint(row.TransformPoint(new Vector3(row.rect.xMax,row.rect.yMax,0f)));
+            popup.position=panel.TransformPoint(new Vector3(panel.rect.xMax+12f,top.y,0f));
+            if(tooltipCanvas==null) return;
+            RectTransform bounds=(RectTransform)tooltipCanvas.transform;
+            popup.GetWorldCorners(tooltipCorners);
+            Vector3 min=bounds.InverseTransformPoint(tooltipCorners[0]);
+            Vector3 max=bounds.InverseTransformPoint(tooltipCorners[2]);
+            float x=Mathf.Max(0f,bounds.rect.xMin+8f-min.x)-Mathf.Max(0f,max.x-(bounds.rect.xMax-8f));
+            float y=Mathf.Max(0f,bounds.rect.yMin+8f-min.y)-Mathf.Max(0f,max.y-(bounds.rect.yMax-8f));
+            popup.position+=bounds.TransformVector(new Vector3(x,y,0f));
+        }
         private void LayoutGroup(TraitCategory category,RectTransform title,bool available,ref float top)
         {
             bool visible=false;
@@ -78,6 +136,6 @@ namespace AutoBattler.Presentation.Battle
             }
             top+=8f;
         }
-        private void OnDisable() { displayed=null; hasShown=false; }
+        private void OnDisable() { ClearTooltip(); displayed=null; hasShown=false; }
     }
 }

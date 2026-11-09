@@ -15,84 +15,354 @@ MonoBehaviour:
   effects:
   - id: 0
     prefab:
-      m_AssetGUID: 61c0d45e71d60414b9a84c225878761d
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_AssetGUID: 90b8868d9b61fb84392efdfc1130f905
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
     capacity: 32
-    scale: .15
-    lifetime: 1.5
+    scale: 1
+    lifetime: 1.1200001
   - id: 1
     prefab:
-      m_AssetGUID: 5e7f35e7697cc1e4c947348d379da0f7
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
-      m_EditorAssetChanged: 0
-    capacity: 24
-    scale: .16
-    lifetime: 1.5
-  - id: 2
-    prefab:
-      m_AssetGUID: 1a16de034bdaadd41afd8cd6f5544808
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
-      m_EditorAssetChanged: 0
-    capacity: 8
-    scale: 0.38
-    lifetime: 1.5
-  - id: 3
-    prefab:
-      m_AssetGUID: 51dbb0c3e7bb999448274f6e9abee29e
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
-      m_EditorAssetChanged: 0
-    capacity: 12
-    scale: .12
-    lifetime: 1.5
-  - id: 4
-    prefab:
-      m_AssetGUID: 089eee584ffcfed41998417631995344
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_AssetGUID: 1e223e4a4ebbfcf479bd21b730c06093
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
     capacity: 20
-    scale: .13
-    lifetime: 1.5
-  - id: 5
+    scale: 1
+    lifetime: 0.42000002
+  - id: 2
     prefab:
-      m_AssetGUID: e0feb8eb0f44c3142b3f6b48fa3d85f5
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_AssetGUID: 6916cd32cf76b3d45987edc77f568f32
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 10
+    scale: 1
+    lifetime: 1.4600002
+  - id: 3
+    prefab:
+      m_AssetGUID: 08e7fc7fdf51360489a4d296f22252b9
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 12
+    scale: 1
+    lifetime: 1.12
+  - id: 4
+    prefab:
+      m_AssetGUID: 5cb529f39b1b7954ab94c2cf672a7316
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
     capacity: 8
-    scale: 0.32
-    lifetime: 1.5
+    scale: 1
+    lifetime: 1.7200003
+  - id: 5
+    prefab:
+      m_AssetGUID: 867672c72a89b6e46a46785c5995e7fb
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 8
+    scale: 1
+    lifetime: 0.42000002
   - id: 6
     prefab:
       m_AssetGUID: 1feefd6de7dd74244946c6c3693a9c36
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
-    capacity: 32
+    capacity: 64
     scale: 1
     lifetime: 12
   - id: 7
     prefab:
-      m_AssetGUID: 362dbe5486c8e6d49bed694c84bf3bbf
-      m_SubObjectName:
-      m_SubObjectType:
-      m_SubObjectGUID:
+      m_AssetGUID: 46b135f74fe150542990650058cf86e1
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 16
+    scale: 1
+    lifetime: 1.12
+  - id: 8
+    prefab:
+      m_AssetGUID: b0977452d6872c14b82d1ecfad08c1ce
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
       m_EditorAssetChanged: 0
     capacity: 20
     scale: 1
-    lifetime: 1.5
+    lifetime: 0.42000002
+  - id: 9
+    prefab:
+      m_AssetGUID: bc86697c7a0525646894bf39c3b30782
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 12
+    scale: 1
+    lifetime: 0.42000002
+  - id: 10
+    prefab:
+      m_AssetGUID: a7db6a0c1024a6341b9f30162e6a2e73
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 20
+    scale: 1
+    lifetime: 0.62
+  - id: 11
+    prefab:
+      m_AssetGUID: 4d3ca9747755b9b4a8dea34ccd9f4730
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 20
+    scale: 1
+    lifetime: 1.1200001
+  - id: 12
+    prefab:
+      m_AssetGUID: ca0b7ec0a464fe540b25eead2973dcf5
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 12
+    scale: 1
+    lifetime: 0.42000002
+  - id: 13
+    prefab:
+      m_AssetGUID: 508de6b2b6ab62e40b7f3935fe064e5d
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 8
+    scale: 1
+    lifetime: 0.53
+  - id: 14
+    prefab:
+      m_AssetGUID: 43193f187c9bc524c89f418e1ab76929
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 10
+    scale: 1
+    lifetime: 0.32000002
+  - id: 15
+    prefab:
+      m_AssetGUID: 03008ed667e786944b0114c14df0dc2c
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 10
+    scale: 1
+    lifetime: 0.73999995
+  - id: 16
+    prefab:
+      m_AssetGUID: 5d98bc61b3cf4cb44937518aa6b3fd0c
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 20
+    scale: 1
+    lifetime: 0.42000002
+  - id: 17
+    prefab:
+      m_AssetGUID: cf1c5a3c496ca8b4ea4b00b291fcefb2
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 24
+    scale: 1
+    lifetime: 0.65999997
+  - id: 18
+    prefab:
+      m_AssetGUID: 157accd8633db7e4dadb2abda2ba40e6
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 12
+    scale: 1
+    lifetime: 0.58
+  - id: 19
+    prefab:
+      m_AssetGUID: b763197ff900a3f4ca6621f6575861ab
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 8
+    scale: 1
+    lifetime: 1.14
+  - id: 20
+    prefab:
+      m_AssetGUID: 3499618a3866d444397078900469501f
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 12
+    scale: 1
+    lifetime: 0.42000002
+  - id: 21
+    prefab:
+      m_AssetGUID: 0e1f2200f42954547b62d1348fc0092b
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 8
+    scale: 1
+    lifetime: 1.2200001
+  - id: 22
+    prefab:
+      m_AssetGUID: 39fdc9b703688834f99ceda4bd451d4e
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 10
+    scale: 1
+    lifetime: 0.42000002
+  - id: 23
+    prefab:
+      m_AssetGUID: 614f5587dfb524f488daf1201837f745
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 10
+    scale: 1
+    lifetime: 1.1200001
+  - id: 24
+    prefab:
+      m_AssetGUID: 0ea4d9caea445fa4a84ac5d35e1b935d
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 8
+    scale: 1
+    lifetime: 0.81999993
+  - id: 25
+    prefab:
+      m_AssetGUID: 84bf954e8eec13f40bbfc1b9eac3be35
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 16
+    scale: 1
+    lifetime: 1.12
+  - id: 26
+    prefab:
+      m_AssetGUID: 163610711d318ea46814426866140463
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 16
+    scale: 1
+    lifetime: 1.12
+  - id: 27
+    prefab:
+      m_AssetGUID: 3baaa2ddb3f120d4b8995b1ebb4b81e2
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 16
+    scale: 1
+    lifetime: 1.12
+  - id: 28
+    prefab:
+      m_AssetGUID: fb77daa992dcb834a9d24be398e3145a
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 20
+    scale: 1
+    lifetime: 1.7200003
+  - id: 29
+    prefab:
+      m_AssetGUID: 79cbe1358f05c2a4eb8f12ba2bb913b4
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 20
+    scale: 1
+    lifetime: 0.92000014
+  - id: 30
+    prefab:
+      m_AssetGUID: 337165b84c01b094993dfed4994656fa
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 16
+    scale: 1
+    lifetime: 0.58
+  - id: 31
+    prefab:
+      m_AssetGUID: e3350ea2618ff1346bd8dad2b64942f2
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 8
+    scale: 1
+    lifetime: 0.5
+  - id: 32
+    prefab:
+      m_AssetGUID: 21cc9329ea7fc9a4996958f7e9b23557
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 12
+    scale: 1
+    lifetime: 1.12
+  - id: 33
+    prefab:
+      m_AssetGUID: ece102b830876d54e9b5bb56711f293c
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 8
+    scale: 1
+    lifetime: 1.6200002
+  - id: 34
+    prefab:
+      m_AssetGUID: e34d5895a618e0e49be885529c39f38e
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 16
+    scale: 1
+    lifetime: 0.92000014
   skills:
   - skillId: 2001
     icon: {fileID: 21300000, guid: a051a723e69914b44b02412e386f0325, type: 3}
@@ -100,144 +370,529 @@ MonoBehaviour:
     areaImpact: 0
     magicProjectile: 0
     projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    projectile: 6
+    casterCentered: 0
+    impactScale: 1
   - skillId: 2002
     icon: {fileID: 21300000, guid: 292c2536b7cf5415db56d0a05903422a, type: 3}
-    impact: 0
+    impact: 10
     areaImpact: 0
     magicProjectile: 0
     projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    projectile: 6
+    casterCentered: 0
+    impactScale: 1
   - skillId: 2003
     icon: {fileID: 21300000, guid: e211b620d4f344184b2e098eee4f570d, type: 3}
     impact: 3
     areaImpact: 0
     magicProjectile: 0
     projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    projectile: 30
+    casterCentered: 0
+    impactScale: 1
   - skillId: 2004
     icon: {fileID: 21300000, guid: 13c035a6820ee40139858ef1f949e854, type: 3}
-    impact: 0
+    impact: 10
     areaImpact: 0
     magicProjectile: 0
     projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    projectile: 6
+    casterCentered: 0
+    impactScale: 1
   - skillId: 2005
     icon: {fileID: 21300000, guid: be32bdc704c87480caa40bcbeba59dda, type: 3}
     impact: 5
     areaImpact: 1
     magicProjectile: 0
     projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    projectile: 6
+    casterCentered: 1
+    impactScale: 1
   - skillId: 2006
     icon: {fileID: 21300000, guid: 66e30fe342c0c4003952f3b752f28d7b, type: 3}
-    impact: 0
+    impact: 12
     areaImpact: 0
     magicProjectile: 0
     projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    projectile: 6
+    casterCentered: 0
+    impactScale: 1
   - skillId: 2007
     icon: {fileID: 21300000, guid: ec19b57ff2b9d4c8ea79f30947f223a7, type: 3}
     impact: 2
     areaImpact: 1
     magicProjectile: 1
     projectileColor: {r: 1, g: 0.35, b: 0.08, a: 1}
+    projectile: 17
+    casterCentered: 0
+    impactScale: 1
   - skillId: 2008
     icon: {fileID: 21300000, guid: bd84a00653c8a48078d52dd78200141d, type: 3}
-    impact: 0
+    impact: 9
     areaImpact: 0
     magicProjectile: 0
     projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    projectile: 6
+    casterCentered: 0
+    impactScale: 1
   - skillId: 2009
     icon: {fileID: 21300000, guid: 66e30fe342c0c4003952f3b752f28d7b, type: 3}
-    impact: 0
+    impact: 11
     areaImpact: 0
     magicProjectile: 0
     projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    projectile: 6
+    casterCentered: 0
+    impactScale: 1
   - skillId: 2010
     icon: {fileID: 21300000, guid: 13c035a6820ee40139858ef1f949e854, type: 3}
-    impact: 0
-    areaImpact: 0
+    impact: 10
+    areaImpact: 1
     magicProjectile: 0
     projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    projectile: 6
+    casterCentered: 1
+    impactScale: 1.5
   - skillId: 2011
     icon: {fileID: 21300000, guid: 66e30fe342c0c4003952f3b752f28d7b, type: 3}
-    impact: 0
+    impact: 12
     areaImpact: 0
     magicProjectile: 0
     projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    projectile: 6
+    casterCentered: 0
+    impactScale: 1
   - skillId: 2012
     icon: {fileID: 21300000, guid: e211b620d4f344184b2e098eee4f570d, type: 3}
-    impact: 3
-    areaImpact: 0
+    impact: 13
+    areaImpact: 1
     magicProjectile: 0
     projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    projectile: 6
+    casterCentered: 1
+    impactScale: 1
   - skillId: 2013
     icon: {fileID: 21300000, guid: a051a723e69914b44b02412e386f0325, type: 3}
-    impact: 1
-    areaImpact: 1
-    magicProjectile: 0
-    projectileColor: {r: 1, g: 1, b: 1, a: 1}
-  - skillId: 2014
-    icon: {fileID: 21300000, guid: bd84a00653c8a48078d52dd78200141d, type: 3}
-    impact: 0
-    areaImpact: 1
-    magicProjectile: 0
-    projectileColor: {r: 1, g: 1, b: 1, a: 1}
-  - skillId: 2015
-    icon: {fileID: 21300000, guid: 292c2536b7cf5415db56d0a05903422a, type: 3}
-    impact: 0
+    impact: 14
     areaImpact: 0
     magicProjectile: 0
     projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    projectile: 6
+    casterCentered: 0
+    impactScale: 1
+  - skillId: 2014
+    icon: {fileID: 21300000, guid: bd84a00653c8a48078d52dd78200141d, type: 3}
+    impact: 19
+    areaImpact: 1
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    projectile: 6
+    casterCentered: 0
+    impactScale: 1
+  - skillId: 2015
+    icon: {fileID: 21300000, guid: 292c2536b7cf5415db56d0a05903422a, type: 3}
+    impact: 18
+    areaImpact: 0
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    projectile: 6
+    casterCentered: 0
+    impactScale: 1
   - skillId: 2016
     icon: {fileID: 21300000, guid: ec19b57ff2b9d4c8ea79f30947f223a7, type: 3}
-    impact: 1
+    impact: 20
     areaImpact: 1
     magicProjectile: 1
     projectileColor: {r: 1, g: 0.35, b: 0.08, a: 1}
+    projectile: 29
+    casterCentered: 0
+    impactScale: 1
   - skillId: 2017
     icon: {fileID: 21300000, guid: a051a723e69914b44b02412e386f0325, type: 3}
-    impact: 1
-    areaImpact: 1
+    impact: 33
+    areaImpact: 0
     magicProjectile: 0
     projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    projectile: 6
+    casterCentered: 0
+    impactScale: 1
   - skillId: 2018
     icon: {fileID: 21300000, guid: 13c035a6820ee40139858ef1f949e854, type: 3}
-    impact: 0
+    impact: 10
     areaImpact: 0
     magicProjectile: 0
     projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    projectile: 6
+    casterCentered: 0
+    impactScale: 1
   - skillId: 2019
     icon: {fileID: 21300000, guid: a051a723e69914b44b02412e386f0325, type: 3}
-    impact: 4
-    areaImpact: 0
-    magicProjectile: 0
-    projectileColor: {r: 1, g: 1, b: 1, a: 1}
-  - skillId: 2020
-    icon: {fileID: 21300000, guid: e211b620d4f344184b2e098eee4f570d, type: 3}
-    impact: 1
-    areaImpact: 0
-    magicProjectile: 0
-    projectileColor: {r: 1, g: 1, b: 1, a: 1}
-  - skillId: 2021
-    icon: {fileID: 21300000, guid: 66e30fe342c0c4003952f3b752f28d7b, type: 3}
-    impact: 0
-    areaImpact: 0
-    magicProjectile: 0
-    projectileColor: {r: 1, g: 1, b: 1, a: 1}
-  - skillId: 2022
-    icon: {fileID: 21300000, guid: bd84a00653c8a48078d52dd78200141d, type: 3}
-    impact: 0
+    impact: 18
     areaImpact: 1
     magicProjectile: 0
     projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    projectile: 6
+    casterCentered: 1
+    impactScale: 1
+  - skillId: 2020
+    icon: {fileID: 21300000, guid: e211b620d4f344184b2e098eee4f570d, type: 3}
+    impact: 31
+    areaImpact: 0
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    projectile: 30
+    casterCentered: 0
+    impactScale: 1
+  - skillId: 2021
+    icon: {fileID: 21300000, guid: 66e30fe342c0c4003952f3b752f28d7b, type: 3}
+    impact: 12
+    areaImpact: 0
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    projectile: 6
+    casterCentered: 0
+    impactScale: 1
+  - skillId: 2022
+    icon: {fileID: 21300000, guid: bd84a00653c8a48078d52dd78200141d, type: 3}
+    impact: 20
+    areaImpact: 1
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    projectile: 6
+    casterCentered: 1
+    impactScale: 1
   - skillId: 2023
     icon: {fileID: 21300000, guid: 292c2536b7cf5415db56d0a05903422a, type: 3}
-    impact: 0
+    impact: 20
     areaImpact: 0
     magicProjectile: 0
     projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    projectile: 6
+    casterCentered: 0
+    impactScale: 1
   - skillId: 2024
     icon: {fileID: 21300000, guid: 13c035a6820ee40139858ef1f949e854, type: 3}
-    impact: 0
+    impact: 10
+    areaImpact: 1
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    projectile: 6
+    casterCentered: 1
+    impactScale: 1.5
+  - skillId: 2025
+    icon: {fileID: 21300000, guid: be32bdc704c87480caa40bcbeba59dda, type: 3}
+    impact: 9
+    areaImpact: 1
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    projectile: 6
+    casterCentered: 1
+    impactScale: 1
+  - skillId: 2026
+    icon: {fileID: 21300000, guid: 13c035a6820ee40139858ef1f949e854, type: 3}
+    impact: 10
     areaImpact: 0
     magicProjectile: 0
     projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    projectile: 6
+    casterCentered: 0
+    impactScale: 1
+  - skillId: 2027
+    icon: {fileID: 21300000, guid: ec19b57ff2b9d4c8ea79f30947f223a7, type: 3}
+    impact: 15
+    areaImpact: 1
+    magicProjectile: 1
+    projectileColor: {r: 1, g: 0.35, b: 0.08, a: 1}
+    projectile: 16
+    casterCentered: 0
+    impactScale: 1
+  - skillId: 2028
+    icon: {fileID: 21300000, guid: ec19b57ff2b9d4c8ea79f30947f223a7, type: 3}
+    impact: 21
+    areaImpact: 1
+    magicProjectile: 1
+    projectileColor: {r: 1, g: 0.35, b: 0.08, a: 1}
+    projectile: 34
+    casterCentered: 0
+    impactScale: 1
+  - skillId: 2029
+    icon: {fileID: 21300000, guid: be32bdc704c87480caa40bcbeba59dda, type: 3}
+    impact: 22
+    areaImpact: 1
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    projectile: 6
+    casterCentered: 1
+    impactScale: 1
+  - skillId: 2030
+    icon: {fileID: 21300000, guid: ec19b57ff2b9d4c8ea79f30947f223a7, type: 3}
+    impact: 23
+    areaImpact: 1
+    magicProjectile: 1
+    projectileColor: {r: 1, g: 0.35, b: 0.08, a: 1}
+    projectile: 17
+    casterCentered: 0
+    impactScale: 1
+  - skillId: 2031
+    icon: {fileID: 21300000, guid: 13c035a6820ee40139858ef1f949e854, type: 3}
+    impact: 23
+    areaImpact: 1
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    projectile: 6
+    casterCentered: 1
+    impactScale: 1
+  - skillId: 2032
+    icon: {fileID: 21300000, guid: be32bdc704c87480caa40bcbeba59dda, type: 3}
+    impact: 24
+    areaImpact: 1
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    projectile: 6
+    casterCentered: 1
+    impactScale: 1
+  - skillId: 2033
+    icon: {fileID: 21300000, guid: ec19b57ff2b9d4c8ea79f30947f223a7, type: 3}
+    impact: 20
+    areaImpact: 0
+    magicProjectile: 1
+    projectileColor: {r: 1, g: 0.35, b: 0.08, a: 1}
+    projectile: 29
+    casterCentered: 0
+    impactScale: 1
+  units:
+  - unitId: 1001
+    basicImpact: 8
+    projectile: 6
+    healing: 3
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 1
+  - unitId: 1002
+    basicImpact: 0
+    projectile: 6
+    healing: 3
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 1
+  - unitId: 1003
+    basicImpact: 18
+    projectile: 30
+    healing: 3
+    magicProjectile: 1
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 1
+  - unitId: 1004
+    basicImpact: 10
+    projectile: 6
+    healing: 3
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 1
+  - unitId: 1005
+    basicImpact: 9
+    projectile: 6
+    healing: 32
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 1
+  - unitId: 1006
+    basicImpact: 12
+    projectile: 6
+    healing: 32
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 1
+  - unitId: 1007
+    basicImpact: 2
+    projectile: 17
+    healing: 3
+    magicProjectile: 1
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 0.3
+  - unitId: 1008
+    basicImpact: 9
+    projectile: 6
+    healing: 3
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 1
+  - unitId: 1009
+    basicImpact: 11
+    projectile: 6
+    healing: 3
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 1
+  - unitId: 1010
+    basicImpact: 10
+    projectile: 6
+    healing: 3
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 1
+  - unitId: 1011
+    basicImpact: 12
+    projectile: 6
+    healing: 3
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 1
+  - unitId: 1012
+    basicImpact: 8
+    projectile: 6
+    healing: 3
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 1
+  - unitId: 1013
+    basicImpact: 14
+    projectile: 6
+    healing: 3
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 1
+  - unitId: 1014
+    basicImpact: 10
+    projectile: 6
+    healing: 3
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 1
+  - unitId: 1015
+    basicImpact: 18
+    projectile: 6
+    healing: 32
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 1
+  - unitId: 1016
+    basicImpact: 20
+    projectile: 29
+    healing: 32
+    magicProjectile: 1
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 0.55
+  - unitId: 1017
+    basicImpact: 11
+    projectile: 6
+    healing: 3
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 1
+  - unitId: 1018
+    basicImpact: 10
+    projectile: 6
+    healing: 3
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 1
+  - unitId: 1019
+    basicImpact: 11
+    projectile: 6
+    healing: 3
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 1
+  - unitId: 1020
+    basicImpact: 18
+    projectile: 30
+    healing: 3
+    magicProjectile: 1
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 1
+  - unitId: 1021
+    basicImpact: 12
+    projectile: 6
+    healing: 3
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 1
+  - unitId: 1022
+    basicImpact: 20
+    projectile: 6
+    healing: 32
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 0.55
+  - unitId: 1023
+    basicImpact: 20
+    projectile: 6
+    healing: 32
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 0.55
+  - unitId: 1024
+    basicImpact: 10
+    projectile: 6
+    healing: 32
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 1
+  - unitId: 1025
+    basicImpact: 9
+    projectile: 6
+    healing: 3
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 1
+  - unitId: 1026
+    basicImpact: 10
+    projectile: 6
+    healing: 3
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 1
+  - unitId: 1027
+    basicImpact: 15
+    projectile: 16
+    healing: 3
+    magicProjectile: 1
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 0.3
+  - unitId: 1028
+    basicImpact: 21
+    projectile: 34
+    healing: 3
+    magicProjectile: 1
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 0.3
+  - unitId: 1029
+    basicImpact: 22
+    projectile: 6
+    healing: 32
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 1
+  - unitId: 1030
+    basicImpact: 2
+    projectile: 17
+    healing: 3
+    magicProjectile: 1
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 0.3
+  - unitId: 1031
+    basicImpact: 10
+    projectile: 6
+    healing: 3
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 1
+  - unitId: 1032
+    basicImpact: 22
+    projectile: 6
+    healing: 3
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 1
+  - unitId: 1033
+    basicImpact: 20
+    projectile: 29
+    healing: 32
+    magicProjectile: 1
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 0.55
   arrow: {fileID: 21300000, guid: 392a42fac20e044729fd9892ca268f05, type: 3}
   magicOrb: {fileID: 21300000, guid: eb9cf9cef884e564fb9e99a3dd8cb56a, type: 3}
   stun: {fileID: 21300000, guid: bd84a00653c8a48078d52dd78200141d, type: 3}

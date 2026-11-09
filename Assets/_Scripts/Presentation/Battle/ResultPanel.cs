@@ -3,6 +3,7 @@ using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Serialization;
 
 namespace AutoBattler.Presentation.Battle
 {
@@ -15,8 +16,8 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private TextMeshProUGUI resultText;
         [SerializeField] private TextMeshProUGUI endMessageText;
         [SerializeField] private Button nextRoundButton;
-        [SerializeField] private Button retryButton;
-        [SerializeField] private Button titleButton;
+        [FormerlySerializedAs("titleButton")]
+        [SerializeField] private Button stageSelectionButton;
         [Header("결과 이미지")]
         [SerializeField] private Image outcomeImage;
         [SerializeField] private Sprite victorySprite;
@@ -25,8 +26,7 @@ namespace AutoBattler.Presentation.Battle
 
         public bool CanContinue { get; private set; }
         public event Action ContinueRequested;
-        public event Action RetryRequested;
-        public event Action TitleRequested;
+        public event Action StageSelectionRequested;
         [Header("카운트다운 알림 배치")]
         [SerializeField] private Vector2 countdownSize=new Vector2(420f,120f);
         [SerializeField] private float countdownTop=128f;
@@ -44,8 +44,12 @@ namespace AutoBattler.Presentation.Battle
         public TextMeshProUGUI ResultText => resultText;
         public TextMeshProUGUI EndMessageText => endMessageText;
         public Button NextRoundButton => nextRoundButton;
-        public Button RetryButton => retryButton;
-        public Button TitleButton => titleButton;
+        public Button StageSelectionButton => stageSelectionButton;
+#if UNITY_EDITOR
+        // 이전 로컬 검사 도구 참조 호환. 실제 재도전 버튼은 제거.
+        public Button RetryButton => null;
+        public Button TitleButton => stageSelectionButton;
+#endif
         public Image OutcomeImage => outcomeImage;
         public void SetOutcome(bool won)
         {
@@ -75,8 +79,7 @@ namespace AutoBattler.Presentation.Battle
             nextRoundButton.gameObject.SetActive(canContinue);
             endMessageText.text=string.Empty;
             endMessageText.gameObject.SetActive(false);
-            if(retryButton!=null) retryButton.gameObject.SetActive(!canContinue);
-            if(titleButton!=null) titleButton.gameObject.SetActive(!canContinue);
+            stageSelectionButton.gameObject.SetActive(!canContinue);
             SetNavigationBusy(false);
             canvasGroup.interactable = true;
             canvasGroup.blocksRaycasts = true;
@@ -146,8 +149,7 @@ namespace AutoBattler.Presentation.Battle
         public void StopAnimation() => canvasGroup.DOKill();
         public void SetNavigationBusy(bool busy)
         {
-            if(retryButton!=null) retryButton.interactable=!busy;
-            if(titleButton!=null) titleButton.interactable=!busy;
+            stageSelectionButton.interactable=!busy;
         }
 
         private void OnEnable()
@@ -155,8 +157,7 @@ namespace AutoBattler.Presentation.Battle
             if (Application.isPlaying)
             {
                 nextRoundButton.onClick.AddListener(RequestContinue);
-                if(retryButton!=null) retryButton.onClick.AddListener(RequestRetry);
-                if(titleButton!=null) titleButton.onClick.AddListener(RequestTitle);
+                stageSelectionButton.onClick.AddListener(RequestStageSelection);
                 if (isPresented)
                     canvasGroup.alpha = 1f;
             }
@@ -167,17 +168,14 @@ namespace AutoBattler.Presentation.Battle
             if (!automaticCountdown && CanContinue && nextRoundButton.IsInteractable())
                 ContinueRequested?.Invoke();
         }
-        private void RequestRetry()
-        { if(isPresented && gameObject.activeInHierarchy && !CanContinue && retryButton.IsInteractable()) RetryRequested?.Invoke(); }
-        private void RequestTitle()
-        { if(isPresented && gameObject.activeInHierarchy && !CanContinue && titleButton.IsInteractable()) TitleRequested?.Invoke(); }
+        private void RequestStageSelection()
+        { if(isPresented && gameObject.activeInHierarchy && !CanContinue && stageSelectionButton.IsInteractable()) StageSelectionRequested?.Invoke(); }
 
         private void OnDisable()
         {
             if (nextRoundButton != null)
                 nextRoundButton.onClick.RemoveListener(RequestContinue);
-            if(retryButton!=null) retryButton.onClick.RemoveListener(RequestRetry);
-            if(titleButton!=null) titleButton.onClick.RemoveListener(RequestTitle);
+            if(stageSelectionButton!=null) stageSelectionButton.onClick.RemoveListener(RequestStageSelection);
             if (canvasGroup != null)
                 canvasGroup.DOKill();
         }

@@ -17,19 +17,21 @@ MonoBehaviour:
   chapter: 3
   number: 1
   regionName: "\uC218\uC778\uC758 \uB9C8\uC744"
-  locationName: "\uAC1C\uC6B8\uAC00 \uAD11\uC7A5"
-  description:
+  locationName: "\uAC1C\uC6B8 \uB098\uB8E8"
+  description: 
+  roundsPerSegment: 7
+  plannedUnlockUnitIds: fc030000
   sceneBuildIndex: 1
   battleBackground:
     m_AssetGUID: 30b583abc4d840349aac9cf63a87629a
-    m_SubObjectName:
-    m_SubObjectType:
-    m_SubObjectGUID:
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
     m_EditorAssetChanged: 0
   benchFloor:
     m_AssetGUID: 46e593536d781c04a996130bfae9ff61
     m_SubObjectName: Bench_3_BeastVillage
     m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
-    m_SubObjectGUID:
+    m_SubObjectGUID: 
     m_EditorAssetChanged: 0

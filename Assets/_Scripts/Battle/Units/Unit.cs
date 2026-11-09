@@ -38,7 +38,7 @@ namespace AutoBattler.Battle.Units
         public UnitTeam Team { get; private set; }
         public int InstanceId { get; private set; }
         public int Star { get; private set; }
-        public float MoveSeconds { get; private set; }=.3f;
+        public float MoveSeconds { get; private set; }=.5f;
         public float WindupSeconds { get; private set; }=.2f;
         public float ProjectileSpeed { get; private set; }=8f;
         public UnitView View { get; private set; }

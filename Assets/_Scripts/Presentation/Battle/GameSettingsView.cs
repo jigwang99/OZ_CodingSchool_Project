@@ -1,6 +1,7 @@
 using AutoBattler.Managers;
 using AutoBattler.Run;
 using DG.Tweening;
+using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -8,14 +9,16 @@ using UnityEngine.UI;
 
 namespace AutoBattler.Presentation.Battle
 {
-    /// <summary>프레임 제한·효과음·게임 종료 설정과 배경 입력 차단.</summary>
+    /// <summary>프레임 제한·효과음·배경음악·게임 종료 설정과 배경 입력 차단.</summary>
     [DisallowMultipleComponent]
     public sealed class GameSettingsView : MonoBehaviour
     {
         public const string Heading = "설정";
         public const string FrameRateHeading = "프레임 제한";
         public const string EffectVolumeHeading = "효과음";
+        public const string MusicVolumeHeading = "배경음악";
         public const string QuitLabel = "게임 종료";
+        public const string StageSelectionLabel = "스테이지 선택";
         public const string CloseLabel = "닫기";
 
         private CanvasGroup underlying;
@@ -23,9 +26,12 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private Button openButton;
         [SerializeField] private Button closeButton;
         [SerializeField] private Button quitButton;
+        [SerializeField] private Button stageSelectionButton;
         [SerializeField] private TMP_Dropdown frameRateDropdown;
         [SerializeField] private Slider effectVolumeSlider;
         [SerializeField] private TextMeshProUGUI effectVolumeLabel;
+        [SerializeField] private Slider musicVolumeSlider;
+        [SerializeField] private TextMeshProUGUI musicVolumeLabel;
         private SoundManager sound;
         private static readonly GameFrameRate[] FrameRates =
             { GameFrameRate.Fps30, GameFrameRate.Fps60, GameFrameRate.Fps144 };
@@ -35,6 +41,9 @@ namespace AutoBattler.Presentation.Battle
         private bool previousInteraction;
         private bool previousRaycasts;
         private bool previousDragEnabled;
+        private GameNavigationSettings navigation;
+        private System.Action showStageSelection;
+        private bool navigating;
 
         public bool IsOpen { get; private set; }
         public CanvasGroup Modal => modal;
@@ -42,19 +51,22 @@ namespace AutoBattler.Presentation.Battle
         public Button OpenButton => openButton;
         public Button CloseButton => closeButton;
         public Button QuitButton => quitButton;
+        public Button StageSelectionButton => stageSelectionButton;
         public TMP_Dropdown FrameRateDropdown => frameRateDropdown;
         public Slider EffectVolumeSlider => effectVolumeSlider;
         public TextMeshProUGUI EffectVolumeLabel => effectVolumeLabel;
+        public Slider MusicVolumeSlider=>musicVolumeSlider;
+        public TextMeshProUGUI MusicVolumeLabel=>musicVolumeLabel;
 
-        public void BindContext(CanvasGroup group, RunController controller)
+        public void BindContext(CanvasGroup group, RunController controller,GameNavigationSettings settings=null,System.Action openStageSelection=null)
         {
             if(underlying!=group) Close();
-            underlying=group; run=controller;
+            underlying=group; run=controller; navigation=settings; showStageSelection=openStageSelection;
         }
         public void UnbindContext(CanvasGroup group)
         {
             if(underlying!=group) return;
-            Close(); underlying=null; run=null;
+            Close(); underlying=null; run=null; navigation=null; showStageSelection=null;
         }
 
         private void OnEnable()
@@ -68,9 +80,13 @@ namespace AutoBattler.Presentation.Battle
             sound.VolumeChanged+=RefreshEffectVolume;
             effectVolumeSlider.onValueChanged.AddListener(SelectEffectVolume);
             RefreshEffectVolume(sound.EffectVolume);
+            sound.MusicVolumeChanged+=RefreshMusicVolume;
+            musicVolumeSlider.onValueChanged.AddListener(SelectMusicVolume);
+            RefreshMusicVolume(sound.MusicVolume);
             openButton.onClick.AddListener(Open);
             closeButton.onClick.AddListener(Close);
             quitButton.onClick.AddListener(Quit);
+            stageSelectionButton.onClick.AddListener(OpenStageSelection);
             frameRateDropdown.onValueChanged.AddListener(SelectFrameRate);
             modal.gameObject.SetActive(false);
             RefreshFrameRate(manager.CurrentFrameRate);
@@ -78,10 +94,12 @@ namespace AutoBattler.Presentation.Battle
 
         private bool CanOpen => underlying!=null && !GameNavigation.IsTransitioning
             && (run==null || run.IsReady && !run.IsShuttingDown && !run.Flow.IsAugmentWindowOpen);
+        private bool CanOpenStageSelection=>IsOpen && !navigating && !GameNavigation.IsTransitioning && navigation!=null;
 
         private void LateUpdate()
         {
             openButton.interactable=!IsOpen && CanOpen;
+            stageSelectionButton.interactable=CanOpenStageSelection;
         }
 
         public void Open()
@@ -96,6 +114,7 @@ namespace AutoBattler.Presentation.Battle
             underlying.interactable=false;
             underlying.blocksRaycasts=false;
             IsOpen=true;
+            stageSelectionButton.interactable=CanOpenStageSelection;
             modal.ignoreParentGroups=true;
             modal.transform.SetAsLastSibling();
             modal.gameObject.SetActive(true);
@@ -123,6 +142,12 @@ namespace AutoBattler.Presentation.Battle
         }
 
         private void SelectEffectVolume(float value) => sound.SetEffectVolume(value);
+        private void SelectMusicVolume(float value)=>sound.SetMusicVolume(value);
+        private void RefreshMusicVolume(float value)
+        {
+            musicVolumeSlider.SetValueWithoutNotify(value);
+            musicVolumeLabel.text=$"{Mathf.RoundToInt(value*100f)}%";
+        }
         private void RefreshEffectVolume(float value)
         {
             effectVolumeSlider.SetValueWithoutNotify(value);
@@ -135,6 +160,21 @@ namespace AutoBattler.Presentation.Battle
             manager.SetFrameRate(FrameRates[index]);
         }
         private void Quit() { if (IsOpen) manager.QuitGame(); }
+        private void OpenStageSelection()=>OpenStageSelectionAsync().Forget();
+        private async UniTask OpenStageSelectionAsync()
+        {
+            if(!IsOpen || navigating || GameNavigation.IsTransitioning || navigation==null) return;
+            navigating=true;
+            RunController current=run; GameNavigationSettings settings=navigation; System.Action open=showStageSelection;
+            try
+            {
+                Close();
+                if(current==null && open!=null) open();
+                else if(!await GameNavigation.OpenStageSelectionAsync(settings,current) && underlying!=null) Open();
+            }
+            catch(System.Exception exception) { Debug.LogException(exception); if(underlying!=null) Open(); }
+            finally {navigating=false;}
+        }
 
         private void RefreshFrameRate(GameFrameRate value)
         {
@@ -147,10 +187,13 @@ namespace AutoBattler.Presentation.Battle
             Close();
             if (manager!=null) manager.FrameRateChanged-=RefreshFrameRate;
             if (sound!=null) sound.VolumeChanged-=RefreshEffectVolume;
+            if(sound!=null)sound.MusicVolumeChanged-=RefreshMusicVolume;
+            if(musicVolumeSlider!=null)musicVolumeSlider.onValueChanged.RemoveListener(SelectMusicVolume);
             if (effectVolumeSlider!=null) effectVolumeSlider.onValueChanged.RemoveListener(SelectEffectVolume);
             if (openButton!=null) openButton.onClick.RemoveListener(Open);
             if (closeButton!=null) closeButton.onClick.RemoveListener(Close);
             if (quitButton!=null) quitButton.onClick.RemoveListener(Quit);
+            if (stageSelectionButton!=null) stageSelectionButton.onClick.RemoveListener(OpenStageSelection);
             if (frameRateDropdown!=null) frameRateDropdown.onValueChanged.RemoveListener(SelectFrameRate);
             if (modal!=null) modal.DOKill();
         }

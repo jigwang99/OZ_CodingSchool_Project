@@ -17,19 +17,21 @@ MonoBehaviour:
   chapter: 2
   number: 3
   regionName: "\uC5D8\uD504\uC758 \uC232"
-  locationName: "\uACE0\uBAA9 \uC9C0\uB300"
-  description:
+  locationName: "\uD30C\uC218\uAFBC \uCD08\uC18C"
+  description: 
+  roundsPerSegment: 5
+  plannedUnlockUnitIds: 
   sceneBuildIndex: 1
   battleBackground:
     m_AssetGUID: f8ce781b042becf4a80fd2aaac33b52d
-    m_SubObjectName:
-    m_SubObjectType:
-    m_SubObjectGUID:
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
     m_EditorAssetChanged: 0
   benchFloor:
     m_AssetGUID: 8d6e0197151cf0e419133545cfd289c1
     m_SubObjectName: Bench_2_ElvenForest
     m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
-    m_SubObjectGUID:
+    m_SubObjectGUID: 
     m_EditorAssetChanged: 0

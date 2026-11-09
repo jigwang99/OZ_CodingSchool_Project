@@ -9,7 +9,10 @@ using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace AutoBattler.Presentation.Battle
 {
@@ -50,7 +53,11 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private SelectedAugmentsView selectedAugments;
         [SerializeField] private UnitInfoPanel unitInfo;
         [SerializeField] private ItemInventoryPanel inventory;
+        [SerializeField] private ItemHoverTooltip itemTooltip;
+        [SerializeField] private GoldIncomeHover goldIncome;
         public ItemInventoryPanel Inventory=>inventory;
+        public ItemHoverTooltip ItemTooltip => itemTooltip;
+        public GoldIncomeHover GoldIncome => goldIncome;
 
         [Header("전투와 결과")]
         [SerializeField] private Button startBattleButton;
@@ -97,7 +104,7 @@ namespace AutoBattler.Presentation.Battle
             if (Application.isPlaying)
             {
                 gameSettings=AutoBattler.Managers.GameManager.instance.Settings;
-                if(gameSettings!=null) gameSettings.BindContext(interactionRoot,run);
+                if(gameSettings!=null) gameSettings.BindContext(interactionRoot,run,navigation);
                 Bind();
             }
         }
@@ -121,13 +128,14 @@ namespace AutoBattler.Presentation.Battle
             run.Drag.BindDropTarget(this);
             HideSellDrag();
             resultPanel.ContinueRequested += NextRound;
-            resultPanel.RetryRequested += RetryRun;
-            resultPanel.TitleRequested += ReturnToTitle;
+            resultPanel.StageSelectionRequested += OpenStageSelection;
             retryLoadButton.onClick.AddListener(RetryLoad);
             loadTitleButton.onClick.AddListener(ReturnFromLoadError);
             run.DisplayChanged += Refresh;
             if(inventory!=null) inventory.Bind(run,interactionRoot);
             if(unitInfo!=null) unitInfo.BindRun(run);
+            itemTooltip.Bind(run, interactionRoot, inventory, inventory.StoredSlots.Concat(unitInfo.EquipmentSlots));
+            goldIncome.Bind(run, interactionRoot, inventory);
             if(augmentPanel!=null) { augmentPanel.Selected+=SelectAugment; augmentPanel.ToggleRequested+=ToggleAugments; }
             isBound = true;
             hasDisplayedPhase = false;
@@ -161,19 +169,17 @@ namespace AutoBattler.Presentation.Battle
         private async UniTask ReturnFromLoadErrorAsync()
         {
             if(run.IsReady || run.IsLoading || GameNavigation.IsTransitioning) return;
-            try { await GameNavigation.ReturnToTitleAsync(navigation,run); }
+            try { await GameNavigation.OpenStageSelectionAsync(navigation,run); }
             catch(System.Exception exception) { Debug.LogException(exception); }
         }
-        private void RetryRun()=>NavigateAsync(false).Forget();
-        private void ReturnToTitle()=>NavigateAsync(true).Forget();
-        private async Cysharp.Threading.Tasks.UniTask NavigateAsync(bool title)
+        private void OpenStageSelection()=>NavigateAsync().Forget();
+        private async Cysharp.Threading.Tasks.UniTask NavigateAsync()
         {
             if((!run.IsReady && !run.IsShuttingDown) || run.State==null || !run.State.IsOver || run.State.HasPendingRoundReward || GameNavigation.IsTransitioning) return;
             resultPanel.SetNavigationBusy(true);
             try
             {
-                bool loaded=title ? await GameNavigation.ReturnToTitleAsync(navigation,run)
-                    : await GameNavigation.RetryAsync(navigation,run);
+                bool loaded=await GameNavigation.OpenStageSelectionAsync(navigation,run);
                 if(!loaded && this!=null) messageText.text="장면을 열 수 없습니다. 다시 시도해 주세요.";
             }
             catch(System.Exception exception)
@@ -196,6 +202,24 @@ namespace AutoBattler.Presentation.Battle
             if(run.IsReady && run.Flow.CurrentPhase==BattlePhase.Result && (!run.State.IsOver || run.State.HasPendingRoundReward))
                 resultPanel.ShowCountdown();
             RefreshSelection();
+            HandleShopShortcuts();
+        }
+
+        private void HandleShopShortcuts()
+        {
+            Keyboard keyboard=Keyboard.current;
+            if(keyboard==null || !keyboard.dKey.wasPressedThisFrame && !keyboard.fKey.wasPressedThisFrame) return;
+            if(!run.IsReady || run.IsShuttingDown || GameNavigation.IsTransitioning || !CanPrepare()
+                || run.State.Augments.HasPending || run.Flow.IsAugmentWindowOpen
+                || interactionRoot==null || !interactionRoot.interactable || !interactionRoot.blocksRaycasts
+                || gameSettings!=null && gameSettings.IsOpen) return;
+            GameObject selected=EventSystem.current!=null?EventSystem.current.currentSelectedGameObject:null;
+            TMP_InputField input=selected!=null?selected.GetComponentInParent<TMP_InputField>():null;
+            if(input!=null && input.isFocused) return;
+            if(keyboard.dKey.wasPressedThisFrame && refreshButton.IsActive() && refreshButton.IsInteractable())
+                refreshButton.onClick.Invoke();
+            if(keyboard.fKey.wasPressedThisFrame && buyExperienceButton.IsActive() && buyExperienceButton.IsInteractable())
+                buyExperienceButton.onClick.Invoke();
         }
 
         private void RefreshTime()
@@ -233,7 +257,7 @@ namespace AutoBattler.Presentation.Battle
             messageText.text = run.Message;
             messageText.gameObject.SetActive(!ready);
             roundProgress.Show(ready ? run.State : null, ready ? run.Stage.DisplayName : "--");
-            roundText.text = ready ? run.Stage.RegionName : "--";
+            roundText.text = ready ? $"{run.Stage.DisplayName} {run.Stage.LocationName}" : "--";
             goldText.text = ready ? run.State.Gold.ToString() : "--";
             RefreshTime();
             livesText.text = ready ? run.State.Lives.ToString() : "--";
@@ -300,6 +324,8 @@ namespace AutoBattler.Presentation.Battle
 
         private void Unbind()
         {
+            if (goldIncome != null) goldIncome.Bind(null, null, null);
+            if (itemTooltip != null) itemTooltip.Bind(null, null, null, null);
             if(inventory!=null) inventory.Bind(null,null);
             if (unitInfo != null) { unitInfo.Hide(); unitInfo.BindRun(null); }
             if (!isBound)
@@ -321,8 +347,7 @@ namespace AutoBattler.Presentation.Battle
             }
             HideSellDrag();
             resultPanel.ContinueRequested -= NextRound;
-            resultPanel.RetryRequested -= RetryRun;
-            resultPanel.TitleRequested -= ReturnToTitle;
+            resultPanel.StageSelectionRequested -= OpenStageSelection;
             retryLoadButton.onClick.RemoveListener(RetryLoad);
             loadTitleButton.onClick.RemoveListener(ReturnFromLoadError);
             preparationPanel.DOKill();

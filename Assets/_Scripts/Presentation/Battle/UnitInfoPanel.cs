@@ -1,4 +1,3 @@
-using System.Text;
 using System.Linq;
 using AutoBattler.Run;
 using AutoBattler.Battle.Units;
@@ -31,6 +30,7 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private TextMeshProUGUI statsText;
         [SerializeField] private TextMeshProUGUI skillNameText;
         [SerializeField] private TextMeshProUGUI skillText;
+        [SerializeField] private ScrollRect skillScroll;
         [SerializeField] private AutoBattler.Assets.AssetCatalog catalog;
         [SerializeField] private Image unitIcon,skillIcon,shieldIcon;
         public Image UnitIcon=>unitIcon;
@@ -46,7 +46,7 @@ namespace AutoBattler.Presentation.Battle
             if (run != null) run.DisplayChanged += RefreshEquipment;
         }
         private void Awake()
-        { foreach (ItemIconButton slot in equipmentSlots) slot.Pressed += Unequip; }
+        { foreach (ItemIconButton slot in equipmentSlots) slot.RightPressed += Unequip; }
         private void Unequip(int itemId)
         {
             Unit unit = boundUnit;
@@ -74,6 +74,7 @@ namespace AutoBattler.Presentation.Battle
         public TextMeshProUGUI ManaText => manaText;
         public TextMeshProUGUI StatsText => statsText;
         public TextMeshProUGUI SkillText => skillText;
+        public ScrollRect SkillScroll=>skillScroll;
         public TextMeshProUGUI SkillNameText=>skillNameText;
         public Image HealthFill => healthFill;
         public Image ManaFill => manaFill;
@@ -93,13 +94,13 @@ namespace AutoBattler.Presentation.Battle
             unit.Equipment.Changed += RefreshEquipment;
             gameObject.SetActive(true);
             nameText.text=$"{BattleText.UnitName(unit.Definition)} <color=#FFD159>{new string('★', unit.Star)}</color>";
-            identityText.text=$"{(unit.Team==UnitTeam.Ally ? "아군" : "적군")}   비용 {unit.Definition.Cost}G";
-            traitsText.text=$"{TraitName(TraitCategory.Origin, unit.Definition.OriginId)} / {TraitName(TraitCategory.Class, unit.Definition.ClassId)}"
-                +$"   |   {(unit.Definition.IsRanged ? "원거리" : "근거리")}";
+            identityText.text=$"{UnitStarRules.SalePrice(unit.Definition.Cost,unit.Star)}G";
+            traitsText.text=$"{TraitName(TraitCategory.Origin, unit.Definition.OriginId)} / {TraitName(TraitCategory.Class, unit.Definition.ClassId)}";
             teamAccent.color=unit.Team==UnitTeam.Ally ? new Color(.2f,.85f,.85f) : new Color(1f,.35f,.4f);
             if(unitIcon!=null) { unitIcon.sprite=catalog.Icon(unit.Definition.IconId); unitIcon.enabled=unitIcon.sprite!=null; }
             if(skillIcon!=null) { skillIcon.sprite=catalog.BattleVisuals.Skill(unit.Skill.Definition?.Id ?? 0)?.icon; skillIcon.enabled=skillIcon.sprite!=null; }
             RefreshDetails();
+            skillScroll.verticalNormalizedPosition=1f;
             RefreshEquipment();
             RefreshHealth(false);
             SetBar(manaFill, unit.Mana.Current, unit.Mana.Maximum, false);
@@ -153,61 +154,11 @@ namespace AutoBattler.Presentation.Battle
             SkillDefinition skill=boundUnit.Skill.Definition;
             skillNameText.text=skill?.Name ?? "스킬 없음";
             if (skill==null) { skillText.text=""; return; }
-            string target=skill.TargetRule==SkillTargetRule.Self ? "자신"
-                : skill.TargetRule==SkillTargetRule.LowestHealthAlly ? "체력이 가장 낮은 아군"
-                : skill.TargetRule==SkillTargetRule.NearestOtherAllies ? $"가까운 다른 아군 최대 {skill.TargetCount}명" : "현재 공격 대상";
-            StringBuilder description=new StringBuilder();
-            description.Append($"{target}  |  {skill.ManaCost} MP\n시전 준비 {skill.Windup:0.##}초  /  재사용 {skill.Cooldown:0.##}초\n");
-            description.Append($"사거리 {skill.CastRange}칸  /  반경 {skill.Radius}칸\n");
-            float starScale=data!=null ? UnitStarRules.StatMultiplier(boundUnit.Star,data.Rule(EconomyRule.StarMultiplier)) : 1f;
-            float power=boundUnit.StatModifiers.SkillPower;
-            if (skill.BaseDamage>0 || skill.AttackRatio>0)
-            {
-                float damage=(skill.BaseDamage*starScale+stats.AttackDamage*skill.AttackRatio)*power;
-                description.Append($"피해량 {damage:0.#} (방어력 적용 전)\n");
-            }
-            if (skill.ArmorIgnore>0) description.Append($"방어력 무시 {skill.ArmorIgnore:P0}\n");
-            if (data!=null && data.Effects.TryGetValue(skill.EffectId,out EffectDefinition effect))
-            {
-                float value=effect.Value;
-                if(effect.Kind==EffectKind.Shield && skill.ShieldMaxHpRatio>0) value=stats.MaxHp*skill.ShieldMaxHpRatio*power;
-                else if (effect.Kind==EffectKind.Heal || effect.Kind==EffectKind.Shield) value*=starScale*power;
-                if (effect.Kind==EffectKind.Slow) description.Append($"둔화 {value:P0}");
-                else if (effect.Kind==EffectKind.Stun) description.Append("기절");
-                else if (effect.Kind==EffectKind.StatModifier) description.Append($"{StatName(effect.Stat)} {(effect.Operation==ModifierOperation.Flat ? value.ToString("+0.##;-0.##;0") : value.ToString("+0%;-0%;0%"))}");
-                else description.Append($"{(effect.Kind==EffectKind.Heal ? "체력 회복" : "보호막")} {value:0.#}");
-                if (effect.Duration>0) description.Append($" ({effect.Duration:0.##}초)");
-                description.AppendLine();
-            }
-            if (skill.Delivery==SkillDelivery.Projectile) description.Append("투사체");
-            if(skill.Shape==SkillShape.Line) description.Append($"\n직선 관통 {(skill.TargetCount>0?$"최대 {skill.TargetCount}명":"전체")}");
-            if(skill.Shape==SkillShape.FrontArc) description.Append("\n시전자 정면 부채꼴 범위");
-            if(skill.HitCount>1) description.Append($"\n{skill.HitInterval:0.##}초 간격 {skill.HitCount}회 공격{(skill.RetargetOnKill?" · 대상 사망 시 재선정":"")}");
-            if(skill.ExecuteThreshold>0) description.Append($"\n대상 체력 {skill.ExecuteThreshold:P0} 이하: 피해 {skill.ExecuteMultiplier:0.##}배");
-            if(skill.DistanceBonus>0) description.Append($"\n거리 1칸 초과마다 피해 +{skill.DistanceBonus:P0}");
-            if(skill.LifeStealRatio>0) description.Append($"\n실제 체력 피해의 {skill.LifeStealRatio:P0} 회복");
-            if(skill.EffectLowHpThreshold>0) description.Append($"\n자신 체력 {skill.EffectLowHpThreshold:P0} 이하: 강화 효과 {skill.EffectLowHpMultiplier:0.##}배");
-            if(data!=null && data.Effects.TryGetValue(skill.SecondaryEffectId,out EffectDefinition additional))
-            {
-                string recipients=skill.SecondaryTarget==SecondarySkillTarget.EnemiesAroundCaster?$"주변 {skill.SecondaryRadius}칸 적":"같은 대상";
-                string extra=additional.Kind==EffectKind.Shield?$"보호막 {additional.Value*starScale*power:0.#}":$"{StatName(additional.Stat)} {additional.Value:P0}";
-                description.Append($"\n추가: {recipients} {extra} ({additional.Duration:0.#}초)");
-            }
-            skillText.text=description.ToString().TrimEnd();
+            float starScale=data!=null?UnitStarRules.StatMultiplier(boundUnit.Star,data.Rule(EconomyRule.StarMultiplier)):1f;
+            skillText.text=SkillDescriptionText.Describe(skill,data,stats.AttackDamage,stats.MaxHp,starScale,boundUnit.StatModifiers.SkillPower);
+            float height=skillText.GetPreferredValues(skillText.text,skillScroll.viewport.rect.width,0f).y;
+            skillText.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,height);
         }
-        private static string StatName(StatType stat) => stat switch
-        {
-            StatType.MaxHp => "최대 체력",
-            StatType.AttackDamage => "공격력",
-            StatType.Defense => "방어력",
-            StatType.AttackSpeed => "공격 속도",
-            StatType.MoveSpeed => "이동 속도",
-            StatType.SkillPower => "스킬 위력",
-            StatType.CritChance => "치명타 확률",
-            StatType.CritMultiplier => "치명타 피해",
-            StatType.BasicAttackPower => "기본 공격 위력",
-            _ => "능력치"
-        };
         public void Hide()
         {
             Unbind();
@@ -230,7 +181,7 @@ namespace AutoBattler.Presentation.Battle
             if (manaFill!=null) manaFill.transform.DOKill();
         }
         private void OnDestroy()
-        { BindRun(null); foreach (ItemIconButton slot in equipmentSlots) slot.Pressed -= Unequip; }
+        { BindRun(null); foreach (ItemIconButton slot in equipmentSlots) slot.RightPressed -= Unequip; }
         private void OnDisable() { Unbind(); if(group!=null) group.DOKill(); }
     }
 }

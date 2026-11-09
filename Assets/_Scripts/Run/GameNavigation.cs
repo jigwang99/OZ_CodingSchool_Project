@@ -8,26 +8,31 @@ using UnityEngine.SceneManagement;
 
 namespace AutoBattler.Run
 {
+    public enum MenuPage { Title, StageSelection }
     /// <summary>로딩 화면, 도전 정리, 씬 전환과 전투 초기화 완료 순서 관리.</summary>
     public static class GameNavigation
     {
         public static bool IsTransitioning { get; private set; }
         public static StageDefinition SelectedStage { get; private set; }
         public static bool ResumeRequested { get; private set; }
+        public static MenuPage DestinationPage { get; private set; }
+        public static int MenuChapter { get; private set; }=1;
         private static int arrivingScene=-1;
         private static RunController arrivingBattle;
         private static SceneLoadingView loading;
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void Reset()
-        { IsTransitioning=false; SelectedStage=null; ResumeRequested=false; arrivingScene=-1; arrivingBattle=null; loading=null; }
+        { IsTransitioning=false; SelectedStage=null; ResumeRequested=false; DestinationPage=MenuPage.Title; MenuChapter=1; arrivingScene=-1; arrivingBattle=null; loading=null; }
         public static UniTask<bool> StartStageAsync(GameNavigationSettings settings,StageDefinition stage,RunController run=null)
         {
-            if(settings==null || !settings.Contains(stage)) return UniTask.FromResult(false);
+            if(settings!=null) SaveManager.instance.ConfigureProgression(settings);
+            if(settings==null || !settings.Contains(stage) || !SaveManager.instance.IsStageUnlocked(settings,stage)) return UniTask.FromResult(false);
             return LoadAsync(stage.SceneBuildIndex,stage,run,false);
         }
         public static UniTask<bool> ResumeStageAsync(GameNavigationSettings settings)
         {
             SaveManager saves=SaveManager.instance;
+            if(settings!=null) saves.ConfigureProgression(settings);
             if(settings==null || !saves.HasSavedRun || !settings.TryGetStage(saves.SavedStageId,out StageDefinition stage)) return UniTask.FromResult(false);
             return LoadAsync(stage.SceneBuildIndex,stage,null,true);
         }
@@ -35,6 +40,12 @@ namespace AutoBattler.Run
             =>StartStageAsync(settings,SelectedStage!=null?SelectedStage:settings!=null?settings.DefaultStage:null,run);
         public static UniTask<bool> ReturnToTitleAsync(GameNavigationSettings settings,RunController run)
             =>settings==null?UniTask.FromResult(false):LoadAsync(settings.TitleSceneBuildIndex,null,run,false);
+        public static UniTask<bool> OpenStageSelectionAsync(GameNavigationSettings settings,RunController run=null)
+        {
+            if(settings==null) return UniTask.FromResult(false);
+            int chapter=run!=null?run.Stage.Chapter:SelectedStage!=null?SelectedStage.Chapter:settings.DefaultStage.Chapter;
+            return LoadAsync(settings.TitleSceneBuildIndex,null,run,false,MenuPage.StageSelection,chapter);
+        }
         public static void RegisterBattleController(RunController controller)
         {
             if(IsTransitioning && controller.gameObject.scene.buildIndex==arrivingScene) arrivingBattle=controller;
@@ -43,11 +54,13 @@ namespace AutoBattler.Run
         {
             if(IsTransitioning && controller==arrivingBattle && loading!=null) loading.SetProgress(.35f+.65f*progress,message);
         }
-        private static async UniTask<bool> LoadAsync(int buildIndex,StageDefinition stage,RunController run,bool resume)
+        private static async UniTask<bool> LoadAsync(int buildIndex,StageDefinition stage,RunController run,bool resume,MenuPage page=MenuPage.Title,int chapter=1)
         {
             if(IsTransitioning || buildIndex<0 || !Application.CanStreamedLevelBeLoaded(buildIndex)) return false;
+            if(run!=null && run.IsReady && !run.TrySaveForNavigation()) return false;
             IsTransitioning=true; arrivingScene=stage!=null?buildIndex:-1; arrivingBattle=null;
             bool previousResume=ResumeRequested; StageDefinition previousStage=SelectedStage;
+            MenuPage previousPage=DestinationPage; int previousChapter=MenuChapter;
             bool arrived=false,completed=false;
             CancellationToken token=Application.exitCancellationToken;
             loading=GameManager.instance.LoadingScreen;
@@ -55,11 +68,12 @@ namespace AutoBattler.Run
             {
                 Time.timeScale=1f;
                 GameManager.instance.Settings.Close();
-                loading.Show(stage!=null?$"스테이지 {stage.DisplayName}":"타이틀 화면");
+                loading.Show(stage!=null?$"스테이지 {stage.DisplayName}":page==MenuPage.StageSelection?"스테이지 선택":"타이틀 화면");
                 // 로딩 화면을 한 프레임 표시한 뒤 무거운 씬 작업 시작.
                 await UniTask.NextFrame(cancellationToken:token);
                 if(run!=null) { loading.SetProgress(0f,"이전 전투 정리 중..."); await run.ShutdownAsync(); }
                 ResumeRequested=resume; SelectedStage=stage;
+                DestinationPage=page; MenuChapter=chapter;
                 AsyncOperation operation=SceneManager.LoadSceneAsync(buildIndex,LoadSceneMode.Single);
                 if(operation==null) throw new InvalidOperationException("장면 로드 요청 실패.");
                 float sceneWeight=stage!=null?.35f:1f;
@@ -72,11 +86,11 @@ namespace AutoBattler.Run
                     completed=await arrivingBattle.WaitForInitializationAsync(token);
                 }
                 else completed=true;
-                return true;
+                return completed;
             }
             catch
             {
-                if(!arrived) { ResumeRequested=previousResume; SelectedStage=previousStage; }
+                if(!arrived) { ResumeRequested=previousResume; SelectedStage=previousStage; DestinationPage=previousPage; MenuChapter=previousChapter; }
                 throw;
             }
             finally

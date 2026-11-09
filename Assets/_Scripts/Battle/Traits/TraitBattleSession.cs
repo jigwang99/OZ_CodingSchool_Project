@@ -59,6 +59,13 @@ namespace AutoBattler.Battle.Traits
                         case TraitEffect.SkillPower: Set(trait,StatType.SkillPower); break;
                         case TraitEffect.AttackSpeed: Set(trait,StatType.AttackSpeed); break;
                         case TraitEffect.MaxHealth: Set(trait,StatType.MaxHp); break;
+                        case TraitEffect.DemonPower:
+                            // 최고 단계 하나에서 체력·공격력·공격 속도를 함께 적용.
+                            unit.StatModifiers.ReplaceSource(trait.Source,
+                                new StatModifierSpec(StatType.MaxHp,ModifierOperation.Percent,trait.Value),
+                                new StatModifierSpec(StatType.AttackDamage,ModifierOperation.Percent,trait.Value),
+                                new StatModifierSpec(StatType.AttackSpeed,ModifierOperation.Percent,trait.Value));
+                            break;
                         case TraitEffect.BasicArmorIgnore:
                             unit.StatModifiers.ReplaceSource(trait.Source,new StatModifierSpec(StatType.BasicArmorIgnore,ModifierOperation.Flat,trait.Value));
                             break;
@@ -77,7 +84,7 @@ namespace AutoBattler.Battle.Traits
             {
                 if(!CanApply) return;
                 // 전투 시작에 늘어난 최대 체력까지 채운 뒤 보호막 등 시작 효과 적용.
-                if(traits.Any(trait=>trait.Effect==TraitEffect.MaxHealth)) unit.Health.Heal(unit.Health.MaxHp-unit.Health.CurrentHp);
+                if(traits.Any(trait=>trait.Effect==TraitEffect.MaxHealth || trait.Effect==TraitEffect.DemonPower && trait.Value>0)) unit.Health.Heal(unit.Health.MaxHp-unit.Health.CurrentHp);
                 unit.Mana.ResetForRound();
                 foreach(TraitDefinition trait in traits)
                     if(trait.Effect==TraitEffect.ShieldAtStart)

@@ -5,7 +5,13 @@ using UnityEngine.AddressableAssets;
 
 namespace AutoBattler.Presentation.Units
 {
-    public enum BattleVisualId { Hit, MagicHit, Fire, Heal, Shield, Spin, Projectile, Stun }
+    public enum BattleVisualId
+    {
+        Hit, MagicHit, Fire, Heal, Shield, Spin, Projectile, Stun,
+        Slash, HeavySlash, Pierce, Punch, DarkSlash, HolyBurst, WindSlash, IceBurst, IceBolt, FireBolt,
+        NatureBurst, Vine, SpiritBurst, StarBurst, BloodSlash, FlameWave, FireSpin,
+        ColdStatus, PowerStatus, WeakStatus, ShieldStatus, SpiritBolt, NatureBolt, Rally, LifeSteal, Lightning, ArcaneBolt
+    }
     [Serializable] public sealed class BattleVisualEntry
     {
         public BattleVisualId id;
@@ -22,6 +28,19 @@ namespace AutoBattler.Presentation.Units
         public bool areaImpact;
         public bool magicProjectile;
         public Color projectileColor=Color.white;
+        public BattleVisualId projectile=BattleVisualId.Projectile;
+        public bool casterCentered;
+        [Min(.1f)] public float impactScale=1f;
+    }
+    [Serializable] public sealed class UnitVisualEntry
+    {
+        public int unitId;
+        public BattleVisualId basicImpact=BattleVisualId.Hit;
+        public BattleVisualId projectile=BattleVisualId.Projectile;
+        public BattleVisualId healing=BattleVisualId.Heal;
+        public bool magicProjectile;
+        public Color projectileColor=Color.white;
+        [Min(.1f)] public float basicImpactScale=1f;
     }
     /// <summary>전투 표현의 Addressables 참조·풀 크기·스킬 아이콘 설정.</summary>
     [CreateAssetMenu(menuName="PixelTactics/Battle Visual Settings")]
@@ -29,6 +48,7 @@ namespace AutoBattler.Presentation.Units
     {
         [SerializeField] private BattleVisualEntry[] effects=Array.Empty<BattleVisualEntry>();
         [SerializeField] private SkillVisualEntry[] skills=Array.Empty<SkillVisualEntry>();
+        [SerializeField] private UnitVisualEntry[] units=Array.Empty<UnitVisualEntry>();
         [SerializeField] private Sprite arrow;
         [SerializeField] private Sprite magicOrb;
         [SerializeField] private Sprite stun;
@@ -42,6 +62,10 @@ namespace AutoBattler.Presentation.Units
         public Sprite Health=>health;
         public Sprite Mana=>mana;
         public Sprite Shield=>shield;
+        public IReadOnlyList<UnitVisualEntry> Units=>Array.AsReadOnly(units);
+        public IReadOnlyList<SkillVisualEntry> Skills=>Array.AsReadOnly(skills);
+        public UnitVisualEntry Unit(int id)
+        { foreach(UnitVisualEntry entry in units) if(entry.unitId==id) return entry; return null; }
         public SkillVisualEntry Skill(int id)
         { foreach(SkillVisualEntry entry in skills) if(entry.skillId==id) return entry; return null; }
     }

@@ -9,6 +9,7 @@ using AutoBattler.Data.Units;
 using AutoBattler.Data.Traits;
 using AutoBattler.Data.Augments;
 using AutoBattler.Data.Items;
+using AutoBattler.Data.Stages;
 using AutoBattler.Battle.Units;
 using UnityEditor;
 using UnityEngine;
@@ -25,15 +26,16 @@ namespace AutoBattler.EditorTools.Sheets
         public static readonly string[] AugmentTabs=TraitTabs.Concat(new[]{"Augments"}).ToArray();
         public static readonly string[] ItemTabs=AugmentTabs.Concat(new[]{"Items","ItemStats"}).ToArray();
         public static readonly string[] SkillRuleTabs=ItemTabs.Concat(new[]{"SkillRules"}).ToArray();
-        public static readonly string[] Tabs=SkillRuleTabs.Concat(new[]{"ItemRecipes"}).ToArray();
-        public static string[] TabsForSchema(int schema)=>schema==1?BaseTabs:schema==2?SkillTabs:schema==3?TraitTabs:schema==4?AugmentTabs:schema==5?ItemTabs:schema==6?SkillRuleTabs:schema==7?Tabs:throw new FormatException("지원하지 않는 스키마.");
+        public static readonly string[] RecipeTabs=SkillRuleTabs.Concat(new[]{"ItemRecipes"}).ToArray();
+        public static readonly string[] Tabs=RecipeTabs.Concat(new[]{"Stages","StageUnlockPlans"}).ToArray();
+        public static string[] TabsForSchema(int schema)=>schema==1?BaseTabs:schema==2?SkillTabs:schema==3?TraitTabs:schema==4?AugmentTabs:schema==5?ItemTabs:schema==6?SkillRuleTabs:schema==7?RecipeTabs:schema==8?Tabs:throw new FormatException("지원하지 않는 스키마.");
         public static GameSnapshot Build(Dictionary<string,CsvTable> tables)
         {
             foreach(string tab in BaseTabs) if(!tables.ContainsKey(tab)) throw new FormatException(tab+": 표 없음.");
             CsvTable manifest=tables["Manifest"];
             if(manifest.Rows.Count!=2) throw manifest.Error(1,"schema_version","단일 Manifest 행 필요.");
             int schema=manifest.Int(1,"schema_version");
-            if(manifest.Rows.Count!=2 || schema<1 || schema>7) throw manifest.Error(1,"schema_version","스키마 1~7의 단일 Manifest 행 필요.");
+            if(manifest.Rows.Count!=2 || schema<1 || schema>8) throw manifest.Error(1,"schema_version","스키마 1~8의 단일 Manifest 행 필요.");
             foreach(string tab in TabsForSchema(schema)) if(!tables.ContainsKey(tab)) throw new FormatException(tab+": 표 없음.");
             GameSnapshot data=new GameSnapshot {schemaVersion=schema,dataVersion=manifest.Get(1,"data_version")};
             data.previousDataVersion=schema>=7?manifest.Get(1,"previous_data_version"):null;
@@ -43,7 +45,7 @@ namespace AutoBattler.EditorTools.Sheets
                 hp=t.Int(r,"hp"),attack=t.Int(r,"attack"),armor=t.Int(r,"armor"),attackInterval=t.Float(r,"attack_interval"),attackType=t.Get(r,"attack_type"),
                 attackRange=t.Int(r,"attack_range"),combatRole=t.Int(r,"combat_role"),critChance=t.Float(r,"crit_chance"),critMultiplier=t.Float(r,"crit_multiplier"),
                 skillId=t.Int(r,"skill_id",true),visualId=t.Int(r,"visual_id"),iconId=t.Int(r,"icon_id") });
-            data.rounds=Read(tables["Rounds"],(t,r)=>new RoundRow {roundId=t.Int(r,"round_id"),rewardGold=t.Int(r,"reward_gold"),isBoss=t.Bool(r,"is_boss"),offersAugment=t.Bool(r,"offers_augment")});
+            data.rounds=Read(tables["Rounds"],(t,r)=>new RoundRow {roundId=t.Int(r,"round_id"),rewardGold=t.Int(r,"reward_gold"),isBoss=t.Bool(r,"is_boss"),offersAugment=t.Bool(r,"offers_augment"),stageId=schema>=8?t.Int(r,"stage_id"):0,sequence=schema>=8?t.Int(r,"sequence"):0});
             data.roundUnits=Read(tables["RoundUnits"],(t,r)=>new RoundUnitRow {entryId=t.Int(r,"entry_id"),roundId=t.Int(r,"round_id"),unitId=t.Int(r,"unit_id"),star=t.Int(r,"star"),col=t.Int(r,"col"),row=t.Int(r,"row"),bossProfileId=t.Int(r,"boss_profile_id",true)});
             data.levels=Read(tables["Levels"],(t,r)=>new LevelRow {level=t.Int(r,"level"),requiredXp=t.Int(r,"required_xp"),deploymentLimit=t.Int(r,"deployment_limit")});
             data.shopRates=Read(tables["ShopRates"],(t,r)=>new ShopRateRow {level=t.Int(r,"level"),weights=Enumerable.Range(1,5).Select(c=>t.Int(r,"cost_"+c)).ToArray()});
@@ -83,6 +85,21 @@ namespace AutoBattler.EditorTools.Sheets
             data.itemRecipes=schema<7?Array.Empty<ItemRecipeRow>():Read(tables["ItemRecipes"],(t,r)=>new ItemRecipeRow {
                 recipeId=t.Int(r,"recipe_id"),firstItemId=t.Int(r,"first_item_id"),secondItemId=t.Int(r,"second_item_id"),resultItemId=t.Int(r,"result_item_id") });
             if(schema>=7) CheckIds(data.itemRecipes,recipe=>recipe.recipeId,tables["ItemRecipes"]);
+            data.stages=schema<8?Array.Empty<StageRow>():Read(tables["Stages"],(t,r)=>new StageRow {
+                stageId=t.Int(r,"stage_id"),chapter=t.Int(r,"chapter"),number=t.Int(r,"number"),roundsPerSegment=t.Int(r,"rounds_per_segment"),regionName=t.Get(r,"region_name"),locationName=t.Get(r,"location_name")});
+            data.stageUnlockPlans=schema<8?Array.Empty<StageUnlockPlanRow>():Read(tables["StageUnlockPlans"],(t,r)=>new StageUnlockPlanRow {
+                entryId=t.Int(r,"entry_id"),stageId=t.Int(r,"stage_id"),unitId=t.Int(r,"unit_id")});
+            if(schema>=8)
+            {
+                CheckIds(data.stages,stage=>stage.stageId,tables["Stages"]);
+                CheckIds(data.stageUnlockPlans,plan=>plan.entryId,tables["StageUnlockPlans"]);
+                if(data.stages.Length==0 || data.stages.Any(stage=>stage.chapter<1 || stage.number<1 || stage.roundsPerSegment<2
+                    || string.IsNullOrWhiteSpace(stage.regionName) || string.IsNullOrWhiteSpace(stage.locationName))
+                    || data.stages.Select(stage=>(stage.chapter,stage.number)).Distinct().Count()!=data.stages.Length)
+                    throw new FormatException("Stages: 지역·장소·전투 길이 또는 스테이지 중복 오류.");
+                if(data.rounds.Any(round=>!data.stages.Any(stage=>stage.stageId==round.stageId) || round.sequence<1))
+                    throw new FormatException("Rounds: stage_id 또는 sequence 참조 오류.");
+            }
             if(schema>=5)
             {
                 CheckIds(data.items,x=>x.itemId,tables["Items"]);
@@ -116,9 +133,10 @@ namespace AutoBattler.EditorTools.Sheets
                 {
                     int r=FindRow(t,"trait_id",trait.traitId);
                     if(string.IsNullOrWhiteSpace(trait.name) || trait.groupId<1 || trait.requiredCount<1 || trait.requiredCount>10
-                        || trait.value<0 || trait.secondaryValue<0 || trait.duration<0 || trait.threshold<0 || trait.threshold>1
+                        || (trait.value<0 && trait.effect!=TraitEffect.DemonPower) || trait.secondaryValue<0 || trait.duration<0 || trait.threshold<0 || trait.threshold>1
                         || (trait.effect==TraitEffect.ShieldAtStart && trait.duration<=0)
                         || (trait.effect==TraitEffect.LowHealthAttack && trait.threshold<=0)
+                        || (trait.effect==TraitEffect.DemonPower && (trait.value<=-1 || trait.value==0 || trait.value>1))
                         || ((trait.effect==TraitEffect.DamageLifeSteal || trait.effect==TraitEffect.BasicArmorIgnore) && trait.value>1)
                         || (trait.effect==TraitEffect.StartingMana && (trait.value>100 || trait.value!=(int)trait.value)))
                         throw t.Error(r,"trait_id","시너지 수치·집계 범위 오류.");
@@ -198,6 +216,7 @@ namespace AutoBattler.EditorTools.Sheets
             if(data.economy.Length!=13 || Enumerable.Range(1,13).Any(id=>!data.economy.Any(x=>x.ruleId==id && x.value>0))) throw new FormatException("Economy: 규칙 ID 1~13의 양수 값 필요.");
             if(data.economy.Any(x=>x.ruleId<=9 && x.value!=(int)x.value)) throw new FormatException("Economy: ID 1~9는 정수 필요.");
             DataRepository repository=new DataRepository(data);
+            if(schema>=8) foreach(StageRow stage in data.stages) repository.ForStage(stage.stageId);
             return data;
         }
         private static T[] Read<T>(CsvTable table,Func<CsvTable,int,T> reader)
@@ -223,6 +242,7 @@ namespace AutoBattler.EditorTools.Sheets
         }
         public static void Apply(GameSnapshot snapshot)
         {
+            AutoBattler.Run.StageDefinition[] stageTargets=snapshot.schemaVersion>=8?StageRuleAssetImporter.Targets(snapshot):Array.Empty<AutoBattler.Run.StageDefinition>();
             if(File.Exists(OutputPath) && JsonUtility.FromJson<GameSnapshot>(File.ReadAllText(OutputPath)).schemaVersion>snapshot.schemaVersion)
                 throw new FormatException("이전 스키마는 현재 스냅샷에 적용할 수 없습니다. 최신 Manifest와 필수 표를 확인하세요.");
             string directory=Path.GetDirectoryName(OutputPath); Directory.CreateDirectory(directory);
@@ -232,6 +252,7 @@ namespace AutoBattler.EditorTools.Sheets
                 File.WriteAllText(temporary,JsonUtility.ToJson(snapshot,true)+"\n",new System.Text.UTF8Encoding(false));
                 if(File.Exists(OutputPath)) File.Replace(temporary,OutputPath,null); else File.Move(temporary,OutputPath);
                 AssetDatabase.ImportAsset(OutputPath);
+                if(snapshot.schemaVersion>=8) StageRuleAssetImporter.Apply(snapshot,stageTargets);
             }
             finally { if(File.Exists(temporary)) File.Delete(temporary); }
         }

@@ -16,20 +16,22 @@ MonoBehaviour:
   displayName: 4-1
   chapter: 4
   number: 1
-  regionName: "\uC624\uD06C \uC804\uCD08\uAE30\uC9C0"
-  locationName: "\uC804\uCD08\uAE30\uC9C0 \uC785\uAD6C"
-  description:
+  regionName: "\uC624\uD06C \uC131\uCC44"
+  locationName: "\uC624\uD06C \uC804\uCD08\uAE30\uC9C0"
+  description: 
+  roundsPerSegment: 7
+  plannedUnlockUnitIds: fa030000
   sceneBuildIndex: 1
   battleBackground:
     m_AssetGUID: b52c5ab70d214734887201baa599bf0e
-    m_SubObjectName:
-    m_SubObjectType:
-    m_SubObjectGUID:
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
     m_EditorAssetChanged: 0
   benchFloor:
     m_AssetGUID: 9b0f4f5585be9c143886a46f7b108608
     m_SubObjectName: Bench_4_OrcFortress
     m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
-    m_SubObjectGUID:
+    m_SubObjectGUID: 
     m_EditorAssetChanged: 0

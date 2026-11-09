@@ -43,12 +43,15 @@ namespace AutoBattler.Run
         private readonly Dictionary<int,int> stock=new Dictionary<int,int>();
         private readonly int[] shop=new int[5];
         private readonly RunRandom random;
+        private readonly HashSet<int> availableUnitIds;
+        public IReadOnlyList<int> AvailableUnitIds=>Array.AsReadOnly(availableUnitIds.OrderBy(id=>id).ToArray());
+        public bool IsUnitAvailable(int unitId)=>availableUnitIds.Contains(unitId);
         private int nextId=1, settledRound;
         private bool pendingRoundWon;
         private readonly Dictionary<int,bool> roundOutcomes=new Dictionary<int,bool>();
         public bool TryGetRoundOutcome(int roundId,out bool won)=>roundOutcomes.TryGetValue(roundId,out won);
-        public RunState(DataRepository data,int seed,int stageId=1)
-            :this(data,new RunRandom(seed),new AugmentState(data.Augments,seed))
+        public RunState(DataRepository data,int seed,int stageId=1,IEnumerable<int> availableUnitIds=null)
+            :this(data.ForStage(stageId),new RunRandom(seed),new AugmentState(data.Augments,seed),availableUnitIds ?? InitialUnits(data))
         {
             Items=new ItemInventoryState(data.Items,stageId,seed^0x59B17,data.ItemRecipes);
             Gold=data.IntRule(EconomyRule.StartGold); Lives=data.IntRule(EconomyRule.StartLives);
@@ -60,8 +63,11 @@ namespace AutoBattler.Run
             Reroll();
             Augments.EnterRound(Round,Data.Rounds[Round].OffersAugment);
         }
-        private RunState(DataRepository data,RunRandom random,AugmentState augments)
+        private static IEnumerable<int> InitialUnits(DataRepository data)=>data.InitialUnlockedUnitIds;
+        private RunState(DataRepository data,RunRandom random,AugmentState augments,IEnumerable<int> availableUnits)
         { Data=data; this.random=random; Augments=augments; Placement=new PlacementService(Board);
+            availableUnitIds=new HashSet<int>(availableUnits);
+            if(availableUnitIds.Count==0 || availableUnitIds.Any(id=>!data.Units.ContainsKey(id))) throw new ArgumentException("사용 가능한 유닛 목록 오류.");
             Items=new ItemInventoryState(data.Items,1,random.Seed^0x59B17,data.ItemRecipes); }
 
         public RunSaveData Capture(int stageId,bool augmentWindowOpen,bool replayCombat=false)
@@ -72,13 +78,13 @@ namespace AutoBattler.Run
                 throw new InvalidOperationException("배치가 해제된 유닛은 저장할 수 없습니다.");
             return new RunSaveData
             {
-                dataVersion=Data.Version, stageId=stageId, savedAtUtc=DateTime.UtcNow.ToString("O"),
+                dataVersion=Data.Version, stageId=stageId, roundsPerSegment=Data.RoundsPerSegment,savedAtUtc=DateTime.UtcNow.ToString("O"),
                 // 전투 중 경제·장비 변경은 현재 논리 배치로 준비 단계 재시작 저장.
                 phase=IsSettled?RunSavePhase.Result:RunSavePhase.Preparation,
                 round=Round,gold=Gold,lives=Lives,level=Level,xp=Xp,winStreak=WinStreak,nextInstanceId=nextId,
                 isOver=IsOver,wonRun=WonRun,lastResult=LastResult,augmentWindowOpen=augmentWindowOpen,
                 randomSeed=random.Seed,randomDrawCount=random.DrawCount,shop=(int[])shop.Clone(),
-                unitDefinitionIds=Data.Units.Keys.OrderBy(id=>id).ToArray(),
+                unitDefinitionIds=Data.Units.Keys.OrderBy(id=>id).ToArray(),availableUnitIds=availableUnitIds.OrderBy(id=>id).ToArray(),
                 stock=stock.OrderBy(pair=>pair.Key).Select(pair=>new SavedStock {definitionId=pair.Key,available=pair.Value}).ToArray(),
                 units=owned.Select(unit=>
                 {
@@ -92,8 +98,10 @@ namespace AutoBattler.Run
             };
         }
 
-        public static RunState Restore(DataRepository data,RunSaveData saved)
+        public static RunState Restore(DataRepository data,RunSaveData saved,IEnumerable<int> availableUnitIds=null)
         {
+            if(saved!=null && saved.stageId>0) data=data.ForStage(saved.stageId);
+            saved=RunSaveMigration.Adapt(data,saved);
             if(saved==null || saved.saveVersion!=1 || saved.gridLayoutVersion!=1 || !data.IsSaveCompatible(saved.dataVersion)
                 || !data.Rounds.ContainsKey(saved.round) || saved.level<1 || saved.level>10
                 || saved.gold<0 || saved.lives<0 || saved.lives>data.IntRule(EconomyRule.StartLives)
@@ -109,7 +117,10 @@ namespace AutoBattler.Run
                 || saved.shop==null || saved.shop.Length!=5 || saved.stock==null || saved.units==null || saved.augments==null
                 || saved.units.Length>saved.level+PlacementService.BenchCapacity || saved.nextInstanceId<=0)
                 throw new ArgumentException("저장 형식 또는 게임 데이터 버전이 맞지 않습니다.");
-            RunState state=new RunState(data,new RunRandom(saved.randomSeed,saved.randomDrawCount),AugmentState.Restore(data.Augments,saved.augments))
+            if(saved.availableUnitIds!=null && (saved.availableUnitIds.Distinct().Count()!=saved.availableUnitIds.Length
+                || saved.availableUnitIds.Any(id=>!data.Units.ContainsKey(id)))) throw new ArgumentException("저장된 사용 가능 유닛 목록 오류.");
+            RunState state=new RunState(data,new RunRandom(saved.randomSeed,saved.randomDrawCount),AugmentState.Restore(data.Augments,saved.augments),
+                availableUnitIds ?? saved.availableUnitIds ?? InitialUnits(data))
             {
                 Round=saved.round,Gold=saved.gold,Lives=saved.lives,Level=saved.level,Xp=saved.xp,
                 WinStreak=saved.winStreak,CanPrepare=saved.phase==RunSavePhase.Preparation,
@@ -177,6 +188,10 @@ namespace AutoBattler.Run
             state.Items=ItemInventoryState.Restore(data.Items,saved.items,saved.stageId,saved.randomSeed^0x59B17,
                 state.owned.Select(unit=>unit.Placement.InstanceId).ToArray(),saved.round,data.ItemRecipes);
             if(state.CanPrepare) state.MergePendingUnits();
+            // 이전 저장의 보유 기물은 유지하고, 잠긴 상점 예약만 반환 후 다시 추첨.
+            for(int slot=0;slot<state.shop.Length;slot++)
+                if(state.shop[slot]!=0 && !state.IsUnitAvailable(state.shop[slot]))
+                {state.stock[state.shop[slot]]++;state.shop[slot]=0;state.shop[slot]=state.Draw(data.ShopWeights(state.Level));}
             return state;
         }
         public bool TryEquipItem(int itemInstanceId,int unitInstanceId)
@@ -216,6 +231,7 @@ namespace AutoBattler.Run
         {
             if(!CanTradeUnits || slot<0 || slot>=shop.Length || shop[slot]==0) return Fail("구매할 수 없는 상점입니다.");
             int id=shop[slot], cost=Data.Units[id].Cost;
+            if(!IsUnitAvailable(id)) return Fail("아직 해금되지 않은 유닛입니다.");
             if(Gold<cost) return Fail("골드가 부족합니다.");
             OwnedUnit[] matches=owned.Where(x=>x.DefinitionId==id && x.Star==1
                     && (CanPrepare || IsSettled || x.Placement.Location.Kind==UnitLocationKind.Bench))
@@ -291,20 +307,28 @@ namespace AutoBattler.Run
             LastResult=$"{(won?"승리":"패배")}\n보상은 전투 종료 타이머가 끝나면 지급";
             Notify(); return true;
         }
+        public RoundIncome PreviewRoundIncome(bool won)
+        {
+            if (IsOver && !HasPendingRoundReward) return default;
+            int round = IsSettled && !HasPendingRoundReward ? Round + 1 : Round;
+            // 승패 확정 후에는 실제 결과로 고정하고, 지급 시점의 잔액으로 이자 계산.
+            bool outcome = HasPendingRoundReward ? pendingRoundWon : won;
+            int streak = HasPendingRoundReward ? WinStreak : outcome ? WinStreak + 1 : 0;
+            int streakGold = streak >= 5 ? 3 : streak == 4 ? 2 : streak == 3 ? 1 : 0;
+            int interest = Math.Min(Data.IntRule(EconomyRule.InterestCap), Gold / Data.IntRule(EconomyRule.InterestDivisor));
+            int augment = outcome ? Augments.Selected.Where(definition => definition.Effect == AugmentEffect.VictoryGold).Sum(definition => (int)definition.Value) : 0;
+            return new RoundIncome(Data.Rounds[round].Reward, interest, streakGold, augment);
+        }
         public bool TryGrantRoundRewards()
         {
             if(!IsSettled || !HasPendingRoundReward) return false;
             bool won=pendingRoundWon;
-            int streak=WinStreak>=5?3:WinStreak==4?2:WinStreak==3?1:0;
-            // 카운트다운 중 구매·판매를 반영한 지급 시점의 골드로 이자 계산.
-            int interest=Math.Min(Data.IntRule(EconomyRule.InterestCap),Gold/Data.IntRule(EconomyRule.InterestDivisor));
-            int augmentGold=won?Augments.Selected.Where(x=>x.Effect==AugmentEffect.VictoryGold).Sum(x=>(int)x.Value):0;
-            int income=Data.Rounds[Round].Reward+streak+interest+augmentGold;
-            Gold+=income;
+            RoundIncome income = PreviewRoundIncome(won);
+            Gold += income.Total;
             if(won) Items.GrantVictory(Round);
             // 알림과 저장 전에 대기 상태를 해제하여 재진입·이어하기 중복 지급 차단.
             HasPendingRoundReward=false; pendingRoundWon=false;
-            LastResult=$"{(won?"승리":"패배")}   +{income}골드\n이자 {interest} · 연승 {streak} · 증강 {augmentGold}";
+            LastResult=$"{(won?"승리":"패배")}   +{income.Total}골드\n이자 {income.InterestGold} · 연승 {income.StreakGold} · 증강 {income.AugmentGold}";
             Notify(); return true;
         }
         public bool TryNextRound()
@@ -347,15 +371,15 @@ namespace AutoBattler.Run
         {
             int total=0;
             for(int cost=1;cost<=5;cost++)
-                if(Data.Units.Values.Any(x=>x.Cost==cost && stock[x.Id]>0)) total+=rates[cost-1];
+                if(Data.Units.Values.Any(x=>IsUnitAvailable(x.Id) && x.Cost==cost && stock[x.Id]>0)) total+=rates[cost-1];
             if(total==0) return 0;
             int tierPick=random.Next(total), tier=0;
             for(int cost=1;cost<=5;cost++)
             {
-                if(!Data.Units.Values.Any(x=>x.Cost==cost && stock[x.Id]>0)) continue;
+                if(!Data.Units.Values.Any(x=>IsUnitAvailable(x.Id) && x.Cost==cost && stock[x.Id]>0)) continue;
                 tierPick-=rates[cost-1]; if(tierPick<0) { tier=cost; break; }
             }
-            UnitDefinition[] candidates=Data.Units.Values.Where(x=>x.Cost==tier && stock[x.Id]>0).OrderBy(x=>x.Id).ToArray();
+            UnitDefinition[] candidates=Data.Units.Values.Where(x=>IsUnitAvailable(x.Id) && x.Cost==tier && stock[x.Id]>0).OrderBy(x=>x.Id).ToArray();
             int copyPick=random.Next(candidates.Sum(x=>stock[x.Id]));
             foreach(UnitDefinition unit in candidates)
             {

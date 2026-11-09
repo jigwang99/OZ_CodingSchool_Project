@@ -12,6 +12,7 @@ namespace AutoBattler.Run
         public int gridLayoutVersion=1;
         public string dataVersion;
         public int stageId;
+        public int roundsPerSegment;
         public string savedAtUtc;
         public RunSavePhase phase;
         public int round, gold, lives, level, xp, winStreak, nextInstanceId;
@@ -20,6 +21,7 @@ namespace AutoBattler.Run
         public int randomSeed, randomDrawCount;
         public int[] shop;
         public int[] unitDefinitionIds;
+        public int[] availableUnitIds;
         public SavedStock[] stock;
         public SavedUnit[] units;
         public SavedAugments augments;

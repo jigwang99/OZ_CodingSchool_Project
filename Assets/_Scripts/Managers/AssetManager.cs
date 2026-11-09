@@ -43,12 +43,12 @@ namespace AutoBattler.Managers
             GameObject root=new GameObject("UnitPool"); root.transform.SetParent(transform,false);
             Units=new UnitPrefabPool(assets,root.transform,poolSize);
         }
-        public async UniTask LoadAsync(CancellationToken token,IProgress<float> progress=null)
+        public async UniTask LoadAsync(CancellationToken token,IProgress<float> progress=null,int stageId=1)
         {
             token.ThrowIfCancellationRequested();
             if(shutdown!=null) throw new ObjectDisposedException(nameof(AssetManager));
             if(snapshot==null) snapshot=await assets.AcquireAsync<TextAsset>(catalog.Snapshot,token);
-            DataRepository repository=new DataRepository(JsonUtility.FromJson<GameSnapshot>(snapshot.Asset.text));
+            DataRepository repository=new DataRepository(JsonUtility.FromJson<GameSnapshot>(snapshot.Asset.text),stageId);
             progress?.Report(.1f);
             AssetReferenceGameObject[] prefabs=repository.Units.Values.Select(unit=>catalog.VisualPrefab(unit.VisualId))
                 .GroupBy(reference=>reference.RuntimeKey).Select(group=>group.First()).ToArray();

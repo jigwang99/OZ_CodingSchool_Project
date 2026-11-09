@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using System;
+using System.Collections.Generic;
 
 namespace AutoBattler.Run
 {
@@ -14,6 +16,8 @@ namespace AutoBattler.Run
         [SerializeField] private string regionName="마을 광장";
         [SerializeField] private string locationName="광장 입구";
         [SerializeField,TextArea] private string description;
+        [SerializeField,Min(2)] private int roundsPerSegment=5;
+        [SerializeField] private int[] plannedUnlockUnitIds=Array.Empty<int>();
         [SerializeField] private int sceneBuildIndex=1;
         [SerializeField] private AssetReferenceSprite battleBackground;
         [SerializeField] private AssetReferenceSprite benchFloor;
@@ -24,6 +28,9 @@ namespace AutoBattler.Run
         public string RegionName=>regionName;
         public string LocationName=>locationName;
         public string Description=>description;
+        public int RoundsPerSegment=>roundsPerSegment;
+        public int TotalRounds=>roundsPerSegment*3;
+        public IReadOnlyList<int> PlannedUnlockUnitIds=>Array.AsReadOnly(plannedUnlockUnitIds);
         public int SceneBuildIndex=>sceneBuildIndex;
         public AssetReferenceSprite BattleBackground=>battleBackground;
         public AssetReferenceSprite BenchFloor=>benchFloor;

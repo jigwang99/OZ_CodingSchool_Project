@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using AutoBattler.Assets;
 using AutoBattler.Run;
+using AutoBattler.Managers;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using TMPro;
@@ -35,6 +36,7 @@ namespace AutoBattler.Presentation.Battle
         private bool interactable = true;
         private StageMapRegion currentRegion;
         private Tween markerTween;
+        private SaveManager saves;
         public int Chapter { get; private set; } = 1;
         public StageDefinition Selection { get; private set; }
         public bool IsLoadingMap { get; private set; }
@@ -45,27 +47,37 @@ namespace AutoBattler.Presentation.Battle
         public RectTransform TravelMarker => travelMarker;
         public IReadOnlyList<StageSelectionCard> Cards => Array.AsReadOnly(cards);
         public event Action<StageDefinition> Selected;
+        public void BindProgress(SaveManager progress)
+        {
+            if(saves!=null) saves.Changed-=RefreshProgress;
+            saves=progress;
+            if(saves!=null && isActiveAndEnabled) saves.Changed+=RefreshProgress;
+            if(isActiveAndEnabled) RefreshProgress();
+        }
 
         private void OnEnable()
         {
             if (!Application.isPlaying) return;
             maps = new AssetService();
+            if(saves!=null) saves.Changed+=RefreshProgress;
             previousButton.onClick.AddListener(Previous);
             nextButton.onClick.AddListener(Next);
             retryMapButton.onClick.AddListener(Retry);
             foreach (StageSelectionCard card in cards) card.Selected += Select;
         }
-        public void Open(int chapter)
+        public void Open(int chapter,bool allowNavigationTransition=false)
         {
             interactable = true;
-            ShowChapter(mapSettings.TryGetRegion(chapter, out _) ? chapter : 1);
+            ShowChapter(mapSettings.TryGetRegion(chapter, out _) ? chapter : 1,allowNavigationTransition);
         }
         private void Previous() { if (previousButton.IsInteractable()) ShowChapter(Chapter - 1); }
         private void Next() { if (nextButton.IsInteractable()) ShowChapter(Chapter + 1); }
         private void Retry() { if (retryMapButton.IsInteractable()) ShowChapter(Chapter); }
         public void ShowChapter(int chapter)
+            =>ShowChapter(chapter,false);
+        private void ShowChapter(int chapter,bool allowNavigationTransition)
         {
-            if (!interactable || GameNavigation.IsTransitioning || !isActiveAndEnabled
+            if (!interactable || !allowNavigationTransition && GameNavigation.IsTransitioning || !isActiveAndEnabled
                 || !mapSettings.TryGetRegion(chapter, out StageMapRegion region)) return;
             int direction = chapter.CompareTo(Chapter);
             CancelMapRequest();
@@ -107,7 +119,11 @@ namespace AutoBattler.Presentation.Battle
                 currentRegion = region;
                 StageDefinition[] stages = settings.Stages.Where(stage => stage != null && stage.Chapter == Chapter)
                     .OrderBy(stage => stage.Number).ToArray();
-                for (int i = 0; i < cards.Length; i++) cards[i].Bind(i < stages.Length ? stages[i] : null);
+                for (int i = 0; i < cards.Length; i++)
+                {
+                    StageDefinition stage=i<stages.Length?stages[i]:null;
+                    cards[i].Bind(stage,stage!=null && saves!=null && saves.IsStageUnlocked(settings,stage),stage!=null && saves!=null && saves.IsStageCleared(stage.Id));
+                }
                 PositionNodes();
                 mapStatus.text = "";
                 mapContent.anchoredPosition = new Vector2(direction * mapContent.rect.width * .10f, 0f);
@@ -138,7 +154,7 @@ namespace AutoBattler.Presentation.Battle
         private void Select(StageDefinition stage)
         {
             if (!interactable || IsLoadingMap || GameNavigation.IsTransitioning
-                || stage == null || stage.Chapter != Chapter || !settings.Contains(stage)) return;
+                || stage == null || stage.Chapter != Chapter || !settings.Contains(stage) || currentRegion==null) return;
             int previous = Selection == null ? 0 : Selection.Number - 1;
             Selection = stage;
             foreach (StageSelectionCard card in cards) card.SetSelected(card.Stage == stage);
@@ -187,6 +203,14 @@ namespace AutoBattler.Presentation.Battle
             }
         }
         public void SetInteractable(bool value) { interactable = value; UpdateButtons(); }
+        private void RefreshProgress()
+        {
+            foreach(StageSelectionCard card in cards)
+                if(card.Stage!=null) card.SetProgress(saves!=null && saves.IsStageUnlocked(settings,card.Stage),saves!=null && saves.IsStageCleared(card.Stage.Id));
+            if(Selection!=null && (!settings.Contains(Selection) || Selection.Chapter!=Chapter))
+            {Selection=null; travelMarker.gameObject.SetActive(false); Selected?.Invoke(null);}
+            UpdateButtons();
+        }
         private void UpdateButtons()
         {
             bool ready = interactable && !IsLoadingMap;
@@ -207,6 +231,7 @@ namespace AutoBattler.Presentation.Battle
         }
         private void OnDisable()
         {
+            if(saves!=null) saves.Changed-=RefreshProgress;
             previousButton?.onClick.RemoveListener(Previous);
             nextButton?.onClick.RemoveListener(Next);
             retryMapButton?.onClick.RemoveListener(Retry);

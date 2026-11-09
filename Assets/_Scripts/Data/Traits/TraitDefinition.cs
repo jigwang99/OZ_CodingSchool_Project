@@ -5,7 +5,7 @@ using AutoBattler.Data.Snapshot;
 namespace AutoBattler.Data.Traits
 {
     public enum TraitCategory { Origin, Class }
-    public enum TraitEffect { ShieldAtStart, StartingMana, HealOnKill, LowHealthAttack, BasicAttackPower, SkillPower, AttackSpeed, Critical, MaxHealth, DamageLifeSteal, BasicArmorIgnore }
+    public enum TraitEffect { ShieldAtStart, StartingMana, HealOnKill, LowHealthAttack, BasicAttackPower, SkillPower, AttackSpeed, Critical, MaxHealth, DamageLifeSteal, BasicArmorIgnore, DemonPower }
 
     [Serializable]
     public sealed class TraitRow

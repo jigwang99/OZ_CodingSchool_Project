@@ -1,129 +1,120 @@
 using System;
+using AutoBattler.Managers;
 using AutoBattler.Run;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace AutoBattler.Presentation.Battle
 {
-    /// <summary>타이틀 → 스테이지 선택 → 게임 시작 입력과 로딩 표시.</summary>
+    /// <summary>타이틀·지도 선택과 상세 패널의 이어하기·새로하기 명령 연결.</summary>
     [DisallowMultipleComponent]
     public sealed class TitleMenu : MonoBehaviour
     {
         [SerializeField] private GameNavigationSettings settings;
         [SerializeField] private CanvasGroup titlePanel;
         [SerializeField] private CanvasGroup stagePanel;
-        [SerializeField] private Button openStagesButton;
+        [FormerlySerializedAs("openStagesButton")]
+        [SerializeField] private Button gameStartButton;
         [SerializeField] private Button quitButton;
         [SerializeField] private Button stageButton;
         [SerializeField] private StageSelectionView stageSelection;
-        [SerializeField] private Button startButton;
+        [SerializeField] private StageDetailsPanel detailsPanel;
         [SerializeField] private Button backButton;
-        [SerializeField] private Button continueButton;
-        private AutoBattler.Managers.SaveManager saves;
-        [SerializeField] private TextMeshProUGUI stageNameText;
-        [SerializeField] private TextMeshProUGUI stageDescriptionText;
+
         [SerializeField] private TextMeshProUGUI statusText;
         [SerializeField] private CanvasGroup interactionRoot;
+        private SaveManager saves;
         private GameSettingsView gameSettings;
         private StageDefinition selection;
         private bool busy;
         public GameNavigationSettings Settings=>settings;
         public bool IsStageSelectionOpen=>stagePanel.gameObject.activeSelf;
         public bool IsLoading=>busy;
-        public Button OpenStagesButton=>openStagesButton;
+        public Button GameStartButton=>gameStartButton;
         public Button QuitButton=>quitButton;
         public Button StageButton=>stageButton;
         public StageSelectionView StageSelection=>stageSelection;
         public StageDefinition SelectedStage=>selection;
-        public Button StartButton=>startButton;
+        public StageDetailsPanel DetailsPanel=>detailsPanel;
+        public Button StartButton=>detailsPanel.NewRunButton;
         public Button BackButton=>backButton;
-        public TextMeshProUGUI StageNameText=>stageNameText;
+        public TextMeshProUGUI StageNameText=>detailsPanel.StageNameText;
         public TextMeshProUGUI StatusText=>statusText;
         public GameSettingsView GameSettings=>gameSettings;
-        public Button ContinueButton=>continueButton;
+#if UNITY_EDITOR
+        // 이전 로컬 검사 도구의 버튼 참조 호환. 실제 화면에는 게임 시작 버튼 하나만 존재.
+        public Button OpenStagesButton=>gameStartButton;
+        public Button ContinueButton=>detailsPanel.ContinueButton;
+#endif
         private void OnEnable()
         {
             if(!Application.isPlaying) return;
-            saves=AutoBattler.Managers.SaveManager.instance; saves.Refresh();
-            saves.Changed+=RefreshContinue;
-            continueButton.onClick.AddListener(Resume);
-            gameSettings=AutoBattler.Managers.GameManager.instance.Settings;
-            if(gameSettings!=null) gameSettings.BindContext(interactionRoot,null);
-            openStagesButton.onClick.AddListener(OpenStages);
+            SoundManager.instance.PlayMenuMusicAsync().Forget();
+            saves=SaveManager.instance; saves.ConfigureProgression(settings); saves.Refresh();
+            stageSelection.BindProgress(saves);
+            detailsPanel.Bind(settings,saves);
+            gameSettings=GameManager.instance.Settings;
+            if(gameSettings!=null) gameSettings.BindContext(interactionRoot,null,settings,ShowStageSelection);
+            gameStartButton.onClick.AddListener(StartGame);
             quitButton.onClick.AddListener(Quit);
             stageSelection.Selected+=SelectStage;
-            startButton.onClick.AddListener(StartSelected);
+            detailsPanel.ContinueRequested+=ResumeSelected;
+            detailsPanel.NewRunRequested+=StartSelected;
             backButton.onClick.AddListener(Back);
-            selection=null; SetBusy(false); Show(titlePanel,stagePanel); statusText.text=saves.LastError??"";
-            RefreshContinue();
+            selection=null; SetBusy(false); statusText.text=saves.LastError??"";
+            if(GameNavigation.DestinationPage==MenuPage.StageSelection) OpenStageSelection(true);
+            else Show(titlePanel,stagePanel);
         }
-        private void RefreshContinue()
-        {
-            continueButton.gameObject.SetActive(saves.HasSavedRun && settings.TryGetStage(saves.SavedStageId,out _));
-            continueButton.interactable=!busy;
-        }
-        private void Resume()=>ResumeAsync().Forget();
-        private async UniTask ResumeAsync()
-        {
-            if(busy || !saves.HasSavedRun || GameNavigation.IsTransitioning) return;
-            SetBusy(true); statusText.text="";
-            try
-            {
-                if(!await GameNavigation.ResumeStageAsync(settings) && this!=null)
-                    statusText.text="이어하기를 시작할 수 없습니다. 새 도전을 시작해 주세요.";
-            }
-            catch(Exception exception)
-            { Debug.LogException(exception); if(this!=null) statusText.text="이어하기를 불러오지 못했습니다."; }
-            finally { if(this!=null) SetBusy(false); }
-        }
-        private void OpenStages()
+        private void StartGame()
         {
             if(busy || GameNavigation.IsTransitioning) return;
-            selection=null; startButton.interactable=false;
-            stageNameText.text="스테이지를 선택하세요";
-            stageDescriptionText.text="";
-            Show(stagePanel,titlePanel); statusText.text="";
-            int chapter=settings.TryGetStage(saves.SavedStageId,out StageDefinition saved)?saved.Chapter:settings.DefaultStage.Chapter;
-            stageSelection.Open(chapter);
+            saves.Refresh(); OpenStageSelection();
+        }
+        private void ShowStageSelection()=>OpenStageSelection();
+        public bool OpenStageSelection(bool allowNavigationTransition=false)
+        {
+            if(busy || !allowNavigationTransition && GameNavigation.IsTransitioning) return false;
+            selection=null; detailsPanel.Hide();
+            Show(stagePanel,titlePanel); statusText.text=saves.LastError??"";
+            int chapter=allowNavigationTransition?GameNavigation.MenuChapter
+                :settings.TryGetStage(saves.SavedStageId,out StageDefinition saved)?saved.Chapter:settings.DefaultStage.Chapter;
+            stageSelection.Open(chapter,allowNavigationTransition); return true;
         }
         private void SelectStage(StageDefinition stage)
         {
             if(busy || !IsStageSelectionOpen) return;
             selection=stage;
-            if(selection==null) { stageNameText.text="스테이지를 선택하세요"; stageDescriptionText.text=""; startButton.interactable=false; return; }
-            stageNameText.text=$"스테이지 {selection.DisplayName}";
-            stageDescriptionText.text=selection.RegionName+" · "+selection.LocationName;
-            startButton.interactable=true;
+            if(selection==null) detailsPanel.Hide();
+            else detailsPanel.Show(selection);
         }
         private void Back()
-        { if(!busy) { selection=null; Show(titlePanel,stagePanel); statusText.text=""; } }
-        private void StartSelected()=>StartSelectedAsync().Forget();
-        private async UniTask StartSelectedAsync()
+        {if(!busy && !GameNavigation.IsTransitioning) {selection=null; detailsPanel.Hide(); Show(titlePanel,stagePanel); statusText.text="";}}
+        private void StartSelected()=>StartSelectedAsync(false).Forget();
+        private void ResumeSelected()=>StartSelectedAsync(true).Forget();
+        private async UniTask StartSelectedAsync(bool resume)
         {
-            if(busy || selection==null || GameNavigation.IsTransitioning) return;
+            if(busy || selection==null || GameNavigation.IsTransitioning || !saves.IsStageUnlocked(settings,selection)) return;
+            if(resume && (!saves.HasSavedRun || saves.SavedStageId!=selection.Id)) return;
             SetBusy(true); statusText.text="";
             try
             {
-                if(!await GameNavigation.StartStageAsync(settings,selection) && this!=null)
-                    statusText.text="스테이지를 불러올 수 없습니다. 다시 시도하세요.";
+                bool loaded=resume?await GameNavigation.ResumeStageAsync(settings):await GameNavigation.StartStageAsync(settings,selection);
+                if(!loaded && this!=null) statusText.text="스테이지를 불러올 수 없습니다. 다시 시도하세요.";
             }
             catch(Exception exception)
-            {
-                Debug.LogException(exception);
-                if(this!=null) statusText.text="불러오기에 실패했습니다. 다시 시도하세요.";
-            }
-            finally { if(this!=null) SetBusy(false); }
+            {Debug.LogException(exception); if(this!=null) statusText.text="불러오기에 실패했습니다. 다시 시도하세요.";}
+            finally {if(this!=null) SetBusy(false);}
         }
         private void SetBusy(bool value)
         {
-            busy=value;
-            titlePanel.interactable=!value; stagePanel.interactable=!value;
-            startButton.interactable=!value && selection!=null;
+            busy=value; titlePanel.interactable=!value; stagePanel.interactable=!value;
+            gameStartButton.interactable=!value;
+            detailsPanel.SetInteractable(!value);
             stageSelection.SetInteractable(!value);
-            if(continueButton!=null) continueButton.interactable=!value;
         }
         private static void Show(CanvasGroup show,CanvasGroup hide)
         {
@@ -132,19 +123,14 @@ namespace AutoBattler.Presentation.Battle
             show.DOFade(1f,.18f).SetUpdate(true);
         }
         private void Quit()
-        {
-            if(busy || GameNavigation.IsTransitioning) return;
-            AutoBattler.Managers.GameManager.instance.QuitGame();
-        }
+        {if(!busy && !GameNavigation.IsTransitioning) GameManager.instance.QuitGame();}
         private void OnDisable()
         {
-            if(saves!=null) saves.Changed-=RefreshContinue;
-            if(continueButton!=null) continueButton.onClick.RemoveListener(Resume);
             if(gameSettings!=null) gameSettings.UnbindContext(interactionRoot);
-            if(openStagesButton!=null) openStagesButton.onClick.RemoveListener(OpenStages);
+            if(gameStartButton!=null) gameStartButton.onClick.RemoveListener(StartGame);
             if(quitButton!=null) quitButton.onClick.RemoveListener(Quit);
             if(stageSelection!=null) stageSelection.Selected-=SelectStage;
-            if(startButton!=null) startButton.onClick.RemoveListener(StartSelected);
+            if(detailsPanel!=null) {detailsPanel.ContinueRequested-=ResumeSelected; detailsPanel.NewRunRequested-=StartSelected;}
             if(backButton!=null) backButton.onClick.RemoveListener(Back);
             if(titlePanel!=null) titlePanel.DOKill();
             if(stagePanel!=null) stagePanel.DOKill();

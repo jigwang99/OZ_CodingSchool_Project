@@ -18,6 +18,238 @@ MonoBehaviour:
     m_SubObjectType: 
     m_SubObjectGUID: 
     m_EditorAssetChanged: 0
+  portraits:
+  - visualId: 1
+    sprite:
+      m_AssetGUID: 9611305a1b7b093438e5150f94061b0c
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - visualId: 2
+    sprite:
+      m_AssetGUID: c5ed10f19aec98d468481d9e247f20b5
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - visualId: 3
+    sprite:
+      m_AssetGUID: 6be0bc69172a2dd41b8ac47b9a8230bc
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - visualId: 4
+    sprite:
+      m_AssetGUID: 2c2c68b7639ebd64eb843c78e59fd8b5
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - visualId: 5
+    sprite:
+      m_AssetGUID: 1aab75b8b9e5b11489846503f2507e3f
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - visualId: 6
+    sprite:
+      m_AssetGUID: 90dbbef3c70cc1d4cb53cf1e46454faf
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - visualId: 7
+    sprite:
+      m_AssetGUID: eae8c0b5c99d3584ab17713987bd0c86
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - visualId: 8
+    sprite:
+      m_AssetGUID: 28d8a3bb010383a468f74fc85c03038b
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - visualId: 9
+    sprite:
+      m_AssetGUID: b84aac05c1ea2154b8b89ebe4856996a
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - visualId: 10
+    sprite:
+      m_AssetGUID: 7404f90d7299c404889a3bd4d29eede7
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - visualId: 11
+    sprite:
+      m_AssetGUID: ee902d185351b584686e4a3ca5666a78
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - visualId: 12
+    sprite:
+      m_AssetGUID: e264130b006005d4ba37aa8d56237e97
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - visualId: 13
+    sprite:
+      m_AssetGUID: 68bc020151c90a04990589aef02a79bd
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - visualId: 14
+    sprite:
+      m_AssetGUID: 2a3d7daca4f2c3346aa3cf52d63c8a98
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - visualId: 15
+    sprite:
+      m_AssetGUID: 5154d3d94085b704cad5e44bfe6fc44a
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - visualId: 16
+    sprite:
+      m_AssetGUID: b2abad3cb46ec0a4588ac7b8ab575518
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - visualId: 17
+    sprite:
+      m_AssetGUID: 36af4c37f06e93f4dafed136fe2f2bc9
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - visualId: 18
+    sprite:
+      m_AssetGUID: 8aa0d4d308a5c9943b872a0f3b91f9f9
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - visualId: 19
+    sprite:
+      m_AssetGUID: b51be30505116fb429e504164db27f83
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - visualId: 20
+    sprite:
+      m_AssetGUID: d6018300ac49c7f47b289492454a91f2
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - visualId: 21
+    sprite:
+      m_AssetGUID: d6423d882710f4c458c7a39ef2ef06a0
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - visualId: 22
+    sprite:
+      m_AssetGUID: 88b8b290ebc2b6f4080865267ecc448e
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - visualId: 23
+    sprite:
+      m_AssetGUID: 8a733a9b38211cf4e88166f021f9b566
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - visualId: 24
+    sprite:
+      m_AssetGUID: 2e4ce0a266411a94cb5243f860731e5e
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - visualId: 25
+    sprite:
+      m_AssetGUID: 4119c7e48d6fbcd49a48540612dca2dd
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - visualId: 26
+    sprite:
+      m_AssetGUID: a1ad9c5e002a32e46a470a7f62746731
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - visualId: 27
+    sprite:
+      m_AssetGUID: e38ca0454c5deb84dbb3afcb2d642a9b
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - visualId: 28
+    sprite:
+      m_AssetGUID: 9c4871eb46bceba47bf00fbf43f44725
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - visualId: 29
+    sprite:
+      m_AssetGUID: 307059cf29af85b499a9af5cb1c66882
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - visualId: 30
+    sprite:
+      m_AssetGUID: e4e4d8feccf436c4786e488266f1116b
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - visualId: 31
+    sprite:
+      m_AssetGUID: 7157a21fdf9bb984b890da1f6608a8ab
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - visualId: 32
+    sprite:
+      m_AssetGUID: 71f6e09342885474c900b475f793c282
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - visualId: 33
+    sprite:
+      m_AssetGUID: 407922c184ae3fd41866c60553bea3f0
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
   visuals:
   - id: 1
     prefab:
@@ -183,6 +415,69 @@ MonoBehaviour:
   - id: 24
     prefab:
       m_AssetGUID: fb0a801aa36249747963361adcad145c
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - id: 25
+    prefab:
+      m_AssetGUID: dabe63c5f59dad1429179dd081b2446d
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - id: 26
+    prefab:
+      m_AssetGUID: b5f837a764fd6df45abb113fedbcfbf6
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - id: 27
+    prefab:
+      m_AssetGUID: aafd9ef2deecf37438d6cf36e474d19a
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - id: 28
+    prefab:
+      m_AssetGUID: 5acf2e249881e324ca8d523cb759bf0a
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - id: 29
+    prefab:
+      m_AssetGUID: 317a5269e06c6ca448437f44bdd167eb
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - id: 30
+    prefab:
+      m_AssetGUID: efc749b31fc6b2b4eb337ef2658910a9
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - id: 31
+    prefab:
+      m_AssetGUID: 94ed9a8e8c45ee94ba686ddca3112166
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - id: 32
+    prefab:
+      m_AssetGUID: 62de0496b8526814fb01350d445bfd36
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - id: 33
+    prefab:
+      m_AssetGUID: 4a59cbf93a18d8f42b749cb8566b76c7
       m_SubObjectName: 
       m_SubObjectType: 
       m_SubObjectGUID: 
@@ -400,3 +695,21 @@ MonoBehaviour:
     sprite: {fileID: 1537655665, guid: bbad85936fd9b7e48af28c72838857a4, type: 3}
   - id: 24
     sprite: {fileID: 1537655665, guid: f2e91a65121741c47add833a39d555a0, type: 3}
+  - id: 25
+    sprite: {fileID: -1606347372, guid: 107698d37d6af654f84921a432cd7800, type: 3}
+  - id: 26
+    sprite: {fileID: 1322347637, guid: 7b04078e1e3a5a741bb11c6a8f4bbd83, type: 3}
+  - id: 27
+    sprite: {fileID: 1140529442, guid: c8c604ccfdcc69c4e888f2cfdc4a4c3e, type: 3}
+  - id: 28
+    sprite: {fileID: 700541618, guid: 3817b694033704c439cbeb8963a2a98a, type: 3}
+  - id: 29
+    sprite: {fileID: 1746019823, guid: 1be6ff642c048f24e8ade9229bb23972, type: 3}
+  - id: 30
+    sprite: {fileID: -667060278, guid: e4b5b55985b7df647bb053098d3f09e2, type: 3}
+  - id: 31
+    sprite: {fileID: -1958017996, guid: 65f5134024409f547af28413f5e56050, type: 3}
+  - id: 32
+    sprite: {fileID: 1533800306, guid: e83f418c15b194b4fa5d2a7d8cce0122, type: 3}
+  - id: 33
+    sprite: {fileID: 301494459, guid: a6795527b91634945b12a6eeae2ba68e, type: 3}

@@ -17,19 +17,21 @@ MonoBehaviour:
   chapter: 6
   number: 2
   regionName: "\uB9DD\uC790\uC758 \uAC15"
-  locationName: "\uAC08\uB300 \uAC15\uBCC0"
-  description:
+  locationName: "\uC548\uAC1C \uB098\uB8E8"
+  description: 
+  roundsPerSegment: 10
+  plannedUnlockUnitIds: 
   sceneBuildIndex: 1
   battleBackground:
     m_AssetGUID: f2f9004e4d3b6ec45a4ac52b9f836d53
-    m_SubObjectName:
-    m_SubObjectType:
-    m_SubObjectGUID:
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
     m_EditorAssetChanged: 0
   benchFloor:
     m_AssetGUID: cb82e6586c35bde48ab8076f26c29eaf
     m_SubObjectName: Bench_6_RiverOfDead
     m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
-    m_SubObjectGUID:
+    m_SubObjectGUID: 
     m_EditorAssetChanged: 0

@@ -18,18 +18,20 @@ MonoBehaviour:
   number: 1
   regionName: "\uC78A\uD78C \uC655\uAD6D\uC758 \uC720\uC801"
   locationName: "\uC720\uC801 \uCD08\uC785"
-  description:
+  description: 
+  roundsPerSegment: 10
+  plannedUnlockUnitIds: 
   sceneBuildIndex: 1
   battleBackground:
     m_AssetGUID: daeac4a4938817c48afa6646b1d5b02f
-    m_SubObjectName:
-    m_SubObjectType:
-    m_SubObjectGUID:
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
     m_EditorAssetChanged: 0
   benchFloor:
     m_AssetGUID: d48fbb22880548c44af7d18d07cad45b
     m_SubObjectName: Bench_5_ForgottenRuins
     m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
-    m_SubObjectGUID:
+    m_SubObjectGUID: 
     m_EditorAssetChanged: 0

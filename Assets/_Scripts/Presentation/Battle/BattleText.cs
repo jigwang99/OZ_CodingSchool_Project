@@ -9,20 +9,11 @@ namespace AutoBattler.Presentation.Battle
     /// <summary>기존 데이터 ID와 수치를 유지하는 전투 화면 한국어 표시.</summary>
     public static class BattleText
     {
-        public static string UnitName(UnitDefinition unit)
-        {
-            if(unit==null) return string.Empty;
-            switch(unit.Id)
-            {
-                case 1001:return "방패병"; case 1002:return "정찰병"; case 1003:return "치유사"; case 1004:return "석궁병";
-                case 1005:return "전사"; case 1006:return "암살자"; case 1007:return "화염술사"; case 1008:return "추적자";
-                default:return unit.Name;
-            }
-        }
+        public static string UnitName(UnitDefinition unit)=>unit?.Name ?? string.Empty;
         public static string TraitName(TraitCategory category,int id,string fallback)
         {
             if(category==TraitCategory.Origin)
-                switch(id) {case 1:return "인간";case 2:return "엘프";case 3:return "언데드";case 4:return "오크";case 5:return "수인";case 6:return "유령";}
+                switch(id) {case 1:return "인간";case 2:return "엘프";case 3:return "언데드";case 4:return "오크";case 5:return "수인";case 6:return "유령";case 7:return "악마";}
             else
                 switch(id) {case 1:return "검사";case 2:return "마법사";case 3:return "궁수";case 4:return "암살자";case 5:return "격투가";case 6:return "창병";}
             return fallback;

@@ -9,6 +9,7 @@ using AutoBattler.Battle.Grid;
 using AutoBattler.Battle.Skills;
 using AutoBattler.Battle.Units;
 using AutoBattler.Data.Skills;
+using AutoBattler.Data.Units;
 using AutoBattler.Pooling;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -77,17 +78,23 @@ namespace AutoBattler.Presentation.Units
             visual.Bind(manager,OnReturned,item.Entry.lifetime); active.Add(visual); PlayedCount++; return visual;
         }
         private void OnReturned(PooledBattleVisual visual)=>active.Remove(visual);
-        public PooledBattleVisual Play(BattleVisualId id,Vector3 position)
+        public PooledBattleVisual Play(BattleVisualId id,Vector3 position,Vector3 direction=default,float scaleMultiplier=1f)
         {
             PooledBattleVisual visual=Rent(id);
-            if(visual!=null) visual.PlayParticles(position,loaded[id].Entry.scale);
+            if(visual!=null) visual.PlayEffect(position,loaded[id].Entry.scale*scaleMultiplier,direction);
             return visual;
         }
-        private PooledBattleVisual Projectile(Unit caster,Unit target,float seconds,bool magic,Color color,bool hold)
+        private PooledBattleVisual Follow(BattleVisualId id,CombatUnitReference unit,Vector3 offset)
         {
-            PooledBattleVisual visual=Rent(BattleVisualId.Projectile);
+            PooledBattleVisual visual=Rent(id);
+            if(visual!=null)visual.FollowEffect(unit,loaded[id].Entry.scale,offset);
+            return visual;
+        }
+        private PooledBattleVisual Projectile(Unit caster,Unit target,float seconds,bool magic,Color color,bool hold,BattleVisualId style)
+        {
+            PooledBattleVisual visual=Rent(style);
             if(visual!=null) visual.PlayProjectile(caster.transform.position+Vector3.up*.2f,new CombatUnitReference(target),
-                target.transform.position+Vector3.up*.2f,magic?settings.MagicOrb:settings.Arrow,color,seconds,hold);
+                target.transform.position+Vector3.up*.2f,magic?settings.MagicOrb:settings.Arrow,color,seconds,hold,loaded[style].Entry.scale);
             return visual;
         }
         public async UniTask DisposeAsync()
@@ -103,12 +110,14 @@ namespace AutoBattler.Presentation.Units
             private readonly BattleVisualService service;
             private readonly Unit unit;
             private readonly CombatUnitReference reference;
-            private int shield;
-            private PooledBattleVisual stun,projectile;
-            private int stunGeneration,projectileGeneration;
+            private struct StatusSlot {public PooledBattleVisual Visual;public int Generation;}
+            private readonly UnitVisualEntry presentation;
+            private StatusSlot stun,slow,power,weak,shield;
+            private PooledBattleVisual projectile;
+            private int projectileGeneration;
             public Binding(BattleVisualService owner,Unit actor)
             {
-                service=owner; unit=actor; reference=new CombatUnitReference(actor); shield=unit.Effects.Shield;
+                service=owner; unit=actor; reference=new CombatUnitReference(actor);presentation=service.settings.Unit(unit.Definition.Id);
                 unit.Health.DamageResolved+=OnDamage; unit.Health.Healed+=OnHealed; unit.Health.Died+=OnDied;
                 unit.Effects.Changed+=OnEffects; unit.Combat.ProjectileReleased+=OnProjectile;
                 unit.Skill.EffectReleased+=OnSkillReleased; unit.Skill.EffectApplied+=OnSkillApplied; unit.Skill.CastFinished+=OnCastFinished;
@@ -122,32 +131,51 @@ namespace AutoBattler.Presentation.Units
                 if(result.Context.Kind==DamageKind.Skill)
                 {
                     SkillVisualEntry skill=service.settings.Skill(result.Context.SourceId);
-                    if(skill?.areaImpact==true) return;
+                    // 스킬 적중 이벤트에서 이미 표현한 타격은 중복 재생하지 않음.
+                    if(skill!=null) return;
                     service.Play(skill?.impact ?? BattleVisualId.MagicHit,Position);
                 }
-                else service.Play(result.Context.Attacker.ClassId==2 ? BattleVisualId.MagicHit : BattleVisualId.Hit,Position);
+                else
+                {
+                    UnitVisualEntry attacker=service.settings.Unit(result.Context.Attacker.DefinitionId);
+                    Vector3 direction=result.Context.Attacker.Unit!=null?Position-result.Context.Attacker.Unit.transform.position:Vector3.right;
+                    service.Play(attacker?.basicImpact ?? (result.Context.Attacker.ClassId==2?BattleVisualId.MagicHit:BattleVisualId.Hit),Position,direction,attacker?.basicImpactScale ?? 1f);
+                }
             }
-            private void OnHealed(int amount) { if(Current && amount>0) service.Play(BattleVisualId.Heal,Position); }
+            private void OnHealed(int amount) { if(Current && amount>0) service.Play(presentation?.healing ?? BattleVisualId.Heal,Position); }
             private void OnEffects()
             {
                 if(!Current) return;
-                int current=unit.Effects.Shield;
-                if(current>shield) service.Play(BattleVisualId.Shield,Position);
-                shield=current;
-                if(!unit.Effects.IsStunned) Return(ref stun,stunGeneration);
-                else if(stun==null || !stun.IsRented || stun.Generation!=stunGeneration)
+                bool buff=false,debuff=false;
+                foreach(EffectInstance effect in unit.Effects.Active)
                 {
-                    stun=service.Rent(BattleVisualId.Stun);
-                    if(stun!=null) { stunGeneration=stun.Generation; stun.ShowStatus(reference,service.settings.Stun); }
+                    if(effect.Definition.Kind!=EffectKind.StatModifier)continue;
+                    buff|=effect.Magnitude>0;debuff|=effect.Magnitude<0;
                 }
+                Sync(ref stun,BattleVisualId.Stun,unit.Effects.IsStunned,Vector3.up*.85f);
+                Sync(ref slow,BattleVisualId.ColdStatus,unit.Effects.SlowRate>0,Vector3.up*.15f);
+                Sync(ref power,BattleVisualId.PowerStatus,buff,Vector3.up*.15f);
+                Sync(ref weak,BattleVisualId.WeakStatus,debuff,Vector3.up*.4f);
+                Sync(ref shield,BattleVisualId.ShieldStatus,unit.Effects.Shield>0,Vector3.up*.3f);
             }
-            private void OnDied()=>Return(ref stun,stunGeneration);
+            private void Sync(ref StatusSlot slot,BattleVisualId id,bool enabled,Vector3 offset)
+            {
+                if(!enabled){Return(ref slot.Visual,slot.Generation);return;}
+                if(slot.Visual!=null && slot.Visual.IsRented && slot.Visual.Generation==slot.Generation)return;
+                slot.Visual=service.Follow(id,reference,offset);if(slot.Visual!=null)slot.Generation=slot.Visual.Generation;
+            }
+            private void OnDied()=>ReturnStatuses();
+            private void ReturnStatuses()
+            {
+                Return(ref stun.Visual,stun.Generation);Return(ref slow.Visual,slow.Generation);Return(ref power.Visual,power.Generation);
+                Return(ref weak.Visual,weak.Generation);Return(ref shield.Visual,shield.Generation);
+            }
             private void OnProjectile(UnitCombat target,float seconds)
             {
                 if(!Current || target==null) return;
                 Unit destination=target.GetComponent<Unit>();
-                bool magic=unit.Definition.ClassId==2;
-                service.Projectile(unit,destination,seconds,magic,magic ? new Color(.6f,.9f,1f) : Color.white,false);
+                bool magic=presentation?.magicProjectile ?? unit.Definition.ClassId==2;
+                service.Projectile(unit,destination,seconds,magic,presentation?.projectileColor ?? Color.white,false,presentation?.projectile ?? BattleVisualId.Projectile);
             }
             private void OnSkillReleased(SkillCastContext context)
             {
@@ -155,7 +183,7 @@ namespace AutoBattler.Presentation.Units
                 SkillVisualEntry presentation=service.settings.Skill(context.Definition.Id);
                 float seconds=unit.CurrentCell.Value.DistanceTo(context.Center)/Mathf.Max(.01f,context.Definition.ProjectileSpeed);
                 projectile=service.Projectile(unit,context.Target.Unit,seconds,presentation?.magicProjectile==true,
-                    presentation?.projectileColor ?? Color.white,true);
+                    presentation?.projectileColor ?? Color.white,true,presentation?.projectile ?? BattleVisualId.Projectile);
                 if(projectile!=null) projectileGeneration=projectile.Generation;
             }
             private void OnSkillApplied(SkillCastContext context)
@@ -163,10 +191,15 @@ namespace AutoBattler.Presentation.Units
                 Return(ref projectile,projectileGeneration);
                 if(!Current) return;
                 SkillVisualEntry presentation=service.settings.Skill(context.Definition.Id);
-                if(presentation?.areaImpact==true) service.Play(presentation.impact,service.grid.CellToWorld(context.Center));
-                else if(context.Definition.TargetRule==SkillTargetRule.NearestOtherAllies)
+                Vector3 direction=context.Target.IsValid?context.Target.Unit.transform.position-unit.transform.position:Vector3.right;
+                if(presentation?.areaImpact==true)
+                {
+                    Vector3 center=presentation.casterCentered?Position:service.grid.CellToWorld(context.Center)+Vector3.up*.2f;
+                    service.Play(presentation.impact,center,direction,presentation.impactScale);
+                }
+                else
                     foreach(SkillTarget target in context.AppliedTargets)
-                        if(target.IsValid) service.Play(presentation?.impact ?? BattleVisualId.MagicHit,target.Unit.transform.position+Vector3.up*.2f);
+                        if(target.IsValid) service.Play(presentation?.impact ?? BattleVisualId.MagicHit,target.Unit.transform.position+Vector3.up*.2f,direction,presentation?.impactScale ?? 1f);
             }
             private void OnCastFinished()=>Return(ref projectile,projectileGeneration);
             private static void Return(ref PooledBattleVisual visual,int generation)
@@ -176,7 +209,7 @@ namespace AutoBattler.Presentation.Units
                 unit.Health.DamageResolved-=OnDamage; unit.Health.Healed-=OnHealed; unit.Health.Died-=OnDied;
                 unit.Effects.Changed-=OnEffects; unit.Combat.ProjectileReleased-=OnProjectile;
                 unit.Skill.EffectReleased-=OnSkillReleased; unit.Skill.EffectApplied-=OnSkillApplied; unit.Skill.CastFinished-=OnCastFinished;
-                Return(ref stun,stunGeneration); Return(ref projectile,projectileGeneration);
+                ReturnStatuses();Return(ref projectile,projectileGeneration);
             }
         }
     }

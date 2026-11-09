@@ -8,11 +8,19 @@ namespace AutoBattler.Assets
     [Serializable] public sealed class CatalogEntry { public int id; public AssetReferenceGameObject prefab; }
     [Serializable] public sealed class ItemIconEntry { public int id; public AssetReferenceSprite sprite; }
     [Serializable] public sealed class UnitIconEntry { public int id; public Sprite sprite; }
+    [Serializable] public sealed class UnitPortraitEntry { public int visualId; public AssetReferenceSprite sprite; }
     [CreateAssetMenu(menuName="PixelTactics/Asset Catalog")]
     public sealed class AssetCatalog : ScriptableObject
     {
         [SerializeField] private AssetReferenceT<TextAsset> snapshot;
         public AssetReferenceT<TextAsset> Snapshot => snapshot;
+        [SerializeField] private UnitPortraitEntry[] portraits=Array.Empty<UnitPortraitEntry>();
+        public IReadOnlyList<UnitPortraitEntry> Portraits=>Array.AsReadOnly(portraits);
+        public AssetReferenceSprite PortraitReference(int visualId)
+        {
+            foreach(UnitPortraitEntry entry in portraits) if(entry.visualId==visualId) return entry.sprite;
+            throw new ArgumentException($"미등록 유닛 기본 모습: {visualId}");
+        }
         public CatalogEntry[] visuals;
         [SerializeField] private ItemIconEntry[] itemIcons=Array.Empty<ItemIconEntry>();
         public IReadOnlyList<ItemIconEntry> ItemIcons=>Array.AsReadOnly(itemIcons);

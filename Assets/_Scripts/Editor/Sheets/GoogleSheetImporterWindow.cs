@@ -110,7 +110,7 @@ namespace AutoBattler.EditorTools.Sheets
         private void Apply(Dictionary<string,CsvTable> tables)
         {
             Data.Snapshot.GameSnapshot snapshot=SnapshotImporter.Build(tables); SnapshotImporter.Apply(snapshot);
-            report=$"적용 완료: {snapshot.dataVersion}\n유닛 {snapshot.units.Length}종 / 스킬 {snapshot.skills.Length}종 / 시너지 {snapshot.traits.Length}단계 / 강화 {snapshot.augments.Length}종 / 아이템 {snapshot.items.Length}종 / 합성 조합 {snapshot.itemRecipes.Length}개 / 라운드 {snapshot.rounds.Length}개\n{SnapshotImporter.OutputPath}\n로컬 Addressables 번들을 다시 빌드한 뒤 배포.";
+            report=$"적용 완료: {snapshot.dataVersion}\n유닛 {snapshot.units.Length}종 / 스킬 {snapshot.skills.Length}종 / 시너지 {snapshot.traits.Length}단계 / 강화 {snapshot.augments.Length}종 / 아이템 {snapshot.items.Length}종 / 합성 조합 {snapshot.itemRecipes.Length}개\n스테이지 {snapshot.stages?.Length ?? 0}개 / 전체 스테이지 전투 {snapshot.rounds.Length}개\n{SnapshotImporter.OutputPath}\n로컬 Addressables 번들을 다시 빌드한 뒤 배포.";
         }
         private void OnDisable() { operation?.Cancel(); apiKey=""; bearerToken=""; }
     }

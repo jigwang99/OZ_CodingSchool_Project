@@ -32,7 +32,8 @@ namespace AutoBattler.Presentation.Battle
                 displayedData=state.Data;
                 roundIds=state.Data.Rounds.Keys.OrderBy(id=>id).ToArray();
             }
-            stageText.text=stage;
+            int length=state.Data.RoundsPerSegment;
+            stageText.text=length>0?$"{(state.Round-1)/length+1}-{(state.Round-1)%length+1}":stage;
             int current=-1;
             int first=Mathf.Clamp(Array.IndexOf(roundIds,state.Round)-markers.Length/2,0,Math.Max(0,roundIds.Length-markers.Length));
             for(int i=0;i<markers.Length;i++)

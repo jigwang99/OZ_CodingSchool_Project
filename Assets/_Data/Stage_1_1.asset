@@ -17,19 +17,21 @@ MonoBehaviour:
   chapter: 1
   number: 1
   regionName: "\uB9C8\uC744 \uAD11\uC7A5"
-  locationName: "\uAD11\uC7A5 \uC785\uAD6C"
-  description:
+  locationName: "\uB9C8\uC744 \uC785\uAD6C"
+  description: 
+  roundsPerSegment: 5
+  plannedUnlockUnitIds: 
   sceneBuildIndex: 1
   battleBackground:
     m_AssetGUID: cc1b4513ee8728f42828bdc49061d99a
-    m_SubObjectName:
-    m_SubObjectType:
-    m_SubObjectGUID:
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
     m_EditorAssetChanged: 0
   benchFloor:
     m_AssetGUID: c58c2a391844ab14da6d1b4552637600
     m_SubObjectName: Bench_1_VillageSquare
     m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
-    m_SubObjectGUID:
+    m_SubObjectGUID: 
     m_EditorAssetChanged: 0

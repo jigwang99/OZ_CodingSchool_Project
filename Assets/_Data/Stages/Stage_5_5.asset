@@ -17,19 +17,21 @@ MonoBehaviour:
   chapter: 5
   number: 5
   regionName: "\uC78A\uD78C \uC655\uAD6D\uC758 \uC720\uC801"
-  locationName: "\uC720\uC801 \uC2EC\uBD80"
-  description:
+  locationName: "\uC78A\uD78C \uC655\uC88C"
+  description: 
+  roundsPerSegment: 10
+  plannedUnlockUnitIds: 
   sceneBuildIndex: 1
   battleBackground:
     m_AssetGUID: b2824add064db8747bc3dfb843135baa
-    m_SubObjectName:
-    m_SubObjectType:
-    m_SubObjectGUID:
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
     m_EditorAssetChanged: 0
   benchFloor:
     m_AssetGUID: d48fbb22880548c44af7d18d07cad45b
     m_SubObjectName: Bench_5_ForgottenRuins
     m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
-    m_SubObjectGUID:
+    m_SubObjectGUID: 
     m_EditorAssetChanged: 0

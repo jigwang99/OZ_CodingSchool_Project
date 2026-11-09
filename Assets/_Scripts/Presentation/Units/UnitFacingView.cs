@@ -52,7 +52,8 @@ namespace AutoBattler.Presentation.Units
         }
         private void OnPhaseChanged(BattlePhase phase)
         {
-            if(phase==BattlePhase.Preparation || phase==BattlePhase.Combat)
+            // 결과 대기 중 배치 위치로 복귀하므로 방향도 같은 시점에 복원.
+            if(phase==BattlePhase.Result || phase==BattlePhase.Preparation || phase==BattlePhase.Combat)
                 RestoreDefaultFacing();
         }
         public void RestoreDefaultFacing() => ApplyFacing(unit.Team==UnitTeam.Ally);

@@ -8,14 +8,21 @@ using UnityEngine;
 
 namespace AutoBattler.Managers
 {
-    /// <summary>영속 효과음 볼륨과 미리 배치된 2D 재생 채널 관리.</summary>
+    /// <summary>영속 효과음·배경음악 볼륨과 미리 배치된 2D 재생 채널 관리.</summary>
     [DisallowMultipleComponent, DefaultExecutionOrder(-110)]
     public sealed class SoundManager : Singleton<SoundManager>
     {
         public const string VolumePreferenceKey = "PixelTactics.SfxVolume";
+        public const string MusicVolumePreferenceKey = "PixelTactics.BgmVolume";
         [SerializeField] private SoundCatalog catalog;
         [SerializeField] private AudioSource[] channels = Array.Empty<AudioSource>();
         [SerializeField, Range(0f, 1f)] private float defaultVolume = .7f;
+        [Header("배경음악")]
+        [SerializeField] private MusicCatalog musicCatalog;
+        [SerializeField] private AudioSource musicSource;
+        [SerializeField,Range(0f,1f)] private float defaultMusicVolume=.45f;
+        [SerializeField,Min(0f)] private float musicFadeSeconds=.35f;
+        private MusicPlayback music;
         private readonly Dictionary<SoundId, double> lastPlayed = new Dictionary<SoundId, double>();
         private readonly BattleSoundService battle = new BattleSoundService();
         private SoundAssetService soundAssets;
@@ -30,6 +37,15 @@ namespace AutoBattler.Managers
         public int LoadedClipCount => soundAssets?.LoadedCount ?? 0;
         public int ActiveAssetHandleCount => soundAssets?.ActiveHandleCount ?? 0;
         public event Action<float> VolumeChanged;
+        public MusicCatalog MusicCatalog=>musicCatalog;
+        public AudioSource MusicSource=>musicSource;
+        public float MusicVolume {get;private set;}=.45f;
+        public AudioClip CurrentMusicClip=>music?.CurrentClip;
+        public int ActiveMusicHandleCount=>music?.ActiveHandleCount ?? 0;
+        public int MusicPlayCount=>music?.PlayCount ?? 0;
+        public bool IsMusicLoading=>music!=null && music.IsLoading;
+        public string LastMusicError=>music?.LastError;
+        public event Action<float> MusicVolumeChanged;
 
         protected override void Awake()
         {
@@ -38,6 +54,8 @@ namespace AutoBattler.Managers
             if (!TryGetExisting(out SoundManager current) || current != this) return;
             float stored = PlayerPrefs.GetFloat(VolumePreferenceKey, defaultVolume);
             EffectVolume = Normalize(stored, defaultVolume);
+            MusicVolume=Normalize(PlayerPrefs.GetFloat(MusicVolumePreferenceKey,defaultMusicVolume),defaultMusicVolume);
+            if(musicSource!=null){musicSource.Stop();musicSource.clip=null;musicSource.volume=0f;}
             foreach (AudioSource channel in channels)
                 if (channel != null) { channel.Stop(); channel.volume = EffectVolume; }
         }
@@ -46,6 +64,8 @@ namespace AutoBattler.Managers
         {
             if (!Application.isPlaying || !TryGetExisting(out SoundManager current) || current != this) return;
             soundAssets = new SoundAssetService();
+            music=new MusicPlayback(musicSource,MusicVolume,musicFadeSeconds,
+                message=>Debug.LogWarning("배경음악 불러오기 실패. "+message,this));
             audioLifetime = new CancellationTokenSource();
             PreloadAsync().Forget();
         }
@@ -98,6 +118,15 @@ namespace AutoBattler.Managers
             PlayerPrefs.Save();
             VolumeChanged?.Invoke(next);
         }
+        public void SetMusicVolume(float value)
+        {
+            float next=Normalize(value,MusicVolume);if(Mathf.Approximately(next,MusicVolume))return;
+            MusicVolume=next;music?.SetVolume(next);PlayerPrefs.SetFloat(MusicVolumePreferenceKey,next);PlayerPrefs.Save();MusicVolumeChanged?.Invoke(next);
+        }
+        public UniTask<bool> PlayMenuMusicAsync()=>music!=null && musicCatalog!=null
+            ?music.PlayAsync(musicCatalog.Menu):UniTask.FromResult(false);
+        public UniTask<bool> PlayStageMusicAsync(int chapter)=>music!=null && musicCatalog!=null && musicCatalog.TryGet(chapter,out UnityEngine.AddressableAssets.AssetReferenceT<AudioClip> clip)
+            ?music.PlayAsync(clip):UniTask.FromResult(false);
 
         // 이벤트 호출부에서는 싱글톤 검색·자동 생성 없이 등록된 매니저만 사용.
         public static bool PlayEffect(SoundId id) => TryGetExisting(out SoundManager manager) && manager.Play(id);
@@ -136,6 +165,7 @@ namespace AutoBattler.Managers
         }
         private void ReleaseAudioAssets()
         {
+            music?.Dispose();music=null;
             // 재생·채널 참조를 먼저 정리한 뒤 클립 핸들 반환.
             foreach (AudioSource channel in channels)
                 if (channel != null) { channel.Stop(); channel.clip = null; }

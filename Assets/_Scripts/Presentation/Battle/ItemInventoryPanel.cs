@@ -18,11 +18,12 @@ namespace AutoBattler.Presentation.Battle
     {
         [SerializeField] private CanvasGroup modal;
         [SerializeField] private Button openButton, closeButton, previousPage, nextPage;
-        [SerializeField] private TextMeshProUGUI openLabel, pageLabel, detailLabel, hintLabel;
+        [SerializeField] private TextMeshProUGUI openLabel, pageLabel;
         [SerializeField] private ItemIconButton[] storedSlots;
         [Header("드래그 표시")]
         [SerializeField] private RectTransform dragPreview;
         [SerializeField] private Image dragIcon;
+        [SerializeField] private ItemFusionPreview fusionPreview;
         [SerializeField, Min(1f)] private float targetScale = 1.18f;
         private readonly List<RaycastResult> uiHits = new List<RaycastResult>();
         private RunController run;
@@ -43,6 +44,7 @@ namespace AutoBattler.Presentation.Battle
         public CanvasGroup Modal => modal;
         public ItemIconButton[] StoredSlots => storedSlots;
         public RectTransform DragPreview => dragPreview;
+        public ItemFusionPreview FusionPreview => fusionPreview;
 
         public void Bind(RunController controller, CanvasGroup group)
         {
@@ -142,7 +144,7 @@ namespace AutoBattler.Presentation.Battle
             if (run != null) run.Drag.SetItemDragging(false);
             if (dragPreview != null) dragPreview.gameObject.SetActive(false);
             if (dragIcon != null) dragIcon.sprite = null;
-            if(IsOpen) RefreshHint(null);
+            if (fusionPreview != null) fusionPreview.Hide();
         }
         private Camera UICamera => canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
         private void UpdateTarget()
@@ -158,11 +160,16 @@ namespace AutoBattler.Presentation.Battle
             SetStoredTarget(fusion!=null?hovered:null);
             bool overInventory=RectTransformUtility.RectangleContainsScreenPoint((RectTransform)modal.transform,pointer,UICamera);
             SetTarget(!overInventory && uiHits.Count==0?FindTarget():null);
-            if(target!=null && run.State.Items.TryGetEquipFusion(draggedItem,target.InstanceId,out _,out ItemDefinition equippedFusion)) fusion=equippedFusion;
+            ItemDefinition equippedFusion = null;
+            if (target != null && run.State.Items.TryGetEquipFusion(draggedItem, target.InstanceId, out _, out equippedFusion))
+                fusion = equippedFusion;
             OwnedItem dragged=run.State.Items.Find(draggedItem);
             if(dragged!=null) dragIcon.sprite=run.ItemIcon(fusion!=null?fusion.IconId:run.State.Data.Items[dragged.DefinitionId].IconId);
             dragIcon.color = target != null || storedTarget!=null ? Color.white : new Color(1f, 1f, 1f, .65f);
-            RefreshHint(fusion);
+            if (fusion != null)
+                fusionPreview.Show(fusion, run.ItemIcon(fusion.IconId), pointer, UICamera);
+            else
+                fusionPreview.Hide();
             if (RectTransformUtility.ScreenPointToLocalPointInRectangle((RectTransform)dragPreview.parent,
                 pointer, UICamera, out Vector2 local)) dragPreview.anchoredPosition = local;
         }
@@ -187,12 +194,6 @@ namespace AutoBattler.Presentation.Battle
             if(storedTarget!=null) storedTarget.SetDropHighlighted(false);
             storedTarget=next;
             if(storedTarget!=null) storedTarget.SetDropHighlighted(true);
-        }
-        private void RefreshHint(ItemDefinition fusion)
-        {
-            if(fusion!=null) hintLabel.text=$"{fusion.Name}\n{ItemText.Stats(fusion)}";
-            else hintLabel.text=run!=null && run.IsReady && run.Equipment.CanEquip
-                ?"아이템을 아군에게 드래그하여 장착\n다른 재료 위에 놓으면 합성":"현재 아이템을 장착할 수 없습니다";
         }
         private void SetTarget(Unit next)
         {
@@ -225,9 +226,6 @@ namespace AutoBattler.Presentation.Battle
             }
             OwnedItem selection = run.State.Items.Find(selectedItem);
             if (selection == null || selection.OwnerUnitId != 0) { selectedItem = 0; selection = null; }
-            detailLabel.text = selection == null ? string.Empty
-                : $"{run.State.Data.Items[selection.DefinitionId].Name}\n{ItemText.Stats(run.State.Data.Items[selection.DefinitionId])}";
-            RefreshHint(null);
         }
         private void ClearIcons()
         { foreach (ItemIconButton slot in storedSlots) slot.Show(0, null, "빈 슬롯", false, false); }
