@@ -26,7 +26,7 @@ namespace AutoBattler.Presentation.Battle
         {
             canSell=allowed; IsHovered=false;
             titleText.text=allowed?"판매":"판매 불가";
-            priceText.text=$"{name}  {new string('★',star)}  +{price}골드";
+            priceText.text=$"{name}  {new string('★',star)}  {CurrencyText.Amount(price,"+")}";
             gameObject.SetActive(true); panel.DOKill(); panel.alpha=0f;
             panel.DOFade(1f,.08f).SetUpdate(true); UpdateAppearance();
         }

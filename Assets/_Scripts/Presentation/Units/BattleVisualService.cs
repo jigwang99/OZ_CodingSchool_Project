@@ -69,7 +69,17 @@ namespace AutoBattler.Presentation.Units
             foreach(PooledBattleVisual visual in active.ToArray()) if(visual!=null) visual.ReturnToPool();
             active.Clear();
         }
-        private void OnPhaseChanged(BattlePhase phase) { if(phase!=BattlePhase.Combat) EndBattle(); }
+        private void CompleteBattle()
+        {
+            inBattle=false;
+            // 새 표현 요청만 차단하고 이미 재생 중인 이펙트는 수명 유지.
+            foreach(Binding binding in bindings) binding.StopListening();
+        }
+        private void OnPhaseChanged(BattlePhase phase)
+        {
+            if(phase==BattlePhase.Result) CompleteBattle();
+            else if(phase!=BattlePhase.Combat) EndBattle();
+        }
         private PooledBattleVisual Rent(BattleVisualId id)
         {
             if(disposed || !inBattle || !loaded.TryGetValue(id,out Loaded item)) return null;
@@ -109,19 +119,21 @@ namespace AutoBattler.Presentation.Units
         {
             private readonly BattleVisualService service;
             private readonly Unit unit;
+            private readonly UnitFacingView facing;
             private readonly CombatUnitReference reference;
             private struct StatusSlot {public PooledBattleVisual Visual;public int Generation;}
             private readonly UnitVisualEntry presentation;
             private StatusSlot stun,slow,power,weak,shield;
             private PooledBattleVisual projectile;
             private int projectileGeneration;
+            private bool listening;
             public Binding(BattleVisualService owner,Unit actor)
             {
-                service=owner; unit=actor; reference=new CombatUnitReference(actor);presentation=service.settings.Unit(unit.Definition.Id);
+                service=owner; unit=actor; facing=actor.GetComponent<UnitFacingView>(); reference=new CombatUnitReference(actor);presentation=service.settings.Unit(unit.Definition.Id);
                 unit.Health.DamageResolved+=OnDamage; unit.Health.Healed+=OnHealed; unit.Health.Died+=OnDied;
                 unit.Effects.Changed+=OnEffects; unit.Combat.ProjectileReleased+=OnProjectile;
                 unit.Skill.EffectReleased+=OnSkillReleased; unit.Skill.EffectApplied+=OnSkillApplied; unit.Skill.CastFinished+=OnCastFinished;
-                OnEffects();
+                listening=true; OnEffects();
             }
             private bool Current=>reference.IsCurrent && unit.isActiveAndEnabled;
             private Vector3 Position=>unit.transform.position+Vector3.up*.2f;
@@ -191,7 +203,10 @@ namespace AutoBattler.Presentation.Units
                 Return(ref projectile,projectileGeneration);
                 if(!Current) return;
                 SkillVisualEntry presentation=service.settings.Skill(context.Definition.Id);
-                Vector3 direction=context.Target.IsValid?context.Target.Unit.transform.position-unit.transform.position:Vector3.right;
+                // 대상이 사라져도 마지막 판정 위치를 향해 재생.
+                Vector3 destination=context.Target.IsValid?context.Target.Unit.transform.position:service.grid.CellToWorld(context.Center);
+                Vector3 direction=destination-unit.transform.position; direction.z=0f;
+                if(direction.sqrMagnitude<=.0001f) direction=(facing!=null?facing.IsFacingRight:unit.Team==UnitTeam.Ally)?Vector3.right:Vector3.left;
                 if(presentation?.areaImpact==true)
                 {
                     Vector3 center=presentation.casterCentered?Position:service.grid.CellToWorld(context.Center)+Vector3.up*.2f;
@@ -204,12 +219,17 @@ namespace AutoBattler.Presentation.Units
             private void OnCastFinished()=>Return(ref projectile,projectileGeneration);
             private static void Return(ref PooledBattleVisual visual,int generation)
             { if(visual!=null && visual.IsRented && visual.Generation==generation) visual.ReturnToPool(); visual=null; }
-            public void Dispose()
+            public void StopListening()
             {
+                if(!listening) return;
+                listening=false;
                 unit.Health.DamageResolved-=OnDamage; unit.Health.Healed-=OnHealed; unit.Health.Died-=OnDied;
                 unit.Effects.Changed-=OnEffects; unit.Combat.ProjectileReleased-=OnProjectile;
                 unit.Skill.EffectReleased-=OnSkillReleased; unit.Skill.EffectApplied-=OnSkillApplied; unit.Skill.CastFinished-=OnCastFinished;
-                ReturnStatuses();Return(ref projectile,projectileGeneration);
+            }
+            public void Dispose()
+            {
+                StopListening(); ReturnStatuses(); Return(ref projectile,projectileGeneration);
             }
         }
     }

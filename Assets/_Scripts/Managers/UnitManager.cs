@@ -78,8 +78,7 @@ namespace AutoBattler.Managers
         public void CreateEnemies()
         {
             if(state==null) return;
-            foreach(Unit unit in enemies) pool.Return(unit);
-            enemies.Clear();
+            ReturnBattleEnemies();
             int id=100000;
             foreach(EnemyDefinition definition in state.Data.Rounds[state.Round].Enemies)
             {
@@ -130,6 +129,12 @@ namespace AutoBattler.Managers
             summons.Clear();
         }
 
+        public void ReturnBattleEnemies()
+        {
+            foreach(Unit unit in enemies) pool?.Return(unit);
+            enemies.Clear();
+        }
+
         public void RestorePreparation()
         {
             foreach(Unit unit in allies.Values) unit.RestorePreparation();
@@ -146,9 +151,8 @@ namespace AutoBattler.Managers
         public void Clear()
         {
             foreach(Unit unit in allies.Values) pool?.Return(unit);
-            foreach(Unit unit in enemies) pool?.Return(unit);
-            ReturnBattleSummons();
-            allies.Clear(); enemies.Clear(); state=null;
+            ReturnBattleEnemies(); ReturnBattleSummons();
+            allies.Clear(); state=null;
         }
     }
 }

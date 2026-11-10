@@ -1,5 +1,6 @@
 using System;
 using AutoBattler.Battle.Combat;
+using AutoBattler.Battle.Flow;
 using AutoBattler.Pooling;
 using UnityEngine;
 
@@ -83,7 +84,7 @@ namespace AutoBattler.Presentation.Units
             elapsed+=Time.deltaTime;
             if(playback==Playback.Status)
             {
-                if(!target.IsAlive || !target.Unit.IsInCombat){ReturnToPool();return;}
+                if(!target.IsAlive || !target.Unit.IsInCombat && target.Unit.BattleFlow?.CurrentPhase!=BattlePhase.Result){ReturnToPool();return;}
                 FollowStatus();return;
             }
             if(playback==Playback.Projectile)

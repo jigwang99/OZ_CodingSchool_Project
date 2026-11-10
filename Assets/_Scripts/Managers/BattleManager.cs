@@ -40,13 +40,14 @@ namespace AutoBattler.Managers
         public float NextPreparationSeconds=>IsWaitingForPreparation
             ?Mathf.Max(0f,(float)(preparationDeadline-Time.realtimeSinceStartupAsDouble)):0f;
         private float deadline;
-        private bool stopping;
+        private bool stopping, resultCleanupPending;
         public bool IsRunning=>operation!=null;
+        public BattleStatistics Statistics { get; }=new BattleStatistics();
         public float RemainingSeconds=>Mathf.Max(0f,deadline-Time.time);
         public void Initialize(BattleFlowController phases,UnitDragController input,UnitManager roster,AssetManager content,
             SynergyManager traits,AugmentManager choices,Action<string> message,Func<bool> advance,CancellationToken token)
         { flow=phases; drag=input; units=roster; assets=content; synergies=traits; augments=choices; publish=message; advancePreparation=advance; lifetime=token; }
-        public void Bind(RunState current) { CancelPreparationDelay(); state=current; stopping=false; }
+        public void Bind(RunState current) { CancelPreparationDelay(); Statistics.Dispose(); state=current; stopping=false; resultCleanupPending=false; }
         public bool StartBattle()
         {
             if(stopping || state==null || operation!=null || flow.CurrentPhase!=BattlePhase.Preparation || state.IsOver || state.Augments.HasPending) return false;
@@ -56,10 +57,11 @@ namespace AutoBattler.Managers
             foreach(Unit unit in participants) unit.BeginBattle();
             AutoBattleController battle=new AutoBattleController(participants);
             if(!flow.TryStartCombat()) { units.ReturnBattleSummons(); return false; }
-            state.CanPrepare=false; drag.enabled=true;
+            state.CanPrepare=false; drag.enabled=true; resultCleanupPending=true;
             if(SoundManager.TryGetExisting(out SoundManager sound)) sound.BeginBattle(participants);
             SoundManager.PlayEffect(SoundId.BattleStart);
             assets.Visuals.BeginBattle(participants); synergies.BeginBattle(participants); augments.ApplyBattleStart(participants,synergies.Allies);
+            Statistics.Begin(state.Round,participants);
             operation=CancellationTokenSource.CreateLinkedTokenSource(lifetime);
             battleCompletion=new UniTaskCompletionSource(); deadline=Time.time+state.Data.Rule(EconomyRule.CombatSeconds);
             publish("전투 중"); ExecuteAsync(battle,operation,battleCompletion).Forget(); return true;
@@ -69,23 +71,25 @@ namespace AutoBattler.Managers
             try
             {
                 bool won=await battle.RunAsync(state.Data.Rule(EconomyRule.CombatSeconds),current.Token);
-                if(stopping || !flow.TryFinishCombat()) return;
-                current.Cancel(); augments.EndBattle(); synergies.EndBattle(); units.StopCombat(); units.ReturnBattleSummons();
-                if(SoundManager.TryGetExisting(out SoundManager sound)) sound.EndBattle();
+                if(stopping) return;
+                state.SetBattleReport(Statistics.Complete(won));
+                if(!flow.TryFinishCombat()) return;
+                // 판정과 행동만 종료. 표현·능력치·소환물 정리는 결과 타이머 이후 실행.
+                current.Cancel();
                 if(state.TrySettle(won))
                 { publish(state.LastResult); SoundManager.PlayEffect(won?SoundId.Victory:SoundId.Defeat); }
             }
             catch(OperationCanceledException) { }
             catch(Exception exception)
             {
-                current.Cancel(); augments.EndBattle(); synergies.EndBattle(); units.ReturnBattleSummons(); Debug.LogException(exception,this);
+                current.Cancel(); Debug.LogException(exception,this);
                 if(!stopping)
-                { if(flow.TryFinishCombat()) state.TrySettle(false); publish("전투 오류가 발생했습니다."); }
+                { if(flow.CurrentPhase==BattlePhase.Result || flow.TryFinishCombat()) state.TrySettle(false); publish("전투 오류가 발생했습니다."); }
             }
             finally
             {
-                augments.EndBattle(); synergies.EndBattle(); units.ReturnBattleSummons();
-                if(SoundManager.TryGetExisting(out SoundManager sound)) sound.EndBattle();
+                Statistics.Dispose();
+                if(stopping || flow.CurrentPhase!=BattlePhase.Result) ClearBattleState(false);
                 if(ReferenceEquals(operation,current)) operation=null;
                 current.Dispose(); completion.TrySetResult();
             }
@@ -95,9 +99,8 @@ namespace AutoBattler.Managers
             if(stopping || state==null || !state.IsSettled || state.IsOver && !state.HasPendingRoundReward || flow.CurrentPhase!=BattlePhase.Result)
             { CancelPreparationDelay(); return; }
             if(preparationDelay!=null && waitingRound==state.Round) return;
-            CancelPreparationDelay(); waitingRound=state.Round;
-            // 결과 대기 중 전장 유닛도 확인·판매할 수 있도록 원래 배치로 복귀.
-            units.RestorePreparation();
+            CancelPreparationDelay(); waitingRound=state.Round; resultCleanupPending=true;
+            // 결과 대기 중에는 전투 종료 시점의 체력·위치 유지.
             preparationDeadline=Time.realtimeSinceStartupAsDouble+resultDelaySeconds;
             CancellationTokenSource current=CancellationTokenSource.CreateLinkedTokenSource(lifetime);
             UniTaskCompletionSource completion=new UniTaskCompletionSource();
@@ -110,11 +113,15 @@ namespace AutoBattler.Managers
             {
                 // 게임 배속·프레임 제한과 관계없이 실제 시간으로 대기.
                 await UniTask.Delay(TimeSpan.FromSeconds(resultDelaySeconds),DelayType.Realtime,cancellationToken:current.Token);
+                current.Token.ThrowIfCancellationRequested();
+                if(!stopping && ReferenceEquals(state,expected) && state.Round==round && flow.CurrentPhase==BattlePhase.Result
+                    && resultCleanupPending) ClearBattleState(true);
                 while(!stopping && ReferenceEquals(state,expected) && state.Round==round
                     && state.IsSettled && (state.HasPendingRoundReward || !state.IsOver) && flow.CurrentPhase==BattlePhase.Result)
                 {
                     current.Token.ThrowIfCancellationRequested();
                     if(state.TryGrantRoundRewards()) publish(state.LastResult);
+                    // 다음 준비가 없는 최종 결과도 대기 완료 후에만 복원.
                     if(state.IsOver) return;
                     if(advancePreparation()) return;
                     // 저장 실패 시 결과를 유지하고 다시 시도하여 진행도 보호.
@@ -129,6 +136,14 @@ namespace AutoBattler.Managers
                 current.Dispose(); completion.TrySetResult();
             }
         }
+        private void ClearBattleState(bool restoreUnits)
+        {
+            resultCleanupPending=false;
+            assets?.Visuals?.EndBattle(); augments?.EndBattle(); synergies?.EndBattle();
+            units?.StopCombat(); units?.ReturnBattleSummons(); units?.ReturnBattleEnemies();
+            if(restoreUnits) units?.RestorePreparation();
+            if(SoundManager.TryGetExisting(out SoundManager sound)) sound.EndBattle();
+        }
         private void CancelPreparationDelay()
         {
             CancellationTokenSource current=preparationDelay; preparationDelay=null; waitingRound=0;
@@ -137,19 +152,20 @@ namespace AutoBattler.Managers
         public bool Continue()
         {
             if(stopping || state==null || flow.CurrentPhase!=BattlePhase.Result || state.IsOver) return false;
+            if(IsWaitingForPreparation && NextPreparationSeconds>0f) return false;
             if(!state.TryNextRound()) return false;
             CancelPreparationDelay();
-            units.RestorePreparation(); units.CreateEnemies(); flow.TryBeginPreparation(); augments.EnterPreparation(); synergies.Refresh();
+            if(resultCleanupPending) ClearBattleState(true);
+            units.CreateEnemies(); flow.TryBeginPreparation(); augments.EnterPreparation(); synergies.Refresh();
             publish(state.Augments.HasPending?"증강 선택":"준비");
             return true;
         }
         public UniTask StopAsync()
         {
-            if(SoundManager.TryGetExisting(out SoundManager sound)) sound.EndBattle();
-            stopping=true; CancelPreparationDelay(); operation?.Cancel(); augments?.EndBattle(); synergies?.EndBattle(); units?.StopCombat(); units?.ReturnBattleSummons();
+            stopping=true; Statistics.Dispose(); CancelPreparationDelay(); operation?.Cancel(); ClearBattleState(false);
             return UniTask.WhenAll(battleCompletion!=null?battleCompletion.Task:UniTask.CompletedTask,
                 preparationCompletion!=null?preparationCompletion.Task:UniTask.CompletedTask);
         }
-        protected override void OnDestroy() { CancelPreparationDelay(); if(SoundManager.TryGetExisting(out SoundManager sound)) sound.EndBattle(); operation?.Cancel(); base.OnDestroy(); }
+        protected override void OnDestroy() { stopping=true; Statistics.Dispose(); CancelPreparationDelay(); operation?.Cancel(); ClearBattleState(false); base.OnDestroy(); }
     }
 }

@@ -53,11 +53,14 @@ namespace AutoBattler.Battle.Units
         public bool IsOnBoard=>IsSummon || Team==UnitTeam.Enemy || (View!=null && View.State!=null && View.State.Location.Kind==UnitLocationKind.Board);
         public bool IsInCombat=>isActiveAndEnabled && Stats!=null && IsOnBoard && battleFlow!=null
             && battleFlow.isActiveAndEnabled && battleFlow.CurrentPhase==BattlePhase.Combat;
+        private UnitFacingView facing;
+        private UnitAnimationView animationView;
         private HexCoord? combatCell, enemyCell;
         public HexCoord? CurrentCell=>combatCell ?? enemyCell ?? View?.State?.Cell;
         private void Awake()
         {
             View=GetComponent<UnitView>(); Health=GetComponent<UnitHealth>();
+            facing=GetComponent<UnitFacingView>(); animationView=GetComponent<UnitAnimationView>();
             Move=GetComponent<UnitMove>(); Combat=GetComponent<UnitCombat>();
             StatModifiers=GetComponent<UnitStats>(); Effects=GetComponent<UnitEffects>();
             Mana=GetComponent<UnitMana>(); Skill=GetComponent<UnitSkill>(); Equipment=GetComponent<UnitEquipment>();
@@ -98,6 +101,7 @@ namespace AutoBattler.Battle.Units
             ClearActions();
             Skill.ResetForRound(); Move.Stop(); Effects.Clear(); combatCell=null; Health.RestoreFullHealth(); Mana.ResetForRound(); Combat.ResetForRound();
             if(Team==UnitTeam.Ally && View!=null) View.SnapToLocation(gridLayout,benchLayout);
+            facing?.RestoreDefaultFacing(); animationView?.RestoreIdle();
         }
         internal void SetCombatCell(HexCoord cell)=>combatCell=cell;
         private void Update()=>Actions?.Update();

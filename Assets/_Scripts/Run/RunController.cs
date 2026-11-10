@@ -60,6 +60,8 @@ namespace AutoBattler.Run
         public Sprite ItemIcon(int iconId)=>assets.ItemIcon(iconId);
         public string Message { get; private set; }="불러오는 중...";
         public event Action DisplayChanged;
+        public event Action<string> FailureReported;
+        public void NotifyFailure(string reason) { if(!string.IsNullOrEmpty(reason)) FailureReported?.Invoke(reason); }
         private CancellationTokenSource lifetime;
         private SaveManager saves;
         private bool saveFailed;
@@ -78,12 +80,12 @@ namespace AutoBattler.Run
             assets.Initialize(catalog,flow,grid,unitPoolSize);
             units.Initialize(assets.Units,catalog,flow,drag,grid,bench);
             units.ConfigureItemIcons(ItemIcon);
-            equipment.Initialize(flow,units,Report);
-            shop.Initialize(flow,drag,Report);
+            equipment.Initialize(flow,units,Report,NotifyFailure);
+            shop.Initialize(flow,drag,Report,NotifyFailure);
             augments.Initialize(flow,drag,Report);
             synergies.Initialize(units,flow);
             battle.Initialize(flow,drag,units,assets,synergies,augments,Report,Continue,lifetime.Token);
-            drag.enabled=false; drag.PlacementChanged+=OnPlacementChanged;
+            drag.enabled=false; drag.PlacementChanged+=OnPlacementChanged; drag.PlacementRejected+=NotifyFailure;
         }
         private void Start()=>BootAsync().Forget();
         public void RetryLoad() { if(!IsShuttingDown && !IsLoading && !IsReady) BootAsync().Forget(); }
@@ -198,7 +200,7 @@ namespace AutoBattler.Run
                 IsReady=false; DisplayChanged?.Invoke(); lifetime?.Cancel();
                 if(equipment!=null) equipment.Bind(null);
                 if(State!=null) State.Changed-=OnStateChanged;
-                if(drag!=null) { drag.PlacementChanged-=OnPlacementChanged; drag.ClearSelection(); drag.enabled=false; }
+                if(drag!=null) { drag.PlacementChanged-=OnPlacementChanged; drag.PlacementRejected-=NotifyFailure; drag.ClearSelection(); drag.enabled=false; }
                 if(shop!=null) shop.Bind(null);
                 if(augments!=null) augments.Bind(null);
                 if(battle!=null) await battle.StopAsync();

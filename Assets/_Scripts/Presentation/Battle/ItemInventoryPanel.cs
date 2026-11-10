@@ -35,6 +35,7 @@ namespace AutoBattler.Presentation.Battle
         private Unit target;
         private ItemIconButton storedTarget;
         private int targetVersion;
+        private string dropFailure;
         public bool IsOpen { get; private set; }
         public bool IsDraggingItem => draggedItem != 0;
         public Unit DropUnit => target;
@@ -128,17 +129,21 @@ namespace AutoBattler.Presentation.Battle
             Unit recipient = CanDrag ? target : null;
             int otherItemId=CanDrag?DropStoredItemId:0;
             int itemId = draggedItem;
+            string failure=CanDrag ? dropFailure : null;
             // 장착 콜백에서 배치·풀 상태가 바뀌기 전에 대상 크기와 입력 복원.
             CancelItemDrag();
             if(otherItemId!=0 && run.FuseItems(itemId,otherItemId)) selectedItem=0;
             else if (recipient != null && run.EquipItem(itemId, recipient.InstanceId))
             { selectedItem = 0; run.Drag.Inspect(recipient); }
+            else if(recipient==null && otherItemId==0 && failure!=null)
+            {run.NotifyFailure(failure); SoundManager.PlayEffect(AutoBattler.Audio.SoundId.Denied);}
             Refresh();
         }
         private void CancelSource(ItemIconButton source) { if (source == dragSource) CancelItemDrag(); }
         public void CancelItemDrag()
         {
             SetTarget(null);
+            dropFailure=null;
             SetStoredTarget(null);
             draggedItem = 0; dragSource = null;
             if (run != null) run.Drag.SetItemDragging(false);
@@ -149,6 +154,7 @@ namespace AutoBattler.Presentation.Battle
         private Camera UICamera => canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
         private void UpdateTarget()
         {
+            dropFailure=null;
             uiHits.Clear();
             if(EventSystem.current!=null)
                 EventSystem.current.RaycastAll(new PointerEventData(EventSystem.current) {position=pointer,pointerId=pointerId},uiHits);
@@ -158,6 +164,8 @@ namespace AutoBattler.Presentation.Battle
             ItemDefinition fusion=hovered!=null
                 ?run.State.Items.FusionResult(draggedItem,hovered.ItemId):null;
             SetStoredTarget(fusion!=null?hovered:null);
+            if(hovered!=null && hovered.ItemId!=0 && hovered.ItemId!=draggedItem && fusion==null)
+                dropFailure="두 아이템을 합성할 수 없습니다.";
             bool overInventory=RectTransformUtility.RectangleContainsScreenPoint((RectTransform)modal.transform,pointer,UICamera);
             SetTarget(!overInventory && uiHits.Count==0?FindTarget():null);
             ItemDefinition equippedFusion = null;
@@ -180,10 +188,12 @@ namespace AutoBattler.Presentation.Battle
             foreach (Collider2D hit in Physics2D.OverlapPointAll(world))
             {
                 Unit unit = hit.GetComponentInParent<Unit>();
-                if (unit == null || unit.Team != UnitTeam.Ally || !unit.isActiveAndEnabled || !unit.Health.IsAlive
-                    || !run.Units.Allies.Contains(unit)) continue;
+                if(unit==null || !unit.isActiveAndEnabled) continue;
+                if(unit.Team!=UnitTeam.Ally) {dropFailure="아군 유닛에 장착해 주세요.";continue;}
+                if(!unit.Health.IsAlive || !run.Units.Allies.Contains(unit)) {dropFailure="살아 있는 아군 유닛에 장착해 주세요.";continue;}
                 if (!run.State.Items.CanEquip(draggedItem,unit.InstanceId))
-                    continue;
+                {dropFailure="장착 칸이 가득 찼습니다. 합성 가능한 아이템을 사용해 주세요.";continue;}
+                dropFailure=null;
                 return unit;
             }
             return null;

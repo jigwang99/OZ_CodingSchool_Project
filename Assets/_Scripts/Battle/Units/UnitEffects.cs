@@ -32,7 +32,7 @@ namespace AutoBattler.Battle.Units
             if(isActiveAndEnabled && flow!=null) flow.PhaseChanged+=OnPhaseChanged;
         }
         private void OnPhaseChanged(BattlePhase phase)
-        { if(phase!=BattlePhase.Combat) Clear(); }
+        { if(phase!=BattlePhase.Combat && phase!=BattlePhase.Result) Clear(); }
         private void Update()
         { if(unit!=null && unit.IsInCombat) State.Tick(Time.deltaTime); }
         public EffectHandle Apply(EffectDefinition definition,ModifierSource source,float potency=1f)

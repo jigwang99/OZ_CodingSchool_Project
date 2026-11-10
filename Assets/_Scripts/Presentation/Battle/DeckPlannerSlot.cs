@@ -28,7 +28,7 @@ namespace AutoBattler.Presentation.Battle
             UnitId=unit?.Id ?? 0;
             portrait.sprite=sprite; portrait.enabled=sprite!=null;
             nameText.text=boardCell?string.Empty:unit?.Name ?? string.Empty;
-            costText.text=boardCell || unit==null?string.Empty:$"{unit.Cost}G";
+            costText.text=boardCell || unit==null?string.Empty:CurrencyText.Amount(unit.Cost);
             if(background!=null) background.color=selected?selectedColor:normalColor;
             if(hex!=null) hex.SetState(unit!=null,selected);
         }

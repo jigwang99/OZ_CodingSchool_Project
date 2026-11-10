@@ -30,12 +30,12 @@ namespace AutoBattler.Presentation.Battle
             if (changed)
             {
                 displayedWin = win; displayedKnown = known;
-                basicText.text = $"+{win.BaseGold}";
-                interestText.text = $"+{win.InterestGold}";
+                basicText.text = CurrencyText.Amount(win.BaseGold,"+");
+                interestText.text = CurrencyText.Amount(win.InterestGold,"+");
                 streakText.text = !known && win.StreakGold > 0
-                    ? $"승리 시 +{win.StreakGold}" : $"+{win.StreakGold}";
+                    ? $"승리 시 {CurrencyText.Amount(win.StreakGold,"+")}" : CurrencyText.Amount(win.StreakGold,"+");
                 augmentRow.SetActive(win.AugmentGold > 0);
-                augmentText.text = known ? $"+{win.AugmentGold}" : $"승리 시 +{win.AugmentGold}";
+                augmentText.text = known ? CurrencyText.Amount(win.AugmentGold,"+") : $"승리 시 {CurrencyText.Amount(win.AugmentGold,"+")}";
                 LayoutRebuilder.ForceRebuildLayoutImmediate(panel);
             }
             TooltipPositionUtility.Place(panel, pointer, eventCamera, pointerOffset, edgePadding);

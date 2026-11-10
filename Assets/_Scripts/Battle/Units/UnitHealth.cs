@@ -26,6 +26,7 @@ namespace AutoBattler.Battle.Units
         public event Action<KillEvent> DeathResolved;
         public event Action Died;
         public event Action<int> Healed;
+        public event Action<HealingResult> HealingResolved;
         private void Awake() { stats=GetComponent<UnitStats>(); effects=GetComponent<UnitEffects>(); }
         private void OnEnable() { if(stats!=null) stats.Changed+=OnStatsChanged; }
         private void OnDisable() { LifeVersion++; if(stats!=null) stats.Changed-=OnStatsChanged; }
@@ -84,11 +85,17 @@ namespace AutoBattler.Battle.Units
             finally { isApplyingDamage=false; }
         }
         private bool IsSameLife(UnitHealthState damagedState,int version)=>ReferenceEquals(state,damagedState) && LifeVersion==version;
-        public int Heal(int amount)
+        public int Heal(int amount) => Heal(amount,owner);
+        public int Heal(int amount,Unit healer)
         {
             UnitHealthState healedState=state; int version=LifeVersion;
+            CombatUnitReference source=new CombatUnitReference(healer),target=new CombatUnitReference(owner);
             int restored=healedState?.Heal(amount) ?? 0;
-            if(restored>0 && IsSameLife(healedState,version)) CombatEventDispatcher.Publish(Healed,restored);
+            if(restored>0 && IsSameLife(healedState,version))
+            {
+                CombatEventDispatcher.Publish(HealingResolved,new HealingResult(source,target,restored));
+                if(IsSameLife(healedState,version)) CombatEventDispatcher.Publish(Healed,restored);
+            }
             return restored;
         }
         public void RestoreFullHealth() { LifeVersion++; state?.RestoreFullHealth(); }

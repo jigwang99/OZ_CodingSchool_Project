@@ -1,4 +1,5 @@
 using System;
+using AutoBattler.Battle.Combat;
 using System.Collections.Generic;
 using System.Linq;
 using AutoBattler.Data.Snapshot;
@@ -32,9 +33,13 @@ namespace AutoBattler.Run
         public bool IsSettled=>settledRound==Round;
         public bool HasPendingRoundReward { get; private set; }
         public bool CanTradeUnits => !IsOver && !Augments.HasPending;
+        // 상점 갱신·경험치 구매는 전투·결과 대기·증강 선택 대기에도 허용.
+        public bool CanUseEconomy => !IsOver || HasPendingRoundReward;
         public bool CanManageRoster => !IsOver && !Augments.HasPending && (CanPrepare || !IsSettled);
         public string LastError { get; private set; }
         public string LastResult { get; private set; }
+        public BattleReport LastBattleReport { get; private set; }
+        internal void SetBattleReport(BattleReport report) => LastBattleReport=report;
         public bool LastBattleWon => IsSettled && WinStreak > 0;
         public IReadOnlyList<OwnedUnit> Units => owned.AsReadOnly();
         public IReadOnlyList<int> Shop => Array.AsReadOnly(shop);
@@ -82,7 +87,7 @@ namespace AutoBattler.Run
                 // 전투 중 경제·장비 변경은 현재 논리 배치로 준비 단계 재시작 저장.
                 phase=IsSettled?RunSavePhase.Result:RunSavePhase.Preparation,
                 round=Round,gold=Gold,lives=Lives,level=Level,xp=Xp,winStreak=WinStreak,nextInstanceId=nextId,
-                isOver=IsOver,wonRun=WonRun,lastResult=LastResult,augmentWindowOpen=augmentWindowOpen,
+                isOver=IsOver,wonRun=WonRun,lastResult=LastResult,augmentWindowOpen=augmentWindowOpen,lastBattleReport=LastBattleReport,
                 randomSeed=random.Seed,randomDrawCount=random.DrawCount,shop=(int[])shop.Clone(),
                 unitDefinitionIds=Data.Units.Keys.OrderBy(id=>id).ToArray(),availableUnitIds=availableUnitIds.OrderBy(id=>id).ToArray(),
                 stock=stock.OrderBy(pair=>pair.Key).Select(pair=>new SavedStock {definitionId=pair.Key,available=pair.Value}).ToArray(),
@@ -124,7 +129,7 @@ namespace AutoBattler.Run
             {
                 Round=saved.round,Gold=saved.gold,Lives=saved.lives,Level=saved.level,Xp=saved.xp,
                 WinStreak=saved.winStreak,CanPrepare=saved.phase==RunSavePhase.Preparation,
-                IsOver=saved.isOver,WonRun=saved.wonRun,LastResult=saved.lastResult,
+                IsOver=saved.isOver,WonRun=saved.wonRun,LastResult=saved.lastResult,LastBattleReport=saved.lastBattleReport,
                 nextId=saved.nextInstanceId,settledRound=saved.phase==RunSavePhase.Result?saved.round:saved.round-1,
                 // 이전 저장은 대기 보상이 없으므로 이미 지급된 결과로 복원.
                 HasPendingRoundReward=saved.hasPendingRoundReward,pendingRoundWon=saved.pendingRoundWon
@@ -196,8 +201,10 @@ namespace AutoBattler.Run
         }
         public bool TryEquipItem(int itemInstanceId,int unitInstanceId)
         {
-            if(!CanManageRoster || !owned.Any(unit=>unit.Placement.InstanceId==unitInstanceId)
-                || !Items.TryEquip(itemInstanceId,unitInstanceId)) return Fail("빈 장착 칸 또는 합성 가능한 장비가 필요합니다.");
+            if(!CanManageRoster) return Fail("현재 아이템을 장착할 수 없습니다.");
+            if(!owned.Any(unit=>unit.Placement.InstanceId==unitInstanceId)) return Fail("아군 유닛에 장착해 주세요.");
+            if(Items.Find(itemInstanceId)==null || Items.Find(itemInstanceId).OwnerUnitId!=0) return Fail("보관 중인 아이템을 선택해 주세요.");
+            if(!Items.TryEquip(itemInstanceId,unitInstanceId)) return Fail("장착 칸이 가득 찼습니다. 합성 가능한 아이템을 사용해 주세요.");
             Notify(); return true;
         }
         public bool TryFuseItems(int firstItemId,int secondItemId)
@@ -223,21 +230,31 @@ namespace AutoBattler.Run
         private void Notify() { LastError=null; Changed?.Invoke(); }
         public bool TryRefresh()
         {
-            if(!Ready()) return Fail("준비 단계에서 새로고침할 수 있습니다.");
+            if(!CanUseEconomy) return Fail(null);
             int cost=Data.IntRule(EconomyRule.RefreshCost);
             if(Gold<cost) return Fail("골드가 부족합니다.");
             Gold-=cost; Reroll(); Notify(); return true;
         }
+        public string BuyFailureReason(int slot)
+        {
+            if(!CanTradeUnits) return Augments.HasPending ? "증강을 먼저 선택해 주세요." : "현재 기물을 구매할 수 없습니다.";
+            if(slot<0 || slot>=shop.Length || shop[slot]==0) return "빈 상점입니다.";
+            int id=shop[slot];
+            if(!IsUnitAvailable(id)) return "아직 해금되지 않은 유닛입니다.";
+            if(Gold<Data.Units[id].Cost) return "골드가 부족합니다.";
+            if(Placement.FindFreeBenchSlot()<0 && PurchaseMergeCandidates(id).Length<2) return "대기석이 가득 찼습니다.";
+            return null;
+        }
+        private OwnedUnit[] PurchaseMergeCandidates(int id)=>owned.Where(unit=>unit.DefinitionId==id && unit.Star==1
+                && (CanPrepare || IsSettled || unit.Placement.Location.Kind==UnitLocationKind.Bench))
+            .OrderBy(unit=>unit.Placement.Location.Kind==UnitLocationKind.Board ? 0:1)
+            .ThenBy(unit=>PositionOrder(unit.Placement.Location)).ThenBy(unit=>unit.Placement.InstanceId).Take(2).ToArray();
         public bool TryBuy(int slot)
         {
-            if(!CanTradeUnits || slot<0 || slot>=shop.Length || shop[slot]==0) return Fail("구매할 수 없는 상점입니다.");
+            string reason=BuyFailureReason(slot);
+            if(reason!=null) return Fail(reason);
             int id=shop[slot], cost=Data.Units[id].Cost;
-            if(!IsUnitAvailable(id)) return Fail("아직 해금되지 않은 유닛입니다.");
-            if(Gold<cost) return Fail("골드가 부족합니다.");
-            OwnedUnit[] matches=owned.Where(x=>x.DefinitionId==id && x.Star==1
-                    && (CanPrepare || IsSettled || x.Placement.Location.Kind==UnitLocationKind.Bench))
-                .OrderBy(x=>x.Placement.Location.Kind==UnitLocationKind.Board ? 0:1)
-                .ThenBy(x=>PositionOrder(x.Placement.Location)).ThenBy(x=>x.Placement.InstanceId).Take(2).ToArray();
+            OwnedUnit[] matches=PurchaseMergeCandidates(id);
             int free=Placement.FindFreeBenchSlot();
             if(free<0 && matches.Length<2) return Fail("대기석이 가득 찼습니다.");
             // 변경 조건을 모두 확인한 뒤 예약 1개와 보유 2개를 한 번에 합성.
@@ -281,7 +298,8 @@ namespace AutoBattler.Run
         }
         public bool TryBuyXp()
         {
-            if(!Ready() || Level==10) return Fail("경험치를 구매할 수 없습니다.");
+            if(!CanUseEconomy) return Fail(null);
+            if(Level==10) return Fail("최대 레벨입니다.");
             int cost=Data.IntRule(EconomyRule.XpCost);
             if(Gold<cost) return Fail("골드가 부족합니다.");
             Gold-=cost; AddXp(Data.IntRule(EconomyRule.PurchasedXp)); Notify(); return true;

@@ -82,6 +82,7 @@ namespace AutoBattler.Battle.Grid
             && inspectedUnit.SpawnVersion == inspectedSpawnVersion
             && inspectedUnit.InstanceId == inspectedInstanceId ? inspectedUnit : null;
         public event System.Action PlacementChanged;
+        public event System.Action<string> PlacementRejected;
         public event System.Action<UnitView> DragStarted;
         public event System.Action<Vector2> DragMoved;
         public event System.Action DragEnded;
@@ -292,7 +293,7 @@ namespace AutoBattler.Battle.Grid
             }
             if(!battleFlow.CanPlaceUnits) { CancelDrag(); return; }
             PlacementResult result = TryGetDestination(draggedUnit.transform.position, out UnitLocation destination)
-                ? placementService.TryMoveUnit(draggedUnit.State, destination) : new PlacementResult(false);
+                ? placementService.TryMoveUnit(draggedUnit.State, destination) : new PlacementResult(false,failureReason:"아군 배치 영역 또는 대기석에 놓아 주세요.");
             if (result.Success)
             {
                 draggedUnit.SnapToLocation(gridLayout, benchLayout);
@@ -306,7 +307,8 @@ namespace AutoBattler.Battle.Grid
                 draggedUnit.transform.position = originalPosition;
             Physics2D.SyncTransforms();
             ClearDrag();
-            PlacementChanged?.Invoke();
+            if(!result.Success) PlacementRejected?.Invoke(result.FailureReason ?? "기물을 배치할 수 없습니다.");
+            else PlacementChanged?.Invoke();
         }
 
         /// <summary>레벨 시스템에서 레벨 변경 시 호출.</summary>

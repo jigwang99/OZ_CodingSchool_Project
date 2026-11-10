@@ -53,8 +53,8 @@ namespace AutoBattler.Presentation.Battle
                 case AugmentEffect.StartingShield:
                     return $"전투 시작 시 아군에게 최대 체력의 {percent}% 보호막 부여\n{definition.Duration:0.#}초 지속";
                 case AugmentEffect.StartingMana:return $"아군 시작 마나 +{value} (최대 100)";
-                case AugmentEffect.ImmediateGold:return $"즉시 {value}골드 획득";
-                case AugmentEffect.VictoryGold:return $"전투 승리 시 추가 {value}골드 획득";
+                case AugmentEffect.ImmediateGold:return $"즉시 {CurrencyText.Amount((int)definition.Value)} 획득";
+                case AugmentEffect.VictoryGold:return $"전투 승리 시 추가 {CurrencyText.Amount((int)definition.Value)} 획득";
                 case AugmentEffect.TrainingDummy:
                     return $"전투 시작 시 허수아비 소환\n체력 {value} + 레벨당 {secondary}\n방어력 20, 이동·공격 불가\n배치 인원·시너지 제외";
                 case AugmentEffect.IsolatedShield:

@@ -4,11 +4,13 @@ namespace AutoBattler.Battle.Placement
     public readonly struct PlacementResult
     {
         public bool Success { get; }
+        public string FailureReason { get; }
         public UnitState SwappedUnit { get; }
 
-        public PlacementResult(bool success, UnitState swappedUnit = null)
+        public PlacementResult(bool success, UnitState swappedUnit = null,string failureReason=null)
         {
             Success = success;
+            FailureReason=success ? null : failureReason;
             SwappedUnit = success ? swappedUnit : null;
         }
     }

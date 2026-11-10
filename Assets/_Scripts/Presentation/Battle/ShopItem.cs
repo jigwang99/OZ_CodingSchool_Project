@@ -12,6 +12,8 @@ namespace AutoBattler.Presentation.Battle
     {
         [Header("구매 버튼")]
         [SerializeField] private Button buyButton;
+        [SerializeField] private FailureHint failureHint;
+        public FailureHint FailureHint=>failureHint;
 
         [Header("기물 표시")]
         [SerializeField] private GameObject content;
@@ -54,10 +56,10 @@ namespace AutoBattler.Presentation.Battle
             iconImage.color = icon != null ? Color.white : placeholderColor;
             iconPlaceholderText.gameObject.SetActive(icon == null);
             nameText.text = hasUnit ? BattleText.UnitName(unit) : "";
-            priceText.text = hasUnit ? $"{unit.Cost}골드" : "";
+            priceText.text = hasUnit ? CurrencyText.Amount(unit.Cost) : "";
             poolText.text = string.Empty;
             poolText.gameObject.SetActive(false);
-            emptyText.text = "빈 상점";
+            emptyText.text = "X";
             priceText.color = hasUnit && gold < unit.Cost ? unaffordableColor : priceColor;
             iconPlaceholderText.text = hasUnit && !string.IsNullOrEmpty(nameText.text) ? nameText.text.Substring(0, 1) : "?";
         }

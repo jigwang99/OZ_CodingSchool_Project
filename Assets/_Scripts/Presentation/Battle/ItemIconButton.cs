@@ -41,8 +41,17 @@ namespace AutoBattler.Presentation.Battle
         public void OnPointerClick(PointerEventData eventData)
         {
             if(eventData.button!=PointerEventData.InputButton.Right || eventData.dragging || itemId==0
-                || !isActiveAndEnabled || !button.IsActive() || !button.IsInteractable()) return;
+                || !isActiveAndEnabled || !button.IsActive() || !ParentAllowsInput()) return;
             RightPressed?.Invoke(itemId);
+        }
+        private bool ParentAllowsInput()
+        {
+            foreach(CanvasGroup group in GetComponentsInParent<CanvasGroup>())
+            {
+                if(!group.interactable || !group.blocksRaycasts) return false;
+                if(group.ignoreParentGroups) break;
+            }
+            return true;
         }
         public void OnBeginDrag(PointerEventData eventData)
         {

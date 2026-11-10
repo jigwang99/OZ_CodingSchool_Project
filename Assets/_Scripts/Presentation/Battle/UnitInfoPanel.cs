@@ -94,7 +94,7 @@ namespace AutoBattler.Presentation.Battle
             unit.Equipment.Changed += RefreshEquipment;
             gameObject.SetActive(true);
             nameText.text=$"{BattleText.UnitName(unit.Definition)} <color=#FFD159>{new string('★', unit.Star)}</color>";
-            identityText.text=$"{UnitStarRules.SalePrice(unit.Definition.Cost,unit.Star)}G";
+            identityText.text=CurrencyText.Amount(UnitStarRules.SalePrice(unit.Definition.Cost,unit.Star));
             traitsText.text=$"{TraitName(TraitCategory.Origin, unit.Definition.OriginId)} / {TraitName(TraitCategory.Class, unit.Definition.ClassId)}";
             teamAccent.color=unit.Team==UnitTeam.Ally ? new Color(.2f,.85f,.85f) : new Color(1f,.35f,.4f);
             if(unitIcon!=null) { unitIcon.sprite=catalog.Icon(unit.Definition.IconId); unitIcon.enabled=unitIcon.sprite!=null; }

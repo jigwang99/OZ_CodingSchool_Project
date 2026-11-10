@@ -77,7 +77,11 @@ namespace AutoBattler.Battle.Placement
         public PlacementResult TryMoveUnit(UnitState unit, HexCoord destination) => TryMoveUnit(unit, UnitLocation.OnBoard(destination));
         public PlacementResult TryMoveUnit(UnitState unit, UnitLocation destination)
         {
-            if (!CanMoveUnit(unit, destination)) return new PlacementResult(false);
+            if (!CanMoveUnit(unit, destination)) return new PlacementResult(false,failureReason:
+                !IsValidLocation(destination) ? "아군 배치 영역에 놓아 주세요." : board.HasValidLocation(unit)
+                    && unit.Location.Kind!=UnitLocationKind.Board && destination.Kind==UnitLocationKind.Board
+                    && board.GetOccupant(destination)==null && board.DeployedCount>=PlayerLevel
+                        ? "배치 한도를 초과했습니다." : "기물의 배치 정보를 확인할 수 없습니다.");
             UnitState target = board.GetOccupant(destination);
             if (target == null || ReferenceEquals(target, unit))
                 return new PlacementResult(board.TryMove(unit, destination));

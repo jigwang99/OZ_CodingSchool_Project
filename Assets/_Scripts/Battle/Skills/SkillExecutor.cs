@@ -73,27 +73,29 @@ namespace AutoBattler.Battle.Skills
                         multiplier*=skill.ExecuteMultiplier;
                     if(skill.DistanceBonus>0) multiplier*=1f+skill.DistanceBonus*Math.Max(0,origin.DistanceTo(target.Unit.CurrentCell.Value)-1);
                     if(damage>0) stolenHealth+=target.Unit.Health.TakeDamage(damageContext,damage,multiplier,skill.ArmorIgnore);
-                    if(effect!=null && target.IsValid) Apply(target.Unit,effect,source,power,(float)starScale,maxHp,skill.ShieldMaxHpRatio,effectMultiplier);
+                    if(effect!=null && target.IsValid) Apply(caster,target.Unit,effect,source,power,(float)starScale,maxHp,skill.ShieldMaxHpRatio,effectMultiplier);
                     if(secondary!=null && skill.SecondaryTarget==SecondarySkillTarget.SameTargets && target.IsValid)
-                        Apply(target.Unit,secondary,source,power,(float)starScale,maxHp,0f,1f);
+                        Apply(caster,target.Unit,secondary,source,power,(float)starScale,maxHp,0f,1f);
                     token.ThrowIfCancellationRequested();
                 }
                 if(secondary!=null && skill.SecondaryTarget==SecondarySkillTarget.EnemiesAroundCaster)
                     foreach(SkillTarget target in SkillAreaSelector.EnemiesAround(context,origin,team,skill.SecondaryRadius))
-                        if(target.IsValid) Apply(target.Unit,secondary,source,power,(float)starScale,maxHp,0f,1f);
+                        if(target.IsValid) Apply(caster,target.Unit,secondary,source,power,(float)starScale,maxHp,0f,1f);
                 // 보호막 피해와 초과 피해는 실제 체력 감소량에 포함되지 않음.
                 if(skill.LifeStealRatio>0 && stolenHealth>0 && owner.IsAlive)
                     caster.Health.Heal((int)Math.Min(int.MaxValue,Math.Floor(stolenHealth*(double)skill.LifeStealRatio)));
             }
         }
-        private static void Apply(Unit target,EffectDefinition effect,ModifierSource source,float power,float starScale,
+        private static void Apply(Unit caster,Unit target,EffectDefinition effect,ModifierSource source,float power,float starScale,
             float maxHp,float shieldRatio,float multiplier)
         {
             float potency=multiplier;
             if(effect.Kind==EffectKind.Shield && shieldRatio>0)
                 potency*=maxHp*shieldRatio*power/Mathf.Max(.0001f,effect.Value);
             else if(effect.Kind==EffectKind.Heal || effect.Kind==EffectKind.Shield) potency*=power*starScale;
-            target.Effects.Apply(effect,source,potency);
+            if(effect.Kind==EffectKind.Heal)
+                target.Health.Heal((int)Math.Max(0,Math.Min(int.MaxValue,Math.Floor((double)(effect.Value*potency)))),caster);
+            else target.Effects.Apply(effect,source,potency);
         }
     }
 }

@@ -18,6 +18,7 @@ namespace AutoBattler.Run
         public int round, gold, lives, level, xp, winStreak, nextInstanceId;
         public bool isOver, wonRun, augmentWindowOpen;
         public string lastResult;
+        public AutoBattler.Battle.Combat.BattleReport lastBattleReport;
         public int randomSeed, randomDrawCount;
         public int[] shop;
         public int[] unitDefinitionIds;

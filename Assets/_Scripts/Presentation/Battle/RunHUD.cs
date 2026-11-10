@@ -56,6 +56,8 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private ItemHoverTooltip itemTooltip;
         [SerializeField] private GoldIncomeHover goldIncome;
         [SerializeField] private DeckPlannerPanel deckPlanner;
+        [SerializeField] private BattleStatisticsPanel battleStatistics;
+        public BattleStatisticsPanel BattleStatistics=>battleStatistics;
         public DeckPlannerPanel DeckPlanner=>deckPlanner;
         public ItemInventoryPanel Inventory=>inventory;
         public ItemHoverTooltip ItemTooltip => itemTooltip;
@@ -68,6 +70,10 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private Button loadTitleButton;
         [SerializeField, Min(0f)] private float fadeDuration = 0.2f;
 
+        [Header("실패 사유 안내")]
+        [SerializeField] private ActionFeedbackView feedback;
+        [SerializeField] private FailureHint refreshHint,experienceHint;
+        public ActionFeedbackView Feedback=>feedback;
         private bool isBound;
         private bool hasDisplayedPhase;
         private BattlePhase displayedPhase;
@@ -119,6 +125,8 @@ namespace AutoBattler.Presentation.Battle
             for (int i = 0; i < shopItems.Length; i++)
             {
                 shopItems[i].BindSlot(i);
+                int slot=i;
+                shopItems[i].FailureHint.Bind(()=>run.Shop.BuyFailureReason(slot),CanReportFailure,run.NotifyFailure);
                 shopItems[i].PurchaseRequested += BuyShopItem;
             }
             startBattleButton.onClick.AddListener(StartBattle);
@@ -134,11 +142,15 @@ namespace AutoBattler.Presentation.Battle
             retryLoadButton.onClick.AddListener(RetryLoad);
             loadTitleButton.onClick.AddListener(ReturnFromLoadError);
             run.DisplayChanged += Refresh;
+            run.FailureReported+=feedback.ShowFailure;
+            refreshHint.Bind(()=>run.Shop.RefreshFailureReason,CanReportFailure,run.NotifyFailure);
+            experienceHint.Bind(()=>run.Shop.ExperienceFailureReason,CanReportFailure,run.NotifyFailure);
             if(inventory!=null) inventory.Bind(run,interactionRoot);
             if(unitInfo!=null) unitInfo.BindRun(run);
             itemTooltip.Bind(run, interactionRoot, inventory, inventory.StoredSlots.Concat(unitInfo.EquipmentSlots));
             goldIncome.Bind(run, interactionRoot, inventory);
             deckPlanner.Bind(run,interactionRoot,inventory);
+            battleStatistics.Bind(run,interactionRoot);
             if(augmentPanel!=null) { augmentPanel.Selected+=SelectAugment; augmentPanel.ToggleRequested+=ToggleAugments; }
             isBound = true;
             hasDisplayedPhase = false;
@@ -164,7 +176,7 @@ namespace AutoBattler.Presentation.Battle
         {
             Unit unit=view!=null ? view.GetComponent<Unit>() : null;
             return run.IsReady && unit!=null && unit.Team==UnitTeam.Ally && view.State!=null
-                && run.Shop.CanSell(view.State.InstanceId) && run.SellUnit(view.State.InstanceId);
+                && run.SellUnit(view.State.InstanceId);
         }
         private void NextRound() => run.Continue();
         private void RetryLoad() => run.RetryLoad();
@@ -212,19 +224,28 @@ namespace AutoBattler.Presentation.Battle
         {
             Keyboard keyboard=Keyboard.current;
             if(keyboard==null || !keyboard.dKey.wasPressedThisFrame && !keyboard.fKey.wasPressedThisFrame) return;
-            if(!run.IsReady || run.IsShuttingDown || GameNavigation.IsTransitioning || !CanPrepare()
-                || run.State.Augments.HasPending || run.Flow.IsAugmentWindowOpen
+            if(!run.IsReady || run.IsShuttingDown || GameNavigation.IsTransitioning
+                || run.Flow.IsAugmentWindowOpen
                 || interactionRoot==null || !interactionRoot.interactable || !interactionRoot.blocksRaycasts
                 || gameSettings!=null && gameSettings.IsOpen) return;
             GameObject selected=EventSystem.current!=null?EventSystem.current.currentSelectedGameObject:null;
             TMP_InputField input=selected!=null?selected.GetComponentInParent<TMP_InputField>():null;
             if(input!=null && input.isFocused) return;
-            if(keyboard.dKey.wasPressedThisFrame && refreshButton.IsActive() && refreshButton.IsInteractable())
-                refreshButton.onClick.Invoke();
-            if(keyboard.fKey.wasPressedThisFrame && buyExperienceButton.IsActive() && buyExperienceButton.IsInteractable())
-                buyExperienceButton.onClick.Invoke();
+            if(inventory.IsDraggingItem || run.Drag.DraggedUnit!=null) return;
+            if(keyboard.dKey.wasPressedThisFrame) TryShortcut(refreshButton,run.Shop.RefreshFailureReason);
+            if(keyboard.fKey.wasPressedThisFrame) TryShortcut(buyExperienceButton,run.Shop.ExperienceFailureReason);
         }
 
+        private void TryShortcut(Button button,string reason)
+        {
+            if(!button.IsActive()) return;
+            if(button.IsInteractable()) button.onClick.Invoke();
+            else if(!string.IsNullOrEmpty(reason))
+            { run.NotifyFailure(reason); AutoBattler.Managers.SoundManager.PlayEffect(AutoBattler.Audio.SoundId.Denied); }
+        }
+        private bool CanReportFailure()=>run.IsReady && !run.IsShuttingDown && !GameNavigation.IsTransitioning
+            && interactionRoot.interactable && interactionRoot.blocksRaycasts && !run.Flow.IsAugmentWindowOpen
+            && (gameSettings==null || !gameSettings.IsOpen) && !inventory.IsDraggingItem && run.Drag.DraggedUnit==null;
         private void RefreshTime()
         {
             if (timerRoot == null || timeText == null) return;
@@ -241,7 +262,7 @@ namespace AutoBattler.Presentation.Battle
         {
             if (unitInfo != null)
             {
-                Unit inspected = run.IsReady && run.Drag.CanInspectUnits ? run.Drag.InspectedUnit : null;
+                Unit inspected = run.IsReady && !battleStatistics.IsOpen && run.Drag.CanInspectUnits ? run.Drag.InspectedUnit : null;
                 unitInfo.Show(inspected, run.IsReady ? run.State.Data : null);
             }
         }
@@ -255,7 +276,7 @@ namespace AutoBattler.Presentation.Battle
             if(selectedAugments!=null) selectedAugments.Show(run);
             bool prepare = CanPrepare();
             bool canBuy = ready && run.Shop.CanBuy;
-            bool canManage = prepare || canBuy;
+            bool canManage = prepare || canBuy || ready && run.Shop.CanTrade;
             if(synergyPanel!=null) synergyPanel.Show(ready?run.AllySynergies:null,ready,run.Flow.CurrentPhase);
             messageText.text = run.Message;
             messageText.gameObject.SetActive(!ready);
@@ -275,14 +296,14 @@ namespace AutoBattler.Presentation.Battle
                 int id = ready ? run.State.Shop[i] : 0;
                 UnitDefinition unit = id == 0 ? null : run.State.Data.Units[id];
                 Sprite icon = unit == null ? null : run.UnitIcon(unit.IconId);
-                shopItems[i].Show(unit, icon, id == 0 ? 0 : run.State.Stock(id), ready ? run.State.Gold : 0, canBuy);
+                shopItems[i].Show(unit, icon, id == 0 ? 0 : run.State.Stock(id), ready ? run.State.Gold : 0, ready && run.Shop.CanBuySlot(i));
             }
 
             // 비용 표시도 시트의 경제 규칙을 사용.
-            refreshLabel.text = ready ? $"새로고침 ({run.State.Data.IntRule(EconomyRule.RefreshCost)}골드)" : "새로고침";
-            buyExperienceLabel.text = ready ? $"경험치 ({run.State.Data.IntRule(EconomyRule.XpCost)}골드)" : "경험치 구매";
-            refreshButton.interactable = prepare;
-            buyExperienceButton.interactable = prepare && run.State.Level < 10;
+            refreshLabel.text = ready ? $"새로고침 {CurrencyText.Cost(run.State.Data.IntRule(EconomyRule.RefreshCost),run.State.Gold)}" : "새로고침";
+            buyExperienceLabel.text = ready ? $"경험치 {CurrencyText.Cost(run.State.Data.IntRule(EconomyRule.XpCost),run.State.Gold)}" : "경험치 구매";
+            refreshButton.interactable = ready && run.Shop.CanTrade && run.Shop.RefreshFailureReason==null;
+            buyExperienceButton.interactable = ready && run.Shop.CanTrade && run.Shop.ExperienceFailureReason==null;
             startBattleButton.interactable = prepare && run.State.Board.DeployedCount > 0;
             startBattleButton.gameObject.SetActive(ready);
             retryLoadButton.gameObject.SetActive(!ready && !run.IsLoading);
@@ -327,6 +348,7 @@ namespace AutoBattler.Presentation.Battle
 
         private void Unbind()
         {
+            if(battleStatistics!=null) battleStatistics.Bind(null,null);
             if(deckPlanner!=null) deckPlanner.Bind(null,null,null);
             if (goldIncome != null) goldIncome.Bind(null, null, null);
             if (itemTooltip != null) itemTooltip.Bind(null, null, null, null);
@@ -334,8 +356,10 @@ namespace AutoBattler.Presentation.Battle
             if (unitInfo != null) { unitInfo.Hide(); unitInfo.BindRun(null); }
             if (!isBound)
                 return;
+            refreshHint.Bind(null,null,null); experienceHint.Bind(null,null,null);
+            foreach(ShopItem item in shopItems) item.FailureHint.Bind(null,null,null);
             if (run != null)
-                run.DisplayChanged -= Refresh;
+            { run.DisplayChanged -= Refresh; run.FailureReported-=feedback.ShowFailure; }
             if(augmentPanel!=null) { augmentPanel.Selected-=SelectAugment; augmentPanel.ToggleRequested-=ToggleAugments; }
             for (int i = 0; i < shopItems.Length; i++)
                 shopItems[i].PurchaseRequested -= BuyShopItem;
