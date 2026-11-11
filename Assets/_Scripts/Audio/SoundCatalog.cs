@@ -8,7 +8,8 @@ namespace AutoBattler.Audio
     public enum SoundId
     {
         Click, Denied, Trade, Refresh, Place, Augment, BattleStart, Victory, Defeat,
-        Hit, MagicHit, Death, Heal, Shield, Slash, Shoot, Fire, HeavyImpact
+        Hit, MagicHit, Death, Heal, Shield, Slash, Shoot, Fire, HeavyImpact,
+        StageClear, StageFailed
     }
 
     [Serializable]

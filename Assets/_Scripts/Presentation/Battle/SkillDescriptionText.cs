@@ -47,7 +47,6 @@ namespace AutoBattler.Presentation.Battle
                 AppendEffect(text,recipients,additional,EffectValue(additional,0f,maxHp,starScale,power));
             }
             if(skill.RetargetOnKill) text.Append("\n공격 중 대상이 쓰러지면 다른 적을 다시 지정합니다.");
-            if(skill.Delivery==SkillDelivery.Projectile) text.Append("\n투사체가 대상에게 도착하면 효과가 적용됩니다.");
             if(skill.Cooldown>0) text.Append($"\n재사용 대기시간은 {Number(skill.Cooldown)}초입니다.");
             return text.ToString();
         }

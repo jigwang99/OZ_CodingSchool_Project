@@ -363,9 +363,19 @@ MonoBehaviour:
     capacity: 16
     scale: 1
     lifetime: 0.92000014
+  - id: 35
+    prefab:
+      m_AssetGUID: 3990a5ee0ddd2f747b291840f8b384e4
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    capacity: 80
+    scale: 1
+    lifetime: 2
   skills:
   - skillId: 2001
-    icon: {fileID: 21300000, guid: a051a723e69914b44b02412e386f0325, type: 3}
+    icon: {fileID: -1858583594, guid: 74f209aad83300944a19b7d8b7520d31, type: 3}
     impact: 4
     areaImpact: 0
     magicProjectile: 0
@@ -374,7 +384,7 @@ MonoBehaviour:
     casterCentered: 0
     impactScale: 1
   - skillId: 2002
-    icon: {fileID: 21300000, guid: 292c2536b7cf5415db56d0a05903422a, type: 3}
+    icon: {fileID: 1034724493, guid: 74f209aad83300944a19b7d8b7520d31, type: 3}
     impact: 10
     areaImpact: 0
     magicProjectile: 0
@@ -383,7 +393,7 @@ MonoBehaviour:
     casterCentered: 0
     impactScale: 1
   - skillId: 2003
-    icon: {fileID: 21300000, guid: e211b620d4f344184b2e098eee4f570d, type: 3}
+    icon: {fileID: -246313351, guid: 74f209aad83300944a19b7d8b7520d31, type: 3}
     impact: 3
     areaImpact: 0
     magicProjectile: 0
@@ -392,7 +402,7 @@ MonoBehaviour:
     casterCentered: 0
     impactScale: 1
   - skillId: 2004
-    icon: {fileID: 21300000, guid: 13c035a6820ee40139858ef1f949e854, type: 3}
+    icon: {fileID: 868461663, guid: 74f209aad83300944a19b7d8b7520d31, type: 3}
     impact: 10
     areaImpact: 0
     magicProjectile: 0
@@ -401,7 +411,7 @@ MonoBehaviour:
     casterCentered: 0
     impactScale: 1
   - skillId: 2005
-    icon: {fileID: 21300000, guid: be32bdc704c87480caa40bcbeba59dda, type: 3}
+    icon: {fileID: 1112471, guid: 74f209aad83300944a19b7d8b7520d31, type: 3}
     impact: 5
     areaImpact: 1
     magicProjectile: 0
@@ -410,7 +420,7 @@ MonoBehaviour:
     casterCentered: 1
     impactScale: 1
   - skillId: 2006
-    icon: {fileID: 21300000, guid: 66e30fe342c0c4003952f3b752f28d7b, type: 3}
+    icon: {fileID: -301408715, guid: 74f209aad83300944a19b7d8b7520d31, type: 3}
     impact: 12
     areaImpact: 0
     magicProjectile: 0
@@ -419,7 +429,7 @@ MonoBehaviour:
     casterCentered: 0
     impactScale: 1
   - skillId: 2007
-    icon: {fileID: 21300000, guid: ec19b57ff2b9d4c8ea79f30947f223a7, type: 3}
+    icon: {fileID: 1860539257, guid: 74f209aad83300944a19b7d8b7520d31, type: 3}
     impact: 2
     areaImpact: 1
     magicProjectile: 1
@@ -428,7 +438,7 @@ MonoBehaviour:
     casterCentered: 0
     impactScale: 1
   - skillId: 2008
-    icon: {fileID: 21300000, guid: bd84a00653c8a48078d52dd78200141d, type: 3}
+    icon: {fileID: 249564183, guid: 74f209aad83300944a19b7d8b7520d31, type: 3}
     impact: 9
     areaImpact: 0
     magicProjectile: 0
@@ -437,7 +447,7 @@ MonoBehaviour:
     casterCentered: 0
     impactScale: 1
   - skillId: 2009
-    icon: {fileID: 21300000, guid: 66e30fe342c0c4003952f3b752f28d7b, type: 3}
+    icon: {fileID: 656858826, guid: 74f209aad83300944a19b7d8b7520d31, type: 3}
     impact: 11
     areaImpact: 0
     magicProjectile: 0
@@ -446,7 +456,7 @@ MonoBehaviour:
     casterCentered: 0
     impactScale: 1
   - skillId: 2010
-    icon: {fileID: 21300000, guid: 13c035a6820ee40139858ef1f949e854, type: 3}
+    icon: {fileID: 1731938704, guid: a7214cabcfae7ea4fad2a35b6221b821, type: 3}
     impact: 10
     areaImpact: 1
     magicProjectile: 0
@@ -455,7 +465,7 @@ MonoBehaviour:
     casterCentered: 1
     impactScale: 1.5
   - skillId: 2011
-    icon: {fileID: 21300000, guid: 66e30fe342c0c4003952f3b752f28d7b, type: 3}
+    icon: {fileID: 1327935432, guid: a7214cabcfae7ea4fad2a35b6221b821, type: 3}
     impact: 12
     areaImpact: 0
     magicProjectile: 0
@@ -464,7 +474,7 @@ MonoBehaviour:
     casterCentered: 0
     impactScale: 1
   - skillId: 2012
-    icon: {fileID: 21300000, guid: e211b620d4f344184b2e098eee4f570d, type: 3}
+    icon: {fileID: 2078345527, guid: a7214cabcfae7ea4fad2a35b6221b821, type: 3}
     impact: 13
     areaImpact: 1
     magicProjectile: 0
@@ -473,7 +483,7 @@ MonoBehaviour:
     casterCentered: 1
     impactScale: 1
   - skillId: 2013
-    icon: {fileID: 21300000, guid: a051a723e69914b44b02412e386f0325, type: 3}
+    icon: {fileID: -1156636435, guid: a7214cabcfae7ea4fad2a35b6221b821, type: 3}
     impact: 14
     areaImpact: 0
     magicProjectile: 0
@@ -482,7 +492,7 @@ MonoBehaviour:
     casterCentered: 0
     impactScale: 1
   - skillId: 2014
-    icon: {fileID: 21300000, guid: bd84a00653c8a48078d52dd78200141d, type: 3}
+    icon: {fileID: 1337465115, guid: a7214cabcfae7ea4fad2a35b6221b821, type: 3}
     impact: 19
     areaImpact: 1
     magicProjectile: 0
@@ -491,7 +501,7 @@ MonoBehaviour:
     casterCentered: 0
     impactScale: 1
   - skillId: 2015
-    icon: {fileID: 21300000, guid: 292c2536b7cf5415db56d0a05903422a, type: 3}
+    icon: {fileID: 581042546, guid: a7214cabcfae7ea4fad2a35b6221b821, type: 3}
     impact: 18
     areaImpact: 0
     magicProjectile: 0
@@ -500,7 +510,7 @@ MonoBehaviour:
     casterCentered: 0
     impactScale: 1
   - skillId: 2016
-    icon: {fileID: 21300000, guid: ec19b57ff2b9d4c8ea79f30947f223a7, type: 3}
+    icon: {fileID: -472891371, guid: a7214cabcfae7ea4fad2a35b6221b821, type: 3}
     impact: 20
     areaImpact: 1
     magicProjectile: 1
@@ -509,7 +519,7 @@ MonoBehaviour:
     casterCentered: 0
     impactScale: 1
   - skillId: 2017
-    icon: {fileID: 21300000, guid: a051a723e69914b44b02412e386f0325, type: 3}
+    icon: {fileID: -637408621, guid: a7214cabcfae7ea4fad2a35b6221b821, type: 3}
     impact: 33
     areaImpact: 0
     magicProjectile: 0
@@ -518,7 +528,7 @@ MonoBehaviour:
     casterCentered: 0
     impactScale: 1
   - skillId: 2018
-    icon: {fileID: 21300000, guid: 13c035a6820ee40139858ef1f949e854, type: 3}
+    icon: {fileID: 221792831, guid: a7214cabcfae7ea4fad2a35b6221b821, type: 3}
     impact: 10
     areaImpact: 0
     magicProjectile: 0
@@ -527,7 +537,7 @@ MonoBehaviour:
     casterCentered: 0
     impactScale: 1
   - skillId: 2019
-    icon: {fileID: 21300000, guid: a051a723e69914b44b02412e386f0325, type: 3}
+    icon: {fileID: 24989992, guid: 63814d2a030946944a33150fb5934400, type: 3}
     impact: 18
     areaImpact: 1
     magicProjectile: 0
@@ -536,7 +546,7 @@ MonoBehaviour:
     casterCentered: 1
     impactScale: 1
   - skillId: 2020
-    icon: {fileID: 21300000, guid: e211b620d4f344184b2e098eee4f570d, type: 3}
+    icon: {fileID: 266017212, guid: 63814d2a030946944a33150fb5934400, type: 3}
     impact: 31
     areaImpact: 0
     magicProjectile: 0
@@ -545,7 +555,7 @@ MonoBehaviour:
     casterCentered: 0
     impactScale: 1
   - skillId: 2021
-    icon: {fileID: 21300000, guid: 66e30fe342c0c4003952f3b752f28d7b, type: 3}
+    icon: {fileID: 42323874, guid: 63814d2a030946944a33150fb5934400, type: 3}
     impact: 12
     areaImpact: 0
     magicProjectile: 0
@@ -554,7 +564,7 @@ MonoBehaviour:
     casterCentered: 0
     impactScale: 1
   - skillId: 2022
-    icon: {fileID: 21300000, guid: bd84a00653c8a48078d52dd78200141d, type: 3}
+    icon: {fileID: 1524679203, guid: 63814d2a030946944a33150fb5934400, type: 3}
     impact: 20
     areaImpact: 1
     magicProjectile: 0
@@ -563,7 +573,7 @@ MonoBehaviour:
     casterCentered: 1
     impactScale: 1
   - skillId: 2023
-    icon: {fileID: 21300000, guid: 292c2536b7cf5415db56d0a05903422a, type: 3}
+    icon: {fileID: 195563713, guid: 63814d2a030946944a33150fb5934400, type: 3}
     impact: 20
     areaImpact: 0
     magicProjectile: 0
@@ -572,7 +582,7 @@ MonoBehaviour:
     casterCentered: 0
     impactScale: 1
   - skillId: 2024
-    icon: {fileID: 21300000, guid: 13c035a6820ee40139858ef1f949e854, type: 3}
+    icon: {fileID: 1073441545, guid: 63814d2a030946944a33150fb5934400, type: 3}
     impact: 10
     areaImpact: 1
     magicProjectile: 0
@@ -581,7 +591,7 @@ MonoBehaviour:
     casterCentered: 1
     impactScale: 1.5
   - skillId: 2025
-    icon: {fileID: 21300000, guid: be32bdc704c87480caa40bcbeba59dda, type: 3}
+    icon: {fileID: 2140258948, guid: 63814d2a030946944a33150fb5934400, type: 3}
     impact: 9
     areaImpact: 1
     magicProjectile: 0
@@ -590,7 +600,7 @@ MonoBehaviour:
     casterCentered: 1
     impactScale: 1
   - skillId: 2026
-    icon: {fileID: 21300000, guid: 13c035a6820ee40139858ef1f949e854, type: 3}
+    icon: {fileID: -1522659212, guid: 63814d2a030946944a33150fb5934400, type: 3}
     impact: 10
     areaImpact: 0
     magicProjectile: 0
@@ -599,7 +609,7 @@ MonoBehaviour:
     casterCentered: 0
     impactScale: 1
   - skillId: 2027
-    icon: {fileID: 21300000, guid: ec19b57ff2b9d4c8ea79f30947f223a7, type: 3}
+    icon: {fileID: -32706533, guid: 63814d2a030946944a33150fb5934400, type: 3}
     impact: 15
     areaImpact: 1
     magicProjectile: 1
@@ -608,7 +618,7 @@ MonoBehaviour:
     casterCentered: 0
     impactScale: 1
   - skillId: 2028
-    icon: {fileID: 21300000, guid: ec19b57ff2b9d4c8ea79f30947f223a7, type: 3}
+    icon: {fileID: 175205449, guid: 5e8de5e8d3a5b5b47ab756909cdc5b21, type: 3}
     impact: 21
     areaImpact: 1
     magicProjectile: 1
@@ -617,7 +627,7 @@ MonoBehaviour:
     casterCentered: 0
     impactScale: 1
   - skillId: 2029
-    icon: {fileID: 21300000, guid: be32bdc704c87480caa40bcbeba59dda, type: 3}
+    icon: {fileID: 2120851169, guid: 5e8de5e8d3a5b5b47ab756909cdc5b21, type: 3}
     impact: 22
     areaImpact: 1
     magicProjectile: 0
@@ -626,7 +636,7 @@ MonoBehaviour:
     casterCentered: 1
     impactScale: 1
   - skillId: 2030
-    icon: {fileID: 21300000, guid: ec19b57ff2b9d4c8ea79f30947f223a7, type: 3}
+    icon: {fileID: 2065140409, guid: 5e8de5e8d3a5b5b47ab756909cdc5b21, type: 3}
     impact: 23
     areaImpact: 1
     magicProjectile: 1
@@ -635,7 +645,7 @@ MonoBehaviour:
     casterCentered: 0
     impactScale: 1
   - skillId: 2031
-    icon: {fileID: 21300000, guid: 13c035a6820ee40139858ef1f949e854, type: 3}
+    icon: {fileID: -190119775, guid: 5e8de5e8d3a5b5b47ab756909cdc5b21, type: 3}
     impact: 23
     areaImpact: 1
     magicProjectile: 0
@@ -644,7 +654,7 @@ MonoBehaviour:
     casterCentered: 1
     impactScale: 1
   - skillId: 2032
-    icon: {fileID: 21300000, guid: be32bdc704c87480caa40bcbeba59dda, type: 3}
+    icon: {fileID: 303539248, guid: 5e8de5e8d3a5b5b47ab756909cdc5b21, type: 3}
     impact: 24
     areaImpact: 1
     magicProjectile: 0
@@ -653,7 +663,7 @@ MonoBehaviour:
     casterCentered: 1
     impactScale: 1
   - skillId: 2033
-    icon: {fileID: 21300000, guid: ec19b57ff2b9d4c8ea79f30947f223a7, type: 3}
+    icon: {fileID: -1358784070, guid: 5e8de5e8d3a5b5b47ab756909cdc5b21, type: 3}
     impact: 20
     areaImpact: 0
     magicProjectile: 1
@@ -893,6 +903,12 @@ MonoBehaviour:
     magicProjectile: 1
     projectileColor: {r: 1, g: 1, b: 1, a: 1}
     basicImpactScale: 0.55
+  skillEffects:
+    m_AssetGUID: e392087fbfc5adc41a62ed9372171158
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
   arrow: {fileID: 21300000, guid: 392a42fac20e044729fd9892ca268f05, type: 3}
   magicOrb: {fileID: 21300000, guid: eb9cf9cef884e564fb9e99a3dd8cb56a, type: 3}
   stun: {fileID: 21300000, guid: bd84a00653c8a48078d52dd78200141d, type: 3}

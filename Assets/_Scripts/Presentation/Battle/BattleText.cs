@@ -64,7 +64,7 @@ namespace AutoBattler.Presentation.Battle
                 case AugmentEffect.EliteArmy:
                     return $"배치 한도보다 적게 배치 시\n아군 체력·공격력 +{percent}%";
                 case AugmentEffect.LastStand:
-                    return $"아군이 1기만 남으면\n체력 {secondaryPercent}% 회복·공격 속도 +{percent}%\n유닛당 전투 1회";
+                    return $"아군이 1기만 남으면\n최대 체력의 {secondaryPercent}% 보호막·공격 속도 +{percent}%";
                 case AugmentEffect.HealOnKill:
                     return $"적 처치 시 최대 체력의 {percent}% 회복\nMP {secondary} 획득";
                 case AugmentEffect.EmergencyShield:
@@ -78,7 +78,7 @@ namespace AutoBattler.Presentation.Battle
                     return $"장비 3개 장착 시\n최대 체력의 {percent}% 보호막\n전투 중 장착도 적용·전투 1회";
                 case AugmentEffect.MaterialSupply:return $"즉시 무작위 하위 아이템 {value}개 획득";
                 case AugmentEffect.ActiveTraitPower:
-                    return $"활성 시너지 1개당\n아군 스킬 위력 +{percent}%\n전투 시작 시 판정";
+                    return $"활성 시너지 1개당\n아군 스킬 위력 +{percent}%";
                 default:return definition.Description;
             }
         }

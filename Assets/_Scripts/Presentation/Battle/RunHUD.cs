@@ -46,6 +46,9 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private TextMeshProUGUI refreshLabel;
         [SerializeField] private Button buyExperienceButton;
         [SerializeField] private TextMeshProUGUI buyExperienceLabel;
+        [SerializeField] private Button shopLockButton;
+        [SerializeField] private TextMeshProUGUI shopLockLabel;
+        [SerializeField] private ShopOddsHover shopOdds;
         [SerializeField] private GameObject shopContent;
         [SerializeField] private UnitSellZone sellZone;
         [SerializeField] private SynergyPanel synergyPanel;
@@ -132,6 +135,8 @@ namespace AutoBattler.Presentation.Battle
             startBattleButton.onClick.AddListener(StartBattle);
             refreshButton.onClick.AddListener(RefreshShop);
             buyExperienceButton.onClick.AddListener(BuyExperience);
+            shopLockButton.onClick.AddListener(ToggleShopLock);
+            shopOdds.Bind(run,interactionRoot);
             run.Drag.DragStarted+=ShowSellDrag;
             run.Drag.DragMoved+=UpdateSellDrag;
             run.Drag.DragEnded+=HideSellDrag;
@@ -143,6 +148,7 @@ namespace AutoBattler.Presentation.Battle
             loadTitleButton.onClick.AddListener(ReturnFromLoadError);
             run.DisplayChanged += Refresh;
             run.FailureReported+=feedback.ShowFailure;
+            if(selectedAugments!=null) run.Augments.Activated+=selectedAugments.ShowActivation;
             refreshHint.Bind(()=>run.Shop.RefreshFailureReason,CanReportFailure,run.NotifyFailure);
             experienceHint.Bind(()=>run.Shop.ExperienceFailureReason,CanReportFailure,run.NotifyFailure);
             if(inventory!=null) inventory.Bind(run,interactionRoot);
@@ -161,6 +167,7 @@ namespace AutoBattler.Presentation.Battle
         private void BuyShopItem(int slotIndex) => run.Buy(slotIndex);
         private void RefreshShop() => run.RefreshShop();
         private void BuyExperience() => run.BuyXp();
+        private void ToggleShopLock()=>run.ToggleShopLock();
         private void ShowSellDrag(UnitView view)
         {
             Unit unit=view.GetComponent<Unit>();
@@ -217,13 +224,16 @@ namespace AutoBattler.Presentation.Battle
             if(run.IsReady && run.Flow.CurrentPhase==BattlePhase.Result && (!run.State.IsOver || run.State.HasPendingRoundReward))
                 resultPanel.ShowCountdown();
             RefreshSelection();
-            HandleShopShortcuts();
+            HandleShortcuts();
         }
 
-        private void HandleShopShortcuts()
+        private void HandleShortcuts()
         {
             Keyboard keyboard=Keyboard.current;
-            if(keyboard==null || !keyboard.dKey.wasPressedThisFrame && !keyboard.fKey.wasPressedThisFrame) return;
+            if(keyboard==null) return;
+            bool refresh=keyboard.dKey.wasPressedThisFrame, experience=keyboard.fKey.wasPressedThisFrame;
+            bool place=keyboard.wKey.wasPressedThisFrame, sell=keyboard.eKey.wasPressedThisFrame;
+            if(!refresh && !experience && !place && !sell) return;
             if(!run.IsReady || run.IsShuttingDown || GameNavigation.IsTransitioning
                 || run.Flow.IsAugmentWindowOpen
                 || interactionRoot==null || !interactionRoot.interactable || !interactionRoot.blocksRaycasts
@@ -232,8 +242,13 @@ namespace AutoBattler.Presentation.Battle
             TMP_InputField input=selected!=null?selected.GetComponentInParent<TMP_InputField>():null;
             if(input!=null && input.isFocused) return;
             if(inventory.IsDraggingItem || run.Drag.DraggedUnit!=null) return;
-            if(keyboard.dKey.wasPressedThisFrame) TryShortcut(refreshButton,run.Shop.RefreshFailureReason);
-            if(keyboard.fKey.wasPressedThisFrame) TryShortcut(buyExperienceButton,run.Shop.ExperienceFailureReason);
+            if(refresh) TryShortcut(refreshButton,run.Shop.RefreshFailureReason);
+            if(experience) TryShortcut(buyExperienceButton,run.Shop.ExperienceFailureReason);
+            if(!place && !sell) return;
+            Unit unit=run.Drag.HoveredAlly();
+            if(unit==null) return;
+            if(sell && run.Shop.CanSell(unit.InstanceId)) run.SellUnit(unit.InstanceId);
+            else if(place) run.Drag.TogglePlacement(unit);
         }
 
         private void TryShortcut(Button button,string reason)
@@ -276,6 +291,10 @@ namespace AutoBattler.Presentation.Battle
             if(selectedAugments!=null) selectedAugments.Show(run);
             bool prepare = CanPrepare();
             bool canBuy = ready && run.Shop.CanBuy;
+            bool shopLocked=ready && run.State.ShopLocked;
+            shopLockButton.interactable=ready && run.Shop.CanTrade;
+            shopLockLabel.text=shopLocked?"잠김":"잠금";
+            shopLockButton.targetGraphic.color=shopLocked?new Color(.48f,.82f,.79f):Color.white;
             bool canManage = prepare || canBuy || ready && run.Shop.CanTrade;
             if(synergyPanel!=null) synergyPanel.Show(ready?run.AllySynergies:null,ready,run.Flow.CurrentPhase);
             messageText.text = run.Message;
@@ -319,7 +338,8 @@ namespace AutoBattler.Presentation.Battle
             bool animate = hasDisplayedPhase && phaseChanged;
             if (showResult)
             {
-                resultPanel.Show(run.State.LastBattleWon, !run.State.IsOver || run.State.HasPendingRoundReward, hasDisplayedPhase);
+                resultPanel.Show(run.State.IsOver?run.State.WonRun:run.State.LastBattleWon,
+                    !run.State.IsOver || run.State.HasPendingRoundReward, hasDisplayedPhase);
                 if(!run.State.IsOver || run.State.HasPendingRoundReward) resultPanel.ShowCountdown();
             }
             else
@@ -359,13 +379,18 @@ namespace AutoBattler.Presentation.Battle
             refreshHint.Bind(null,null,null); experienceHint.Bind(null,null,null);
             foreach(ShopItem item in shopItems) item.FailureHint.Bind(null,null,null);
             if (run != null)
-            { run.DisplayChanged -= Refresh; run.FailureReported-=feedback.ShowFailure; }
+            {
+                run.DisplayChanged -= Refresh; run.FailureReported-=feedback.ShowFailure;
+                if(selectedAugments!=null) run.Augments.Activated-=selectedAugments.ShowActivation;
+            }
             if(augmentPanel!=null) { augmentPanel.Selected-=SelectAugment; augmentPanel.ToggleRequested-=ToggleAugments; }
             for (int i = 0; i < shopItems.Length; i++)
                 shopItems[i].PurchaseRequested -= BuyShopItem;
             startBattleButton.onClick.RemoveListener(StartBattle);
             refreshButton.onClick.RemoveListener(RefreshShop);
             buyExperienceButton.onClick.RemoveListener(BuyExperience);
+            shopLockButton.onClick.RemoveListener(ToggleShopLock);
+            shopOdds.Bind(null,null);
             if(run!=null)
             {
                 run.Drag.UnbindDropTarget(this);

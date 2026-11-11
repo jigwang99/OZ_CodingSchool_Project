@@ -28,7 +28,9 @@ namespace AutoBattler.Presentation.Units
         private readonly ObjectPoolManager manager;
         private readonly Dictionary<BattleVisualId,Loaded> loaded=new Dictionary<BattleVisualId,Loaded>();
         private readonly HashSet<PooledBattleVisual> active=new HashSet<PooledBattleVisual>();
+        private readonly HashSet<PooledBattleVisual> promotions=new HashSet<PooledBattleVisual>();
         private readonly List<Binding> bindings=new List<Binding>();
+        private AssetService.Lease<SkillEffectLibrary> skillEffects;
         private bool inBattle,disposed;
         public int PrefabLeaseCount=>loaded.Count;
         public int ActiveCount=>active.Count;
@@ -45,6 +47,8 @@ namespace AutoBattler.Presentation.Units
         }
         public async UniTask PreloadAsync(CancellationToken token)
         {
+            if(skillEffects==null && settings.SkillEffects!=null && settings.SkillEffects.RuntimeKeyIsValid())
+                skillEffects=await assets.AcquireAsync<SkillEffectLibrary>(settings.SkillEffects,token);
             foreach(BattleVisualEntry entry in settings.Effects)
             {
                 if(loaded.ContainsKey(entry.id)) continue;
@@ -66,8 +70,9 @@ namespace AutoBattler.Presentation.Units
         {
             inBattle=false;
             foreach(Binding binding in bindings) binding.Dispose(); bindings.Clear();
-            foreach(PooledBattleVisual visual in active.ToArray()) if(visual!=null) visual.ReturnToPool();
-            active.Clear();
+            // 결과 정산 직후 발생한 승급 이펙트는 다음 준비 단계에서도 재생.
+            foreach(PooledBattleVisual visual in active.ToArray())
+                if(visual!=null && !promotions.Contains(visual)) visual.ReturnToPool();
         }
         private void CompleteBattle()
         {
@@ -80,14 +85,27 @@ namespace AutoBattler.Presentation.Units
             if(phase==BattlePhase.Result) CompleteBattle();
             else if(phase!=BattlePhase.Combat) EndBattle();
         }
-        private PooledBattleVisual Rent(BattleVisualId id)
+        private PooledBattleVisual Rent(BattleVisualId id, bool promotion=false)
         {
-            if(disposed || !inBattle || !loaded.TryGetValue(id,out Loaded item)) return null;
+            if(disposed || (!inBattle && !promotion) || !loaded.TryGetValue(id,out Loaded item)) return null;
             // 기존 Pool의 확장 생성 경로를 사용하지 않는 대여.
             if(!manager.TryGetObject<PooledBattleVisual>(id,out PooledBattleVisual visual)) { SkippedCount++; return null; }
-            visual.Bind(manager,OnReturned,item.Entry.lifetime); active.Add(visual); PlayedCount++; return visual;
+            visual.Bind(manager,OnReturned,item.Entry.lifetime); active.Add(visual);
+            if(promotion) promotions.Add(visual);
+            PlayedCount++; return visual;
         }
-        private void OnReturned(PooledBattleVisual visual)=>active.Remove(visual);
+        private void OnReturned(PooledBattleVisual visual)
+        {
+            active.Remove(visual);
+            promotions.Remove(visual);
+        }
+        public void PlayPromotion(Unit unit)
+        {
+            SkillEffectSequence sequence=skillEffects?.Asset.Promotion(unit.Star);
+            if(sequence==null) return;
+            PooledBattleVisual visual=Rent(BattleVisualId.SkillSprites,promotion:true);
+            if(visual!=null) visual.PlaySkillEffect(unit.transform.position+Vector3.up*.36f,Vector3.zero,sequence);
+        }
         public PooledBattleVisual Play(BattleVisualId id,Vector3 position,Vector3 direction=default,float scaleMultiplier=1f)
         {
             PooledBattleVisual visual=Rent(id);
@@ -100,20 +118,33 @@ namespace AutoBattler.Presentation.Units
             if(visual!=null)visual.FollowEffect(unit,loaded[id].Entry.scale,offset);
             return visual;
         }
-        private PooledBattleVisual Projectile(Unit caster,Unit target,float seconds,bool magic,Color color,bool hold,BattleVisualId style)
+        private PooledBattleVisual Projectile(Unit caster,Unit target,float seconds,bool magic,Color color,bool hold,BattleVisualId style,SkillEffectSequence sequence=null)
         {
             PooledBattleVisual visual=Rent(style);
             if(visual!=null) visual.PlayProjectile(caster.transform.position+Vector3.up*.2f,new CombatUnitReference(target),
-                target.transform.position+Vector3.up*.2f,magic?settings.MagicOrb:settings.Arrow,color,seconds,hold,loaded[style].Entry.scale);
+                target.transform.position+Vector3.up*.2f,magic?settings.MagicOrb:settings.Arrow,color,seconds,hold,loaded[style].Entry.scale,sequence);
             return visual;
+        }
+        private void SkillImpact(SkillVisualEntry style, SkillEffectSequence sequence, Vector3 position, Vector3 direction)
+        {
+            if(sequence==null)
+            {
+                Play(style?.impact ?? BattleVisualId.MagicHit,position,direction,style?.impactScale ?? 1f);
+                return;
+            }
+            PooledBattleVisual visual=Rent(BattleVisualId.SkillSprites);
+            if(visual!=null) visual.PlaySkillEffect(position,direction,sequence);
         }
         public async UniTask DisposeAsync()
         {
             if(disposed) return;
             disposed=true; flow.PhaseChanged-=OnPhaseChanged; EndBattle();
+            foreach(PooledBattleVisual promotion in promotions.ToArray())
+                if(promotion!=null) promotion.ReturnToPool();
             manager.Dispose(); UnityEngine.Object.Destroy(manager.gameObject);
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
             foreach(Loaded item in loaded.Values) item.Lease.Dispose(); loaded.Clear();
+            skillEffects?.Dispose(); skillEffects=null;
         }
         private sealed class Binding : IDisposable
         {
@@ -124,15 +155,14 @@ namespace AutoBattler.Presentation.Units
             private struct StatusSlot {public PooledBattleVisual Visual;public int Generation;}
             private readonly UnitVisualEntry presentation;
             private StatusSlot stun,slow,power,weak,shield;
-            private PooledBattleVisual projectile;
-            private int projectileGeneration;
+            private Dictionary<SkillCastContext,StatusSlot> projectiles;
             private bool listening;
             public Binding(BattleVisualService owner,Unit actor)
             {
                 service=owner; unit=actor; facing=actor.GetComponent<UnitFacingView>(); reference=new CombatUnitReference(actor);presentation=service.settings.Unit(unit.Definition.Id);
                 unit.Health.DamageResolved+=OnDamage; unit.Health.Healed+=OnHealed; unit.Health.Died+=OnDied;
                 unit.Effects.Changed+=OnEffects; unit.Combat.ProjectileReleased+=OnProjectile;
-                unit.Skill.EffectReleased+=OnSkillReleased; unit.Skill.EffectApplied+=OnSkillApplied; unit.Skill.CastFinished+=OnCastFinished;
+                unit.Skill.EffectReleased+=OnSkillReleased; unit.Skill.EffectApplied+=OnSkillApplied; unit.Skill.EffectFinished+=ReturnProjectile;
                 listening=true; OnEffects();
             }
             private bool Current=>reference.IsCurrent && unit.isActiveAndEnabled;
@@ -193,16 +223,24 @@ namespace AutoBattler.Presentation.Units
             {
                 if(!Current || context.Definition.Delivery!=SkillDelivery.Projectile || !context.Target.IsValid) return;
                 SkillVisualEntry presentation=service.settings.Skill(context.Definition.Id);
+                SkillEffectSequence sequence=service.skillEffects?.Asset.GetStyle(context.Definition.Id)?.Projectile;
                 float seconds=unit.CurrentCell.Value.DistanceTo(context.Center)/Mathf.Max(.01f,context.Definition.ProjectileSpeed);
-                projectile=service.Projectile(unit,context.Target.Unit,seconds,presentation?.magicProjectile==true,
-                    presentation?.projectileColor ?? Color.white,true,presentation?.projectile ?? BattleVisualId.Projectile);
-                if(projectile!=null) projectileGeneration=projectile.Generation;
+                ReturnProjectile(context);
+                BattleVisualId key=sequence!=null?BattleVisualId.SkillSprites:presentation?.projectile ?? BattleVisualId.Projectile;
+                PooledBattleVisual projectile=service.Projectile(unit,context.Target.Unit,seconds,presentation?.magicProjectile==true,
+                    presentation?.projectileColor ?? Color.white,true,key,sequence);
+                if(projectile!=null)
+                {
+                    projectiles ??= new Dictionary<SkillCastContext,StatusSlot>();
+                    projectiles.Add(context,new StatusSlot {Visual=projectile,Generation=projectile.Generation});
+                }
             }
             private void OnSkillApplied(SkillCastContext context)
             {
-                Return(ref projectile,projectileGeneration);
+                ReturnProjectile(context);
                 if(!Current) return;
                 SkillVisualEntry presentation=service.settings.Skill(context.Definition.Id);
+                SkillEffectSequence sequence=service.skillEffects?.Asset.GetStyle(context.Definition.Id)?.Impact;
                 // 대상이 사라져도 마지막 판정 위치를 향해 재생.
                 Vector3 destination=context.Target.IsValid?context.Target.Unit.transform.position:service.grid.CellToWorld(context.Center);
                 Vector3 direction=destination-unit.transform.position; direction.z=0f;
@@ -210,13 +248,17 @@ namespace AutoBattler.Presentation.Units
                 if(presentation?.areaImpact==true)
                 {
                     Vector3 center=presentation.casterCentered?Position:service.grid.CellToWorld(context.Center)+Vector3.up*.2f;
-                    service.Play(presentation.impact,center,direction,presentation.impactScale);
+                    service.SkillImpact(presentation,sequence,center,direction);
                 }
                 else
                     foreach(SkillTarget target in context.AppliedTargets)
-                        if(target.IsValid) service.Play(presentation?.impact ?? BattleVisualId.MagicHit,target.Unit.transform.position+Vector3.up*.2f,direction,presentation?.impactScale ?? 1f);
+                        if(target.IsValid) service.SkillImpact(presentation,sequence,target.Unit.transform.position+Vector3.up*.2f,direction);
             }
-            private void OnCastFinished()=>Return(ref projectile,projectileGeneration);
+            private void ReturnProjectile(SkillCastContext context)
+            {
+                if(projectiles!=null && projectiles.Remove(context,out StatusSlot slot))
+                    Return(ref slot.Visual,slot.Generation);
+            }
             private static void Return(ref PooledBattleVisual visual,int generation)
             { if(visual!=null && visual.IsRented && visual.Generation==generation) visual.ReturnToPool(); visual=null; }
             public void StopListening()
@@ -225,11 +267,18 @@ namespace AutoBattler.Presentation.Units
                 listening=false;
                 unit.Health.DamageResolved-=OnDamage; unit.Health.Healed-=OnHealed; unit.Health.Died-=OnDied;
                 unit.Effects.Changed-=OnEffects; unit.Combat.ProjectileReleased-=OnProjectile;
-                unit.Skill.EffectReleased-=OnSkillReleased; unit.Skill.EffectApplied-=OnSkillApplied; unit.Skill.CastFinished-=OnCastFinished;
+                unit.Skill.EffectReleased-=OnSkillReleased; unit.Skill.EffectApplied-=OnSkillApplied; unit.Skill.EffectFinished-=ReturnProjectile;
             }
             public void Dispose()
             {
-                StopListening(); ReturnStatuses(); Return(ref projectile,projectileGeneration);
+                StopListening(); ReturnStatuses();
+                if(projectiles==null) return;
+                foreach(StatusSlot projectile in projectiles.Values)
+                {
+                    PooledBattleVisual visual=projectile.Visual;
+                    Return(ref visual,projectile.Generation);
+                }
+                projectiles.Clear();
             }
         }
     }

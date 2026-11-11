@@ -120,7 +120,12 @@ namespace AutoBattler.Managers
                     && state.IsSettled && (state.HasPendingRoundReward || !state.IsOver) && flow.CurrentPhase==BattlePhase.Result)
                 {
                     current.Token.ThrowIfCancellationRequested();
-                    if(state.TryGrantRoundRewards()) publish(state.LastResult);
+                    if(state.TryGrantRoundRewards())
+                    {
+                        if(state.LastBattleWon) augments.ReportVictoryRewards();
+                        if(state.IsOver) SoundManager.PlayEffect(state.WonRun?SoundId.StageClear:SoundId.StageFailed);
+                        publish(state.LastResult);
+                    }
                     // 다음 준비가 없는 최종 결과도 대기 완료 후에만 복원.
                     if(state.IsOver) return;
                     if(advancePreparation()) return;

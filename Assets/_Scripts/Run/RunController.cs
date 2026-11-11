@@ -58,6 +58,7 @@ namespace AutoBattler.Run
         public float RemainingSeconds=>battle!=null ? battle.RemainingSeconds : 0f;
         public Sprite UnitIcon(int iconId)=>catalog.Icon(iconId);
         public Sprite ItemIcon(int iconId)=>assets.ItemIcon(iconId);
+        public bool IsUnitUnlocked(int unitId)=>saves!=null && saves.IsUnitUnlocked(unitId);
         public string Message { get; private set; }="불러오는 중...";
         public event Action DisplayChanged;
         public event Action<string> FailureReported;
@@ -120,7 +121,7 @@ namespace AutoBattler.Run
                 GameNavigation.ReportBattleLoading(this,.95f,"전장과 유닛 배치 중...");
                 units.SyncAllies(); units.CreateEnemies(); synergies.Refresh();
                 if(State.CanPrepare) augments.EnterPreparation(augmentOpen);
-                else { flow.TryRestoreResult(); drag.SetResultTrading(!State.IsOver); battle.ScheduleNextPreparation(); }
+                else { flow.TryRestoreResult(); drag.SetResultTrading(State.CanTradeUnits); battle.ScheduleNextPreparation(); }
                 if(!GameNavigation.ResumeRequested) TrySaveProgress();
                 Report(!State.CanPrepare?State.LastResult:State.Augments.HasPending?"증강 선택":"준비");
             }
@@ -146,8 +147,8 @@ namespace AutoBattler.Run
         private void OnStateChanged()
         {
             drag.SetPlayerLevel(State.Level);
-            drag.SetResultTrading(State.IsSettled && !State.IsOver && flow.CurrentPhase==BattlePhase.Result);
-            units.SyncAllies();
+            drag.SetResultTrading(State.IsSettled && State.CanTradeUnits && flow.CurrentPhase==BattlePhase.Result);
+            units.SyncAllies(assets.Visuals);
             if(!State.IsSettled) synergies.Refresh();
             if(State.IsSettled) { battle.ScheduleNextPreparation(); TrySaveProgress(); }
             DisplayChanged?.Invoke();
@@ -157,6 +158,7 @@ namespace AutoBattler.Run
         public bool Buy(int slot)=>IsReady && SaveAfter(shop.Buy(slot));
         public bool RefreshShop()=>IsReady && SaveAfter(shop.RefreshShop());
         public bool BuyXp()=>IsReady && SaveAfter(shop.BuyXp());
+        public bool ToggleShopLock()=>IsReady && SaveAfter(State.TryToggleShopLock());
         public bool SellSelected()=>IsReady && SaveAfter(shop.SellSelected());
         public bool SellUnit(int instanceId)=>IsReady && SaveAfter(shop.Sell(instanceId));
         public bool ToggleAugmentWindow()=>IsReady && SaveAfter(augments.ToggleWindow());

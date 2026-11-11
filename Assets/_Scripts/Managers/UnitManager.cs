@@ -46,7 +46,7 @@ namespace AutoBattler.Managers
 
         public void Bind(RunState runState)=>state=runState;
 
-        public void SyncAllies()
+        public void SyncAllies(BattleVisualService visuals=null)
         {
             if(state==null) return;
             if(state.CanPrepare) drag.ClearSelection();
@@ -68,7 +68,12 @@ namespace AutoBattler.Managers
                     unit.gameObject.SetActive(true); allies.Add(id,unit);
                 }
                 else if(unit.Star!=owned.Star)
-                { ConfigureUnit(unit,owned.DefinitionId,owned.Star,id,UnitTeam.Ally); initialize=true; }
+                {
+                    bool promoted=owned.Star>unit.Star;
+                    ConfigureUnit(unit,owned.DefinitionId,owned.Star,id,UnitTeam.Ally);
+                    initialize=true;
+                    if(promoted) visuals?.PlayPromotion(unit);
+                }
                 unit.Equipment.Apply(state.Items.Equipped(id),state.Data,itemIcon);
                 if(state.CanPrepare || initialize) AugmentApplicator.ApplyPersistent(unit,state.Augments.Selected);
             }

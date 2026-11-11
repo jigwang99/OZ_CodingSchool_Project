@@ -10,7 +10,8 @@ namespace AutoBattler.Presentation.Units
         Hit, MagicHit, Fire, Heal, Shield, Spin, Projectile, Stun,
         Slash, HeavySlash, Pierce, Punch, DarkSlash, HolyBurst, WindSlash, IceBurst, IceBolt, FireBolt,
         NatureBurst, Vine, SpiritBurst, StarBurst, BloodSlash, FlameWave, FireSpin,
-        ColdStatus, PowerStatus, WeakStatus, ShieldStatus, SpiritBolt, NatureBolt, Rally, LifeSteal, Lightning, ArcaneBolt
+        ColdStatus, PowerStatus, WeakStatus, ShieldStatus, SpiritBolt, NatureBolt, Rally, LifeSteal, Lightning, ArcaneBolt,
+        SkillSprites
     }
     [Serializable] public sealed class BattleVisualEntry
     {
@@ -49,6 +50,7 @@ namespace AutoBattler.Presentation.Units
         [SerializeField] private BattleVisualEntry[] effects=Array.Empty<BattleVisualEntry>();
         [SerializeField] private SkillVisualEntry[] skills=Array.Empty<SkillVisualEntry>();
         [SerializeField] private UnitVisualEntry[] units=Array.Empty<UnitVisualEntry>();
+        [SerializeField] private AssetReferenceT<SkillEffectLibrary> skillEffects;
         [SerializeField] private Sprite arrow;
         [SerializeField] private Sprite magicOrb;
         [SerializeField] private Sprite stun;
@@ -56,6 +58,7 @@ namespace AutoBattler.Presentation.Units
         [SerializeField] private Sprite mana;
         [SerializeField] private Sprite shield;
         public IReadOnlyList<BattleVisualEntry> Effects=>Array.AsReadOnly(effects);
+        public AssetReferenceT<SkillEffectLibrary> SkillEffects=>skillEffects;
         public Sprite Arrow=>arrow;
         public Sprite MagicOrb=>magicOrb;
         public Sprite Stun=>stun;

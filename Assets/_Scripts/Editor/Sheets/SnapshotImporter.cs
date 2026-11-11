@@ -45,7 +45,9 @@ namespace AutoBattler.EditorTools.Sheets
                 hp=t.Int(r,"hp"),attack=t.Int(r,"attack"),armor=t.Int(r,"armor"),attackInterval=t.Float(r,"attack_interval"),attackType=t.Get(r,"attack_type"),
                 attackRange=t.Int(r,"attack_range"),combatRole=t.Int(r,"combat_role"),critChance=t.Float(r,"crit_chance"),critMultiplier=t.Float(r,"crit_multiplier"),
                 skillId=t.Int(r,"skill_id",true),visualId=t.Int(r,"visual_id"),iconId=t.Int(r,"icon_id") });
-            data.rounds=Read(tables["Rounds"],(t,r)=>new RoundRow {roundId=t.Int(r,"round_id"),rewardGold=t.Int(r,"reward_gold"),isBoss=t.Bool(r,"is_boss"),offersAugment=t.Bool(r,"offers_augment"),stageId=schema>=8?t.Int(r,"stage_id"):0,sequence=schema>=8?t.Int(r,"sequence"):0});
+            data.rounds=Read(tables["Rounds"],(t,r)=>new RoundRow {roundId=t.Int(r,"round_id"),rewardGold=t.Int(r,"reward_gold"),
+                bossVictoryGold=t.HasColumn("boss_victory_gold")?t.Int(r,"boss_victory_gold",true):0,isBoss=t.Bool(r,"is_boss"),
+                offersAugment=t.Bool(r,"offers_augment"),stageId=schema>=8?t.Int(r,"stage_id"):0,sequence=schema>=8?t.Int(r,"sequence"):0});
             data.roundUnits=Read(tables["RoundUnits"],(t,r)=>new RoundUnitRow {entryId=t.Int(r,"entry_id"),roundId=t.Int(r,"round_id"),unitId=t.Int(r,"unit_id"),star=t.Int(r,"star"),col=t.Int(r,"col"),row=t.Int(r,"row"),bossProfileId=t.Int(r,"boss_profile_id",true)});
             data.levels=Read(tables["Levels"],(t,r)=>new LevelRow {level=t.Int(r,"level"),requiredXp=t.Int(r,"required_xp"),deploymentLimit=t.Int(r,"deployment_limit")});
             data.shopRates=Read(tables["ShopRates"],(t,r)=>new ShopRateRow {level=t.Int(r,"level"),weights=Enumerable.Range(1,5).Select(c=>t.Int(r,"cost_"+c)).ToArray()});
@@ -202,7 +204,9 @@ namespace AutoBattler.EditorTools.Sheets
             if(!data.units.Any(x=>x.cost==1)) throw new FormatException("Units: 시작용 1코스트 필요.");
             if(data.rounds.Length==0 || data.rounds.OrderBy(x=>x.roundId).Select((x,i)=>x.roundId!=i+1).Any(x=>x)) throw new FormatException("Rounds round_id: 1부터 연속된 라운드 필요.");
             foreach(RoundRow round in data.rounds)
-                if(round.rewardGold<0 || !data.roundUnits.Any(x=>x.roundId==round.roundId)) throw tables["Rounds"].Error(FindRow(tables["Rounds"],"round_id",round.roundId),"reward_gold/round_id","음수 보상 또는 적 구성 없음.");
+                if(round.rewardGold<0 || round.bossVictoryGold<0 || !round.isBoss && round.bossVictoryGold!=0
+                    || !data.roundUnits.Any(x=>x.roundId==round.roundId))
+                    throw tables["Rounds"].Error(FindRow(tables["Rounds"],"round_id",round.roundId),"reward_gold/round_id","잘못된 보상 또는 적 구성 없음.");
             HashSet<string> positions=new HashSet<string>();
             foreach(RoundUnitRow enemy in data.roundUnits)
             {

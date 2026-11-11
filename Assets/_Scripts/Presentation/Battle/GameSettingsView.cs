@@ -1,5 +1,6 @@
 using AutoBattler.Managers;
 using AutoBattler.Run;
+using System.Collections.Generic;
 using DG.Tweening;
 using Cysharp.Threading.Tasks;
 using TMPro;
@@ -9,7 +10,7 @@ using UnityEngine.UI;
 
 namespace AutoBattler.Presentation.Battle
 {
-    /// <summary>프레임 제한·효과음·배경음악·게임 종료 설정과 배경 입력 차단.</summary>
+    /// <summary>화면·음량 설정, 조작 도움말과 배경 입력 차단.</summary>
     [DisallowMultipleComponent]
     public sealed class GameSettingsView : MonoBehaviour
     {
@@ -28,6 +29,10 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private Button quitButton;
         [SerializeField] private Button stageSelectionButton;
         [SerializeField] private TMP_Dropdown frameRateDropdown;
+        [SerializeField] private TMP_Dropdown screenModeDropdown, resolutionDropdown;
+        [SerializeField] private Button helpButton;
+        [SerializeField] private GameObject settingsPage;
+        [SerializeField] private ControlHelpView helpPage;
         [SerializeField] private Slider effectVolumeSlider;
         [SerializeField] private TextMeshProUGUI effectVolumeLabel;
         [SerializeField] private Slider musicVolumeSlider;
@@ -88,8 +93,15 @@ namespace AutoBattler.Presentation.Battle
             quitButton.onClick.AddListener(Quit);
             stageSelectionButton.onClick.AddListener(OpenStageSelection);
             frameRateDropdown.onValueChanged.AddListener(SelectFrameRate);
+            screenModeDropdown.onValueChanged.AddListener(SelectScreenMode);
+            resolutionDropdown.onValueChanged.AddListener(SelectResolution);
+            manager.ScreenSettingsChanged += RefreshDisplay;
+            helpButton.onClick.AddListener(OpenHelp);
+            helpPage.BackButton.onClick.AddListener(ReturnFromHelp);
+            helpPage.CloseButton.onClick.AddListener(Close);
             modal.gameObject.SetActive(false);
             RefreshFrameRate(manager.CurrentFrameRate);
+            RefreshDisplay();
         }
 
         private bool CanOpen => underlying!=null && underlying.interactable && !GameNavigation.IsTransitioning
@@ -120,6 +132,7 @@ namespace AutoBattler.Presentation.Battle
             modal.gameObject.SetActive(true);
             modal.interactable=true;
             modal.blocksRaycasts=true;
+            manager.RefreshScreenOptions();
             modal.DOKill(); modal.alpha=0f;
             modal.DOFade(1f,.15f).SetUpdate(true);
             if (EventSystem.current!=null) EventSystem.current.SetSelectedGameObject(closeButton.gameObject);
@@ -128,7 +141,9 @@ namespace AutoBattler.Presentation.Battle
         public void Close()
         {
             if (!IsOpen) return;
-            frameRateDropdown.Hide();
+            HideDropdowns();
+            helpPage.gameObject.SetActive(false);
+            settingsPage.SetActive(true);
             IsOpen=false;
             modal.DOKill(); modal.gameObject.SetActive(false);
             if(underlying!=null)
@@ -139,6 +154,59 @@ namespace AutoBattler.Presentation.Battle
                 EventSystem.current.SetSelectedGameObject(previousSelection!=null && previousSelection.activeInHierarchy
                     ? previousSelection : null);
             previousSelection=null;
+        }
+
+        private void OpenHelp()
+        {
+            if (!IsOpen) return;
+            HideDropdowns();
+            settingsPage.SetActive(false);
+            helpPage.Show();
+            if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(helpPage.BackButton.gameObject);
+        }
+
+        private void ReturnFromHelp()
+        {
+            helpPage.gameObject.SetActive(false);
+            settingsPage.SetActive(true);
+            if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(helpButton.gameObject);
+        }
+
+        private void HideDropdowns()
+        {
+            frameRateDropdown.Hide();
+            screenModeDropdown.Hide();
+            resolutionDropdown.Hide();
+        }
+
+        private void SelectScreenMode(int index)
+        {
+            if (index == 0) manager.SetScreenMode(FullScreenMode.Windowed);
+            else if (index == 1) manager.SetScreenMode(FullScreenMode.FullScreenWindow);
+        }
+
+        private void SelectResolution(int index)
+        {
+            if (index >= 0 && index < manager.ResolutionOptions.Count)
+                manager.SetResolution(manager.ResolutionOptions[index]);
+        }
+
+        private void RefreshDisplay()
+        {
+            screenModeDropdown.SetValueWithoutNotify(manager.CurrentScreenMode == FullScreenMode.Windowed ? 0 : 1);
+            IReadOnlyList<Vector2Int> sizes = manager.ResolutionOptions;
+            List<string> labels = new List<string>(sizes.Count);
+            int selected = 0;
+            for (int i = 0; i < sizes.Count; i++)
+            {
+                Vector2Int size = sizes[i];
+                labels.Add($"{size.x} x {size.y}");
+                if (size == manager.CurrentResolution) selected = i;
+            }
+            resolutionDropdown.ClearOptions();
+            resolutionDropdown.AddOptions(labels);
+            resolutionDropdown.SetValueWithoutNotify(selected);
+            resolutionDropdown.RefreshShownValue();
         }
 
         private void SelectEffectVolume(float value) => sound.SetEffectVolume(value);
@@ -186,6 +254,7 @@ namespace AutoBattler.Presentation.Battle
         {
             Close();
             if (manager!=null) manager.FrameRateChanged-=RefreshFrameRate;
+            if (manager!=null) manager.ScreenSettingsChanged-=RefreshDisplay;
             if (sound!=null) sound.VolumeChanged-=RefreshEffectVolume;
             if(sound!=null)sound.MusicVolumeChanged-=RefreshMusicVolume;
             if(musicVolumeSlider!=null)musicVolumeSlider.onValueChanged.RemoveListener(SelectMusicVolume);
@@ -195,6 +264,14 @@ namespace AutoBattler.Presentation.Battle
             if (quitButton!=null) quitButton.onClick.RemoveListener(Quit);
             if (stageSelectionButton!=null) stageSelectionButton.onClick.RemoveListener(OpenStageSelection);
             if (frameRateDropdown!=null) frameRateDropdown.onValueChanged.RemoveListener(SelectFrameRate);
+            if (screenModeDropdown!=null) screenModeDropdown.onValueChanged.RemoveListener(SelectScreenMode);
+            if (resolutionDropdown!=null) resolutionDropdown.onValueChanged.RemoveListener(SelectResolution);
+            if (helpButton!=null) helpButton.onClick.RemoveListener(OpenHelp);
+            if (helpPage!=null)
+            {
+                helpPage.BackButton.onClick.RemoveListener(ReturnFromHelp);
+                helpPage.CloseButton.onClick.RemoveListener(Close);
+            }
             if (modal!=null) modal.DOKill();
         }
     }

@@ -44,7 +44,8 @@ namespace AutoBattler.Battle.Units
                 int addedMana=Mathf.Max(0,Mathf.RoundToInt(stats.ManaBonus)-previousMana);
                 if(addedMana>0) unit.Mana.Add(addedMana);
             }
-            else unit.Mana.ResetForRound();
+            else if(unit.BattleFlow==null || unit.BattleFlow.CurrentPhase!=AutoBattler.Battle.Flow.BattlePhase.Result)
+                unit.Mana.ResetForRound();
             version=unit.SpawnVersion; Changed?.Invoke();
         }
         private void ClearSources()

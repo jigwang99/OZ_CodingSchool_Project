@@ -1,12 +1,13 @@
 using System;
 using AutoBattler.Audio;
-using System.Collections.Generic;
 using AutoBattler.Battle.Flow;
 using AutoBattler.Battle.Grid;
 using AutoBattler.Battle.Units;
 using AutoBattler.Run;
 using AutoBattler.Battle.Traits;
 using AutoBattler.Utility;
+using AutoBattler.Data.Augments;
+using System.Linq;
 using UnityEngine;
 
 namespace AutoBattler.Managers
@@ -20,6 +21,7 @@ namespace AutoBattler.Managers
         private UnitDragController drag;
         private Action<string> publish;
         private AugmentBattleSession session;
+        public event Action<AugmentDefinition> Activated;
         public void Initialize(BattleFlowController phases,UnitDragController input,Action<string> message)
         { flow=phases; drag=input; publish=message; }
         public void Bind(RunState current) { EndBattle(); state=current; }
@@ -43,16 +45,33 @@ namespace AutoBattler.Managers
         {
             if(state==null || flow.CurrentPhase!=BattlePhase.AugmentSelection || !flow.IsAugmentWindowOpen) return false;
             if(!state.TrySelectAugment(id)) return false;
-            flow.TryFinishAugmentSelection(); drag.enabled=true; publish("준비"); SoundManager.PlayEffect(SoundId.Augment); return true;
+            flow.TryFinishAugmentSelection(); drag.enabled=true; publish("준비"); SoundManager.PlayEffect(SoundId.Augment);
+            AugmentDefinition selected=state.Data.Augments[id];
+            if(selected.Effect==AugmentEffect.ImmediateGold || selected.Effect==AugmentEffect.MaterialSupply)
+                ReportActivation(selected);
+            return true;
         }
-        public void ApplyBattleStart(IEnumerable<Unit> units,TraitSnapshot traits)
+        public void ApplyBattleStart(Unit[] units,TraitSnapshot traits)
         {
             EndBattle();
             if(state==null) return;
-            session=new AugmentBattleSession(units,state.Augments.Selected,state.Data,state.Placement.PlayerLevel,traits.Active.Count);
+            session=new AugmentBattleSession(units,state.Augments.Selected,state.Data,state.Placement.PlayerLevel,
+                traits.Active.Count,ReportActivation);
             session.Start();
-            AugmentApplicator.ApplyBattleStart(units,state.Augments.Selected);
+            AugmentApplicator.ApplyBattleStart(units,state.Augments.Selected,ReportActivation);
+            bool hasAlly=units.Any(unit=>unit.Team==UnitTeam.Ally && !unit.IsSummon && unit.Health.IsAlive);
+            bool hasDummy=units.Any(unit=>unit.Team==UnitTeam.Ally && unit.IsSummon);
+            foreach(AugmentDefinition augment in state.Augments.Selected)
+                if((hasAlly && (augment.Effect==AugmentEffect.StatModifier || augment.Effect==AugmentEffect.StartingMana))
+                    || (hasDummy && augment.Effect==AugmentEffect.TrainingDummy))
+                    ReportActivation(augment);
         }
+        public void ReportVictoryRewards()
+        {
+            foreach(AugmentDefinition augment in state.Augments.Selected)
+                if(augment.Effect==AugmentEffect.VictoryGold) ReportActivation(augment);
+        }
+        private void ReportActivation(AugmentDefinition augment)=>Activated?.Invoke(augment);
         public void EndBattle() { session?.Dispose(); session=null; }
         protected override void OnDestroy() { EndBattle(); base.OnDestroy(); }
     }

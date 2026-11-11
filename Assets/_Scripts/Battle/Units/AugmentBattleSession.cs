@@ -20,13 +20,14 @@ namespace AutoBattler.Battle.Units
         private bool started,disposed;
 
         public AugmentBattleSession(IEnumerable<Unit> participants,IEnumerable<AugmentDefinition> augments,
-            DataRepository data,int deploymentLimit,int activeTraitCount)
+            DataRepository data,int deploymentLimit,int activeTraitCount,Action<AugmentDefinition> activated=null)
         {
             Unit[] roster=participants.ToArray();
             Unit[] allies=roster.Where(unit=>unit!=null && unit.Team==UnitTeam.Ally && !unit.IsSummon
                 && unit.IsInCombat && unit.Health.IsAlive).ToArray();
             AugmentDefinition[] selected=augments.ToArray();
-            bindings=allies.Select(unit=>new Binding(unit,allies,roster,selected,data,deploymentLimit,activeTraitCount,lifetime.Token)).ToArray();
+            bindings=allies.Select(unit=>new Binding(unit,allies,roster,selected,data,deploymentLimit,activeTraitCount,
+                lifetime.Token,activated)).ToArray();
         }
 
         public void Start()
@@ -55,6 +56,7 @@ namespace AutoBattler.Battle.Units
             private readonly AugmentDefinition[] augments;
             private readonly DataRepository data;
             private readonly CancellationToken token;
+            private readonly Action<AugmentDefinition> activated;
             private readonly int deploymentLimit,activeTraitCount,adjacentCount;
             private readonly HashSet<int> used=new HashSet<int>();
             private readonly HashSet<int> equipmentActive=new HashSet<int>();
@@ -62,10 +64,11 @@ namespace AutoBattler.Battle.Units
             private bool CanApply=>bound && reference.IsAlive && unit.IsInCombat && !token.IsCancellationRequested;
 
             public Binding(Unit unit,Unit[] allies,Unit[] roster,AugmentDefinition[] augments,DataRepository data,
-                int deploymentLimit,int activeTraitCount,CancellationToken token)
+                int deploymentLimit,int activeTraitCount,CancellationToken token,Action<AugmentDefinition> activated)
             {
                 this.unit=unit; this.allies=allies; this.augments=augments; this.data=data;
                 this.deploymentLimit=deploymentLimit; this.activeTraitCount=activeTraitCount; this.token=token;
+                this.activated=activated;
                 reference=new CombatUnitReference(unit);
                 participants=roster.Select(actor=>new CombatUnitReference(actor)).ToArray();
                 adjacentCount=allies.Count(ally=>ally!=unit && ally.CurrentCell.Value.DistanceTo(unit.CurrentCell.Value)==1);
@@ -107,7 +110,11 @@ namespace AutoBattler.Battle.Units
                 TryLastStand();
             }
 
-            private void Set(AugmentDefinition augment,params StatModifierSpec[] specs)=>unit.StatModifiers.ReplaceSource(augment.Source,specs);
+            private void Set(AugmentDefinition augment,params StatModifierSpec[] specs)
+            {
+                unit.StatModifiers.ReplaceSource(augment.Source,specs);
+                activated?.Invoke(augment);
+            }
 
             private void UpdateEquipmentStats()
             {
@@ -139,8 +146,9 @@ namespace AutoBattler.Battle.Units
             private void Shield(AugmentDefinition augment)
             {
                 if(!CanApply || !used.Add(augment.Id)) return;
-                unit.Effects.Apply(new EffectDefinition(augment.Id,EffectKind.Shield,
-                    Mathf.FloorToInt(unit.Health.MaxHp*augment.Value),augment.Duration>0f?augment.Duration:-1f),augment.Source);
+                if(unit.Effects.Apply(new EffectDefinition(augment.Id,EffectKind.Shield,
+                    Mathf.FloorToInt(unit.Health.MaxHp*augment.Value),augment.Duration>0f?augment.Duration:-1f),augment.Source).IsValid)
+                    activated?.Invoke(augment);
             }
 
             private void OnDamaged(int amount)
@@ -157,8 +165,10 @@ namespace AutoBattler.Battle.Units
                 foreach(AugmentDefinition augment in augments)
                     if(augment.Effect==AugmentEffect.HealOnKill)
                     {
-                        unit.Health.Heal(Mathf.FloorToInt(unit.Health.MaxHp*augment.Value));
+                        int healed=unit.Health.Heal(Mathf.FloorToInt(unit.Health.MaxHp*augment.Value));
+                        int manaBefore=unit.Mana.Current;
                         unit.Mana.Add(Mathf.FloorToInt(augment.SecondaryValue));
+                        if(healed>0 || unit.Mana.Current>manaBefore) activated?.Invoke(augment);
                     }
             }
 
@@ -170,7 +180,8 @@ namespace AutoBattler.Battle.Units
                     if(augment.Effect==AugmentEffect.LastStand && used.Add(augment.Id))
                     {
                         Set(augment,new StatModifierSpec(StatType.AttackSpeed,ModifierOperation.Percent,augment.Value));
-                        unit.Health.Heal(Mathf.FloorToInt(unit.Health.MaxHp*augment.SecondaryValue));
+                        unit.Effects.Apply(new EffectDefinition(augment.Id,EffectKind.Shield,
+                            Mathf.FloorToInt(unit.Health.MaxHp*augment.SecondaryValue),-1f),augment.Source);
                     }
             }
 
@@ -179,7 +190,12 @@ namespace AutoBattler.Battle.Units
                 if(!CanApply || context.IsEcho) return;
                 foreach(AugmentDefinition augment in augments)
                 {
-                    if(augment.Effect==AugmentEffect.ManaCycle) unit.Mana.Add(Mathf.FloorToInt(augment.Value));
+                    if(augment.Effect==AugmentEffect.ManaCycle)
+                    {
+                        int manaBefore=unit.Mana.Current;
+                        unit.Mana.Add(Mathf.FloorToInt(augment.Value));
+                        if(unit.Mana.Current>manaBefore) activated?.Invoke(augment);
+                    }
                     else if(augment.Effect==AugmentEffect.EchoSpell && used.Add(augment.Id))
                     {
                         SkillCastContext original=new SkillCastContext(unit,context.Definition,context.Target,context.CurrentParticipants);
@@ -190,6 +206,7 @@ namespace AutoBattler.Battle.Units
 
             private async UniTask EchoAsync(SkillCastContext original,AugmentDefinition augment)
             {
+                SkillCastContext echo=null;
                 try
                 {
                     await UniTask.Delay(TimeSpan.FromSeconds(augment.Duration),cancellationToken:token);
@@ -197,13 +214,15 @@ namespace AutoBattler.Battle.Units
                     Unit target=original.Target.IsValid?original.Target.Unit
                         :SkillTargetSelector.Select(unit,original.Definition,original.CurrentParticipants);
                     if(target==null) return;
-                    SkillCastContext echo=new SkillCastContext(unit,original.Definition,new SkillTarget(target),
+                    echo=new SkillCastContext(unit,original.Definition,new SkillTarget(target),
                         original.CurrentParticipants,augment.Value,true,new ModifierSource(ModifierSourceKind.Augment,augment.Id,unit.InstanceId));
                     echo.Center=original.Definition.CenterOnCaster?unit.CurrentCell.Value:target.CurrentCell.Value;
                     unit.Skill.NotifyRepeatedRelease(echo);
+                    activated?.Invoke(augment);
                     await SkillExecutor.ExecuteAsync(echo,data,token);
                 }
                 catch(OperationCanceledException) { }
+                finally { if(echo!=null && unit!=null) unit.Skill.NotifyEffectFinished(echo); }
             }
 
             public void Dispose()

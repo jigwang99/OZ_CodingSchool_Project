@@ -21,6 +21,9 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private TextMeshProUGUI countText;
         [SerializeField] private CanvasGroup tooltip;
         [SerializeField] private TextMeshProUGUI tooltipText;
+        [SerializeField,Min(.1f)] private float activationSeconds=1.4f;
+        private readonly Dictionary<int,Tween> activations=new Dictionary<int,Tween>();
+        private AugmentDefinition[] definitions=Array.Empty<AugmentDefinition>();
         private bool pointerInside,canHover;
         public int SelectedCount { get; private set; }
         public bool IsTooltipVisible=>tooltip.gameObject.activeSelf;
@@ -32,15 +35,9 @@ namespace AutoBattler.Presentation.Battle
             run.IsReady && !run.Flow.IsAugmentWindowOpen);
         public void Show(IEnumerable<AugmentDefinition> selected,bool allowHover)
         {
-            AugmentDefinition[] definitions=selected.ToArray(); SelectedCount=definitions.Length;
+            definitions=selected.ToArray(); SelectedCount=definitions.Length;
             countText.text=$"증강 {SelectedCount}/3";
-            for(int i=0;i<slots.Length;i++)
-            {
-                bool owned=i<definitions.Length;
-                slots[i].color=owned?new Color(.16f,.34f,.36f):new Color(.1f,.13f,.18f);
-                slotTexts[i].text=owned?(i+1).ToString():"-";
-                slotTexts[i].color=owned?new Color(1f,.84f,.39f):new Color(.4f,.47f,.53f);
-            }
+            RefreshActivation();
             StringBuilder text=new StringBuilder();
             if(definitions.Length==0) text.Append("선택한 증강이 없습니다.");
             for(int i=0;i<definitions.Length;i++)
@@ -55,6 +52,28 @@ namespace AutoBattler.Presentation.Battle
             canHover=allowHover; hoverArea.raycastTarget=allowHover;
             if(!canHover) { pointerInside=false; HideTooltip(false); }
             else if(pointerInside) ShowTooltip();
+        }
+        public void ShowActivation(AugmentDefinition definition)
+        {
+            if(!isActiveAndEnabled || activations.ContainsKey(definition.Id)) return;
+            int id=definition.Id;
+            activations.Add(id,DOVirtual.DelayedCall(activationSeconds,()=>
+            {
+                activations.Remove(id);
+                RefreshActivation();
+            }));
+            RefreshActivation();
+        }
+        private void RefreshActivation()
+        {
+            for(int i=0;i<slots.Length;i++)
+            {
+                bool owned=i<definitions.Length;
+                bool active=owned && activations.ContainsKey(definitions[i].Id);
+                slots[i].color=active?new Color(.42f,.68f,.43f):owned?new Color(.16f,.34f,.36f):new Color(.1f,.13f,.18f);
+                slotTexts[i].text=owned?(i+1).ToString():"-";
+                slotTexts[i].color=active?Color.white:owned?new Color(1f,.84f,.39f):new Color(.4f,.47f,.53f);
+            }
         }
         public void OnPointerEnter(PointerEventData eventData)
         { if(!canHover) return; pointerInside=true; ShowTooltip(); }
@@ -74,6 +93,11 @@ namespace AutoBattler.Presentation.Battle
             else { tooltip.alpha=0f; tooltip.gameObject.SetActive(false); }
         }
         private void OnDisable()
-        { pointerInside=false; if(tooltip!=null) HideTooltip(false); }
+        {
+            pointerInside=false;
+            if(tooltip!=null) HideTooltip(false);
+            foreach(Tween activation in activations.Values) activation.Kill();
+            activations.Clear();
+        }
     }
 }

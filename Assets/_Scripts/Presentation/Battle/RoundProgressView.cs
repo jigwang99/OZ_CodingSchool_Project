@@ -9,13 +9,20 @@ using UnityEngine.UI;
 
 namespace AutoBattler.Presentation.Battle
 {
-    /// <summary>한 도전의 전투 순서, 현재 지점과 저장된 승패 이력 표시.</summary>
+    /// <summary>현재 보스 구간의 전투 순서와 저장된 승패 표시.</summary>
     public sealed class RoundProgressView : MonoBehaviour
     {
         [SerializeField] private RoundProgressSettings settings;
         [SerializeField] private TextMeshProUGUI stageText;
         [SerializeField] private Image[] markers=Array.Empty<Image>();
         [SerializeField] private RectTransform currentIndicator;
+        [SerializeField] private LayoutElement panelLayout;
+        [SerializeField] private RectTransform bossDivider;
+        [SerializeField, Min(0f)] private float horizontalPadding=10f;
+        [SerializeField, Min(0f)] private float markerSpacing=8f;
+        [SerializeField, Min(0f)] private float sectionSpacing=12f;
+        [SerializeField, Min(1f)] private float combatMarkerSize=28f;
+        [SerializeField, Min(1f)] private float bossMarkerSize=32f;
         private DataRepository displayedData;
         private int[] roundIds=Array.Empty<int>();
         public IReadOnlyList<Image> Markers => Array.AsReadOnly(markers);
@@ -33,22 +40,62 @@ namespace AutoBattler.Presentation.Battle
                 roundIds=state.Data.Rounds.Keys.OrderBy(id=>id).ToArray();
             }
             int length=state.Data.RoundsPerSegment;
-            stageText.text=length>0?$"{(state.Round-1)/length+1}-{(state.Round-1)%length+1}":stage;
+            int currentIndex=Array.IndexOf(roundIds,state.Round);
+            int segmentStart=length>0 && currentIndex>=0 ? currentIndex/length*length : 0;
+            int segmentEnd=length>0 ? Math.Min(segmentStart+length,roundIds.Length) : roundIds.Length;
+            stageText.text=RoundLabel(state.Data,state.Round,stage);
             int current=-1;
-            int first=Mathf.Clamp(Array.IndexOf(roundIds,state.Round)-markers.Length/2,0,Math.Max(0,roundIds.Length-markers.Length));
+            int first=Mathf.Clamp(currentIndex-markers.Length/2,segmentStart,Math.Max(segmentStart,segmentEnd-markers.Length));
+            int count=Math.Min(markers.Length,segmentEnd-first);
+            int boss=-1;
             for(int i=0;i<markers.Length;i++)
             {
-                bool available=first+i<roundIds.Length;
+                bool available=i<count;
                 markers[i].gameObject.SetActive(available);
                 if(!available) continue;
                 int id=roundIds[first+i];
-                RoundProgressSprites sprites=state.Data.Rounds[id].IsBoss?settings.Boss:settings.Combat;
+                bool isBoss=state.Data.Rounds[id].IsBoss;
+                if(isBoss) boss=i;
+                RoundProgressSprites sprites=isBoss?settings.Boss:settings.Combat;
                 markers[i].sprite=state.TryGetRoundOutcome(id,out bool won)?won?sprites.Win:sprites.Loss
                     :id==state.Round?sprites.Current:sprites.Pending;
                 if(id==state.Round) current=i;
             }
+            LayoutMarkers(count,boss);
             currentIndicator.gameObject.SetActive(current>=0);
-            if(current>=0) currentIndicator.anchoredPosition=new Vector2(markers[current].rectTransform.anchoredPosition.x,-18f);
+            if(current>=0)
+                currentIndicator.anchoredPosition=new Vector2(markers[current].rectTransform.anchoredPosition.x,currentIndicator.anchoredPosition.y);
+        }
+
+        private void LayoutMarkers(int count,int boss)
+        {
+            RectTransform label=stageText.rectTransform;
+            label.anchoredPosition=new Vector2(horizontalPadding,label.anchoredPosition.y);
+            float x=horizontalPadding+label.rect.width+sectionSpacing;
+            bossDivider.gameObject.SetActive(boss>0);
+            for(int i=0;i<count;i++)
+            {
+                if(i>0) x+=markerSpacing;
+                if(i==boss && i>0)
+                {
+                    bossDivider.anchoredPosition=new Vector2(x+(sectionSpacing-markerSpacing)*.5f,0f);
+                    x+=sectionSpacing;
+                }
+                float size=i==boss?bossMarkerSize:combatMarkerSize;
+                RectTransform marker=markers[i].rectTransform;
+                marker.sizeDelta=new Vector2(size,size);
+                marker.anchoredPosition=new Vector2(x+size*.5f,marker.anchoredPosition.y);
+                x+=size;
+            }
+            panelLayout.preferredWidth=x+horizontalPadding;
+        }
+
+        internal static string RoundLabel(DataRepository data,int id,string fallback="--")
+        {
+            int length=data.RoundsPerSegment;
+            if(length<=0 || !data.Rounds.TryGetValue(id,out RoundDefinition round)) return fallback;
+            int segment=(id-1)/length+1;
+            return round.IsBoss ? $"{segment}보스" : $"{segment}-{(id-1)%length+1}";
         }
     }
 }

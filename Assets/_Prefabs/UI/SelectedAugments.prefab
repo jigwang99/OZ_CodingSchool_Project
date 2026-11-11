@@ -483,6 +483,7 @@ MonoBehaviour:
   countText: {fileID: 5016068390300941277}
   tooltip: {fileID: 5393806016295372073}
   tooltipText: {fileID: 6240394033967723748}
+  activationSeconds: 1.4
 --- !u!1 &6522648008700227492
 GameObject:
   m_ObjectHideFlags: 0

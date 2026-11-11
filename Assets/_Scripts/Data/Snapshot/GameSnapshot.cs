@@ -41,7 +41,7 @@ namespace AutoBattler.Data.Snapshot
         public string name, attackType;
         public float attackInterval, critChance, critMultiplier;
     }
-    [Serializable] public sealed class RoundRow { public int roundId, rewardGold,stageId,sequence; public bool isBoss, offersAugment; }
+    [Serializable] public sealed class RoundRow { public int roundId,rewardGold,bossVictoryGold,stageId,sequence; public bool isBoss,offersAugment; }
     [Serializable] public sealed class RoundUnitRow { public int entryId, roundId, unitId, star, col, row, bossProfileId; }
     [Serializable] public sealed class LevelRow { public int level, requiredXp, deploymentLimit; }
     [Serializable] public sealed class ShopRateRow { public int level; public int[] weights; }
@@ -73,10 +73,12 @@ namespace AutoBattler.Data.Snapshot
     public sealed class RoundDefinition
     {
         public int Id { get; } public int Reward { get; } public bool IsBoss { get; }
+        public int BossVictoryGold { get; }
         public bool OffersAugment { get; } public IReadOnlyList<EnemyDefinition> Enemies { get; }
         public RoundDefinition(RoundRow row, IEnumerable<RoundUnitRow> enemies)
         {
             Id=row.sequence>0?row.sequence:row.roundId; Reward=row.rewardGold; IsBoss=row.isBoss; OffersAugment=row.offersAugment;
+            BossVictoryGold=row.bossVictoryGold;
             Enemies=Array.AsReadOnly(enemies.OrderBy(x=>x.entryId).Select(x=>new EnemyDefinition(x)).ToArray());
         }
     }

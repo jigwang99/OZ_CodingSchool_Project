@@ -148,8 +148,9 @@ namespace AutoBattler.Presentation.Battle
             RefreshHealth(boundUnit.Health.IsAlive);
             manaText.text=$"MP  {boundUnit.Mana.Current}/{boundUnit.Mana.Maximum}";
             statsText.text=$"공격력<pos=205>{stats.AttackDamage}\n방어력<pos=205>{stats.Defense}\n"
-                +$"사거리<pos=205>{stats.AttackRange}칸\n공격 간격<pos=205>{stats.AttackCooldown:0.##}초\n"
-                +$"치명타<pos=205>{boundUnit.StatModifiers.CritChance:P0} / {boundUnit.StatModifiers.CritMultiplier:0.##}배\n"
+                +$"사거리<pos=205>{stats.AttackRange}칸\n공격속도<pos=205>{1f/stats.AttackCooldown:0.##}회/초\n"
+                +$"치명타 확률<pos=205>{boundUnit.StatModifiers.CritChance*100f:0.##}%\n"
+                +$"치명타 데미지<pos=205>{boundUnit.StatModifiers.CritMultiplier:0.##}\n"
                 +$"스킬 위력<pos=205>{boundUnit.StatModifiers.SkillPower:P0}\n보호막<pos=205>{boundUnit.Effects.Shield}";
             SkillDefinition skill=boundUnit.Skill.Definition;
             skillNameText.text=skill?.Name ?? "스킬 없음";

@@ -676,7 +676,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 278, y: -620}
+  m_AnchoredPosition: {x: 278, y: -566}
   m_SizeDelta: {x: 120, y: 88}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &7550375472989192475
@@ -844,7 +844,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 150, y: -620}
+  m_AnchoredPosition: {x: 150, y: -566}
   m_SizeDelta: {x: 120, y: 88}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &4691582931634238204
@@ -1029,8 +1029,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -24, y: -136}
-  m_SizeDelta: {x: 420, y: 760}
+  m_AnchoredPosition: {x: -24, y: -204}
+  m_SizeDelta: {x: 420, y: 672}
   m_Pivot: {x: 1, y: 1}
 --- !u!222 &6801765269594138349
 CanvasRenderer:
@@ -1211,9 +1211,9 @@ MonoBehaviour:
   m_fontSize: 21
   m_fontSizeBase: 21
   m_fontWeight: 400
-  m_enableAutoSizing: 0
+  m_enableAutoSizing: 1
   m_fontSizeMin: 18
-  m_fontSizeMax: 72
+  m_fontSizeMax: 23
   m_fontStyle: 0
   m_HorizontalAlignment: 1
   m_VerticalAlignment: 256
@@ -1221,7 +1221,7 @@ MonoBehaviour:
   m_characterSpacing: 0
   m_characterHorizontalScale: 1
   m_wordSpacing: 0
-  m_lineSpacing: 3
+  m_lineSpacing: -4
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
@@ -1575,7 +1575,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 22, y: -465}
-  m_SizeDelta: {x: 376, y: 140}
+  m_SizeDelta: {x: 376, y: 92}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &6715635583523111879
 MonoBehaviour:
@@ -1887,7 +1887,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 22, y: -620}
+  m_AnchoredPosition: {x: 22, y: -566}
   m_SizeDelta: {x: 120, y: 88}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &3740917716230859800

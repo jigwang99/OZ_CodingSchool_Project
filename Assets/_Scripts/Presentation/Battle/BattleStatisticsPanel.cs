@@ -14,6 +14,7 @@ namespace AutoBattler.Presentation.Battle
     /// <summary>증강 반대편의 비모달 전투 통계 패널. 전투·준비 시간은 계속 진행.</summary>
     public sealed class BattleStatisticsPanel : MonoBehaviour
     {
+        internal const float RowSpacing=60f;
         [SerializeField] private Button toggleButton, closeButton;
         [SerializeField] private Button damageButton, takenButton, healingButton;
         [SerializeField] private CanvasGroup panel;
@@ -29,6 +30,7 @@ namespace AutoBattler.Presentation.Battle
         private CanvasGroup inputRoot;
         private bool dirty, resetScroll;
         private BattleReport displayedReport;
+        private BattleStatisticsRow[] rankedRows;
         public bool IsOpen { get; private set; }
         public BattleStatisticKind SelectedKind { get; private set; }
         public Button ToggleButton => toggleButton;
@@ -38,7 +40,7 @@ namespace AutoBattler.Presentation.Battle
         public Button HealingButton => healingButton;
         public CanvasGroup Panel => panel;
         public TextMeshProUGUI TitleText => titleText;
-        public IReadOnlyList<BattleStatisticsRow> Rows => Array.AsReadOnly(rows);
+        public IReadOnlyList<BattleStatisticsRow> Rows => Array.AsReadOnly(rankedRows ?? rows);
 
         public void Bind(RunController controller, CanvasGroup group)
         {
@@ -92,24 +94,39 @@ namespace AutoBattler.Presentation.Battle
         {
             dirty = false;
             BattleReport report = run.Battle.Statistics.Current ?? run.State.LastBattleReport;
-            if (!ReferenceEquals(displayedReport, report)) { displayedReport = report; resetScroll = true; }
+            bool sameReport=ReferenceEquals(displayedReport,report) || displayedReport!=null && report!=null
+                && displayedReport.Round==report.Round;
+            if(!sameReport)
+            {
+                foreach(BattleStatisticsRow row in rows) row.Hide();
+                resetScroll=true;
+            }
+            displayedReport=report;
             UnitBattleRecord[] ordered = report == null ? Array.Empty<UnitBattleRecord>() : report.Units.Where(record => record != null)
                 .OrderByDescending(record => record.Value(SelectedKind)).ThenBy(record => record.InstanceId).Take(rows.Length).ToArray();
-            int length = run.State.Data.RoundsPerSegment;
-            titleText.text = report == null ? "전투 기록" : $"{(report.Round - 1) / length + 1}-{(report.Round - 1) % length + 1}  {(report.IsComplete ? report.Won ? "승리" : "패배" : "전투 중")}";
+            titleText.text = report == null ? "전투 기록" : $"{RoundProgressView.RoundLabel(run.State.Data, report.Round)}  {(report.IsComplete ? report.Won ? "승리" : "패배" : "전투 중")}";
             long maximum = ordered.Length > 0 ? ordered[0].Value(SelectedKind) : 0;
             Color color = SelectedKind == BattleStatisticKind.DamageTaken ? takenColor : SelectedKind == BattleStatisticKind.HealingDone ? healingColor : damageColor;
-            for (int index = 0; index < rows.Length; index++)
+            foreach(BattleStatisticsRow row in rows)
+                if(row.InstanceId!=0 && !ordered.Any(record=>record.InstanceId==row.InstanceId)) row.Hide();
+            rankedRows ??= new BattleStatisticsRow[rows.Length];
+            for (int index = 0; index < ordered.Length; index++)
             {
-                if (index >= ordered.Length) { rows[index].Hide(); continue; }
                 UnitBattleRecord record = ordered[index];
+                BattleStatisticsRow row=rows.FirstOrDefault(candidate=>candidate.InstanceId==record.InstanceId)
+                    ?? rows.First(candidate=>candidate.InstanceId==0);
                 Sprite icon = run.Assets.UnitPortrait(record.VisualId) ?? run.UnitIcon(record.IconId);
-                rows[index].Show(record, SelectedKind, maximum, icon, color);
+                row.Show(record, SelectedKind, maximum, icon, color);
+                row.SetRank(index,sameReport);
+                rankedRows[index]=row;
             }
+            int free=ordered.Length;
+            foreach(BattleStatisticsRow row in rows)
+                if(row.InstanceId==0) rankedRows[free++]=row;
             damageButton.targetGraphic.color = SelectedKind == BattleStatisticKind.DamageDealt ? selectedTab : normalTab;
             takenButton.targetGraphic.color = SelectedKind == BattleStatisticKind.DamageTaken ? selectedTab : normalTab;
             healingButton.targetGraphic.color = SelectedKind == BattleStatisticKind.HealingDone ? selectedTab : normalTab;
-            scroll.content.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Max(0f, ordered.Length * 60f - 4f));
+            scroll.content.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Max(0f, ordered.Length * RowSpacing - 4f));
             scroll.vertical = scroll.content.rect.height > scroll.viewport.rect.height;
             if (resetScroll) { scroll.StopMovement(); scroll.verticalNormalizedPosition = 1f; resetScroll = false; }
         }

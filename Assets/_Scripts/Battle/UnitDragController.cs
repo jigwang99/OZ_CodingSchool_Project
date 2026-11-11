@@ -99,6 +99,49 @@ namespace AutoBattler.Battle.Grid
             inspectedInstanceId = unit != null ? unit.InstanceId : 0;
             SelectedUnit = unit != null && unit.Team == UnitTeam.Ally ? unit.View : null;
         }
+        public Unit HoveredAlly()
+        {
+            if(Mouse.current==null || boardCamera==null || gridLayout==null
+                || EventSystem.current!=null && EventSystem.current.IsPointerOverGameObject()) return null;
+            Vector3 world=ScreenPositionUtility.ScreenToWorld(boardCamera,Mouse.current.position.ReadValue(),gridLayout.transform.position.z);
+            Collider2D hit=Physics2D.OverlapPoint(world,unitLayer);
+            Unit unit=hit!=null?hit.GetComponentInParent<Unit>():null;
+            return unit!=null && unit.Team==UnitTeam.Ally && unit.isActiveAndEnabled
+                && unit.gameObject.scene==gameObject.scene && boardState.IsRegistered(unit.View.State)?unit:null;
+        }
+        public bool TogglePlacement(Unit unit)
+        {
+            if(!CanPlaceUnits || unit==null || unit.Team!=UnitTeam.Ally || !boardState.IsRegistered(unit.View.State)) return false;
+            UnitState state=unit.View.State;
+            if(state.Location.Kind==UnitLocationKind.Board)
+            {
+                int free=placementService.FindFreeBenchSlot();
+                if(free<0) {PlacementRejected?.Invoke("대기석이 가득 찼습니다."); return false;}
+                return MoveByShortcut(unit.View,UnitLocation.OnBench(free));
+            }
+            if(boardState.DeployedCount>=placementService.PlayerLevel)
+            {PlacementRejected?.Invoke("배치 한도를 초과했습니다."); return false;}
+            HexCoord? closest=null;
+            float distance=float.PositiveInfinity;
+            for(int col=0;col<HexGridLayout.AllyColumns;col++)
+            for(int row=0;row<HexGridLayout.Rows;row++)
+            {
+                HexCoord cell=HexCoord.FromOffset(col,row);
+                float next=(gridLayout.CellToWorld(cell)-unit.transform.position).sqrMagnitude;
+                if(next>=distance || boardState.GetOccupant(UnitLocation.OnBoard(cell))!=null) continue;
+                closest=cell;distance=next;
+            }
+            return closest.HasValue && MoveByShortcut(unit.View,UnitLocation.OnBoard(closest.Value));
+        }
+        private bool MoveByShortcut(UnitView view,UnitLocation destination)
+        {
+            PlacementResult result=placementService.TryMoveUnit(view.State,destination);
+            if(!result.Success) {PlacementRejected?.Invoke(result.FailureReason); return false;}
+            view.SnapToLocation(gridLayout,benchLayout);
+            Physics2D.SyncTransforms();
+            PlacementChanged?.Invoke();
+            return true;
+        }
         public void ClearSelection() { CancelDrag(); SelectedUnit = null; inspectedUnit = null; }
         public void BindBoard(BoardState board, PlacementService service)
         {

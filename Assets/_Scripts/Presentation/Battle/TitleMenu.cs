@@ -20,6 +20,8 @@ namespace AutoBattler.Presentation.Battle
         [FormerlySerializedAs("openStagesButton")]
         [SerializeField] private Button gameStartButton;
         [SerializeField] private Button quitButton;
+        [SerializeField] private Button codexButton;
+        [SerializeField] private UnitCodexView codex;
         [SerializeField] private Button stageButton;
         [SerializeField] private StageSelectionView stageSelection;
         [SerializeField] private StageDetailsPanel detailsPanel;
@@ -61,6 +63,9 @@ namespace AutoBattler.Presentation.Battle
             if(gameSettings!=null) gameSettings.BindContext(interactionRoot,null,settings,ShowStageSelection);
             gameStartButton.onClick.AddListener(StartGame);
             quitButton.onClick.AddListener(Quit);
+            codex.Bind(saves);
+            codexButton.onClick.AddListener(OpenCodex);
+            codex.CloseButton.onClick.AddListener(CloseCodex);
             stageSelection.Selected+=SelectStage;
             detailsPanel.ContinueRequested+=ResumeSelected;
             detailsPanel.NewRunRequested+=StartSelected;
@@ -78,11 +83,26 @@ namespace AutoBattler.Presentation.Battle
         public bool OpenStageSelection(bool allowNavigationTransition=false)
         {
             if(busy || !allowNavigationTransition && GameNavigation.IsTransitioning) return false;
+            CloseCodex();
             selection=null; detailsPanel.Hide();
             Show(stagePanel,titlePanel); statusText.text=saves.LastError??"";
             int chapter=allowNavigationTransition?GameNavigation.MenuChapter
                 :settings.TryGetStage(saves.SavedStageId,out StageDefinition saved)?saved.Chapter:settings.DefaultStage.Chapter;
             stageSelection.Open(chapter,allowNavigationTransition); return true;
+        }
+        private void OpenCodex()
+        {
+            if(busy || IsStageSelectionOpen || GameNavigation.IsTransitioning) return;
+            codex.Open();
+            titlePanel.interactable=false;
+            codex.CloseButton.Select();
+        }
+        private void CloseCodex()
+        {
+            if(!codex.IsOpen) return;
+            codex.Close();
+            titlePanel.interactable=!busy;
+            if(titlePanel.gameObject.activeInHierarchy) codexButton.Select();
         }
         private void SelectStage(StageDefinition stage)
         {
@@ -129,6 +149,8 @@ namespace AutoBattler.Presentation.Battle
             if(gameSettings!=null) gameSettings.UnbindContext(interactionRoot);
             if(gameStartButton!=null) gameStartButton.onClick.RemoveListener(StartGame);
             if(quitButton!=null) quitButton.onClick.RemoveListener(Quit);
+            if(codexButton!=null) codexButton.onClick.RemoveListener(OpenCodex);
+            if(codex!=null) {codex.CloseButton.onClick.RemoveListener(CloseCodex); codex.Close();}
             if(stageSelection!=null) stageSelection.Selected-=SelectStage;
             if(detailsPanel!=null) {detailsPanel.ContinueRequested-=ResumeSelected; detailsPanel.NewRunRequested-=StartSelected;}
             if(backButton!=null) backButton.onClick.RemoveListener(Back);

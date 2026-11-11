@@ -17,6 +17,7 @@ namespace AutoBattler.Run
         public RunSavePhase phase;
         public int round, gold, lives, level, xp, winStreak, nextInstanceId;
         public bool isOver, wonRun, augmentWindowOpen;
+        public bool shopLocked;
         public string lastResult;
         public AutoBattler.Battle.Combat.BattleReport lastBattleReport;
         public int randomSeed, randomDrawCount;

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using AutoBattler.Data.Augments;
 using AutoBattler.Data.Units;
@@ -21,14 +22,16 @@ namespace AutoBattler.Battle.Units
             // 새 유닛·합성 결과는 최종 최대 체력을 기준으로 준비 상태 복원.
             if(!unit.IsInCombat) { unit.Health.RestoreFullHealth(); unit.Mana.ResetForRound(); }
         }
-        public static void ApplyBattleStart(IEnumerable<Unit> units,IEnumerable<AugmentDefinition> augments)
+        public static void ApplyBattleStart(IEnumerable<Unit> units,IEnumerable<AugmentDefinition> augments,
+            Action<AugmentDefinition> activated=null)
         {
             foreach(Unit unit in units)
                 if(unit.Team==UnitTeam.Ally && !unit.IsSummon && unit.Health.IsAlive && unit.IsInCombat)
                     foreach(AugmentDefinition augment in augments)
-                        if(augment.Effect==AugmentEffect.StartingShield)
-                            unit.Effects.Apply(new EffectDefinition(augment.Id,EffectKind.Shield,
-                                Mathf.FloorToInt(unit.Health.MaxHp*augment.Value),augment.Duration),augment.Source);
+                        if(augment.Effect==AugmentEffect.StartingShield
+                            && unit.Effects.Apply(new EffectDefinition(augment.Id,EffectKind.Shield,
+                                Mathf.FloorToInt(unit.Health.MaxHp*augment.Value),augment.Duration),augment.Source).IsValid)
+                            activated?.Invoke(augment);
         }
     }
 }

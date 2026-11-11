@@ -20,6 +20,7 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private Button openButton, closeButton, previousPage, nextPage;
         [SerializeField] private TextMeshProUGUI openLabel, pageLabel;
         [SerializeField] private ItemIconButton[] storedSlots;
+        [SerializeField] private ItemRecipePanel recipePanel;
         [Header("드래그 표시")]
         [SerializeField] private RectTransform dragPreview;
         [SerializeField] private Image dragIcon;
@@ -69,9 +70,11 @@ namespace AutoBattler.Presentation.Battle
                 slot.DragCancelled += CancelSource;
             }
         }
-        private bool CanOpen => run != null && run.IsReady && !run.IsShuttingDown && !run.State.IsOver
+        private bool CanOpen => run != null && run.IsReady && !run.IsShuttingDown
+            && (!run.State.IsOver || run.State.HasPendingRoundReward)
             && underlying != null && underlying.interactable && !GameNavigation.IsTransitioning
-            && !run.Flow.IsAugmentWindowOpen && run.Flow.CurrentPhase != BattlePhase.Result
+            && !run.Flow.IsAugmentWindowOpen
+            && (run.Flow.CurrentPhase != BattlePhase.Result || run.State.HasPendingRoundReward)
             && (GameManager.instance.Settings == null || !GameManager.instance.Settings.IsOpen);
         private bool CanDrag => IsOpen && CanOpen && run.Equipment.CanEquip;
         private void LateUpdate()
@@ -99,11 +102,13 @@ namespace AutoBattler.Presentation.Battle
             if (!IsOpen) return;
             IsOpen = false;
             if (run != null) run.Equipment.SetInventoryOpen(false);
+            selectedItem = 0;
+            recipePanel?.Hide();
             modal.DOKill(); modal.gameObject.SetActive(false); ClearIcons();
         }
-        private void SelectItem(int id) { selectedItem = id; Refresh(); }
-        private void BackPage() { CancelItemDrag(); page--; Refresh(); }
-        private void ForwardPage() { CancelItemDrag(); page++; Refresh(); }
+        private void SelectItem(int id) { selectedItem = selectedItem == id ? 0 : id; Refresh(); }
+        private void BackPage() { CancelItemDrag(); selectedItem = 0; page--; Refresh(); }
+        private void ForwardPage() { CancelItemDrag(); selectedItem = 0; page++; Refresh(); }
         private void BeginItemDrag(ItemIconButton source, PointerEventData eventData)
         {
             if (!CanDrag || IsDraggingItem) return;
@@ -142,6 +147,7 @@ namespace AutoBattler.Presentation.Battle
         private void CancelSource(ItemIconButton source) { if (source == dragSource) CancelItemDrag(); }
         public void CancelItemDrag()
         {
+            bool wasDragging = IsDraggingItem;
             SetTarget(null);
             dropFailure=null;
             SetStoredTarget(null);
@@ -150,6 +156,7 @@ namespace AutoBattler.Presentation.Battle
             if (dragPreview != null) dragPreview.gameObject.SetActive(false);
             if (dragIcon != null) dragIcon.sprite = null;
             if (fusionPreview != null) fusionPreview.Hide();
+            if (wasDragging && IsOpen && CanOpen) Refresh();
         }
         private Camera UICamera => canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
         private void UpdateTarget()
@@ -236,6 +243,11 @@ namespace AutoBattler.Presentation.Battle
             }
             OwnedItem selection = run.State.Items.Find(selectedItem);
             if (selection == null || selection.OwnerUnitId != 0) { selectedItem = 0; selection = null; }
+            if (recipePanel != null)
+            {
+                if (selection != null && !IsDraggingItem) recipePanel.Show(run, selection, stored);
+                else recipePanel.Hide();
+            }
         }
         private void ClearIcons()
         { foreach (ItemIconButton slot in storedSlots) slot.Show(0, null, "빈 슬롯", false, false); }

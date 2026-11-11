@@ -38,8 +38,10 @@ namespace AutoBattler.Battle.Units
         public event Action<SkillCastContext> CastReleased;
         public event Action<SkillCastContext> EffectReleased;
         public event Action<SkillCastContext> EffectApplied;
+        internal event Action<SkillCastContext> EffectFinished;
         internal void NotifyEffectApplied(SkillCastContext context)=>AutoBattler.Battle.Combat.CombatEventDispatcher.Publish(EffectApplied,context);
         internal void NotifyRepeatedRelease(SkillCastContext context)=>AutoBattler.Battle.Combat.CombatEventDispatcher.Publish(EffectReleased,context);
+        internal void NotifyEffectFinished(SkillCastContext context)=>AutoBattler.Battle.Combat.CombatEventDispatcher.Publish(EffectFinished,context);
         public event Action CastFinished;
         private void Awake()=>unit=GetComponent<Unit>();
         private void OnEnable()=>BindUnit(GetComponent<Unit>());
@@ -102,6 +104,7 @@ namespace AutoBattler.Battle.Units
             catch(OperationCanceledException) { }
             finally
             {
+                NotifyEffectFinished(context);
                 if(ReferenceEquals(current,op))
                 {
                     if(!op.Released && unit.IsInCombat && unit.Health.IsAlive

@@ -26,6 +26,7 @@ namespace AutoBattler.Presentation.Units
         private float elapsed,duration,lifetime;
         private bool holdUntilImpact;
         private Playback playback;
+        private SkillEffectSequence sequence;
         public Enum PoolKey=>key;
         public BattleVisualId Id=>key;
         public bool IsRented { get; private set; }
@@ -42,13 +43,27 @@ namespace AutoBattler.Presentation.Units
             if(directional && direction.sqrMagnitude>.0001f)Aim(direction);
             RestartContent();
         }
+        internal void PlaySkillEffect(Vector3 position, Vector3 direction, SkillEffectSequence style)
+        {
+            PlayEffect(position, style.Scale, style.Directional ? direction : Vector3.zero);
+            StartSequence(style);
+        }
         public void PlayProjectile(Vector3 position,CombatUnitReference destination,Vector3 fallback,Sprite sprite,
-            Color color,float seconds,bool hold,float scale)
+            Color color,float seconds,bool hold,float scale,SkillEffectSequence style=null)
         {
             playback=Playback.Projectile;target=destination;start=position;lastDestination=fallback;
             duration=Mathf.Max(.01f,seconds);holdUntilImpact=hold;transform.position=position;transform.localScale=Vector3.one*scale;
-            if(spriteRenderer!=null)SetSprite(sprite,color,.4f);else RestartContent();
+            if(style!=null) { transform.localScale=Vector3.one*style.Scale; StartSequence(style); }
+            else if(spriteRenderer!=null)SetSprite(sprite,color,.4f);
+            else RestartContent();
             Aim(lastDestination-start);
+        }
+        private void StartSequence(SkillEffectSequence style)
+        {
+            sequence=style;
+            spriteRenderer.color=Color.white;
+            spriteRenderer.sprite=style.FrameAt(0f,false);
+            spriteRenderer.enabled=true;
         }
         public void FollowEffect(CombatUnitReference unit,float scale,Vector3 offset)
         {
@@ -82,6 +97,12 @@ namespace AutoBattler.Presentation.Units
         {
             if(!IsRented)return;
             elapsed+=Time.deltaTime;
+            if(sequence!=null)
+            {
+                bool loop=playback==Playback.Projectile;
+                if(!loop && elapsed>=sequence.Duration){ReturnToPool();return;}
+                spriteRenderer.sprite=sequence.FrameAt(elapsed,loop);
+            }
             if(playback==Playback.Status)
             {
                 if(!target.IsAlive || !target.Unit.IsInCombat && target.Unit.BattleFlow?.CurrentPhase!=BattlePhase.Result){ReturnToPool();return;}
@@ -94,7 +115,7 @@ namespace AutoBattler.Presentation.Units
                 Aim(lastDestination-start);
                 if(!holdUntilImpact && elapsed>=duration){ReturnToPool();return;}
             }
-            else if(playback==Playback.Effect && animators.Length==0 && elapsed>.03f)
+            else if(playback==Playback.Effect && sequence==null && animators.Length==0 && elapsed>.03f)
             {
                 bool alive=false;foreach(ParticleSystem system in particles)if(system.IsAlive(false)){alive=true;break;}
                 if(!alive){ReturnToPool();return;}
@@ -115,7 +136,7 @@ namespace AutoBattler.Presentation.Units
             foreach(Animator animator in animators)if(animator!=null)animator.enabled=false;
             foreach(TrailRenderer trail in trails)if(trail!=null)trail.Clear();
             if(spriteRenderer!=null){spriteRenderer.sprite=null;spriteRenderer.color=Color.white;spriteRenderer.enabled=false;}
-            target=default;start=lastDestination=statusOffset=Vector3.zero;elapsed=duration=0;holdUntilImpact=false;playback=Playback.None;
+            sequence=null;target=default;start=lastDestination=statusOffset=Vector3.zero;elapsed=duration=0;holdUntilImpact=false;playback=Playback.None;
         }
         private void OnDisable(){if(IsRented)ReturnToPool();else ResetState();}
     }

@@ -32,10 +32,11 @@ namespace AutoBattler.Run
         public bool CanPrepare { get; set; }=true;
         public bool IsSettled=>settledRound==Round;
         public bool HasPendingRoundReward { get; private set; }
-        public bool CanTradeUnits => !IsOver && !Augments.HasPending;
+        public bool CanTradeUnits => (!IsOver || HasPendingRoundReward) && !Augments.HasPending;
         // 상점 갱신·경험치 구매는 전투·결과 대기·증강 선택 대기에도 허용.
         public bool CanUseEconomy => !IsOver || HasPendingRoundReward;
-        public bool CanManageRoster => !IsOver && !Augments.HasPending && (CanPrepare || !IsSettled);
+        public bool CanManageRoster => CanTradeUnits && (CanPrepare || !IsSettled || HasPendingRoundReward);
+        public bool ShopLocked { get; private set; }
         public string LastError { get; private set; }
         public string LastResult { get; private set; }
         public BattleReport LastBattleReport { get; private set; }
@@ -88,6 +89,7 @@ namespace AutoBattler.Run
                 phase=IsSettled?RunSavePhase.Result:RunSavePhase.Preparation,
                 round=Round,gold=Gold,lives=Lives,level=Level,xp=Xp,winStreak=WinStreak,nextInstanceId=nextId,
                 isOver=IsOver,wonRun=WonRun,lastResult=LastResult,augmentWindowOpen=augmentWindowOpen,lastBattleReport=LastBattleReport,
+                shopLocked=ShopLocked,
                 randomSeed=random.Seed,randomDrawCount=random.DrawCount,shop=(int[])shop.Clone(),
                 unitDefinitionIds=Data.Units.Keys.OrderBy(id=>id).ToArray(),availableUnitIds=availableUnitIds.OrderBy(id=>id).ToArray(),
                 stock=stock.OrderBy(pair=>pair.Key).Select(pair=>new SavedStock {definitionId=pair.Key,available=pair.Value}).ToArray(),
@@ -130,6 +132,7 @@ namespace AutoBattler.Run
                 Round=saved.round,Gold=saved.gold,Lives=saved.lives,Level=saved.level,Xp=saved.xp,
                 WinStreak=saved.winStreak,CanPrepare=saved.phase==RunSavePhase.Preparation,
                 IsOver=saved.isOver,WonRun=saved.wonRun,LastResult=saved.lastResult,LastBattleReport=saved.lastBattleReport,
+                ShopLocked=saved.shopLocked,
                 nextId=saved.nextInstanceId,settledRound=saved.phase==RunSavePhase.Result?saved.round:saved.round-1,
                 // 이전 저장은 대기 보상이 없으므로 이미 지급된 결과로 복원.
                 HasPendingRoundReward=saved.hasPendingRoundReward,pendingRoundWon=saved.pendingRoundWon
@@ -197,6 +200,7 @@ namespace AutoBattler.Run
             for(int slot=0;slot<state.shop.Length;slot++)
                 if(state.shop[slot]!=0 && !state.IsUnitAvailable(state.shop[slot]))
                 {state.stock[state.shop[slot]]++;state.shop[slot]=0;state.shop[slot]=state.Draw(data.ShopWeights(state.Level));}
+            state.RemoveMaxStarOffers();
             return state;
         }
         public bool TryEquipItem(int itemInstanceId,int unitInstanceId)
@@ -214,7 +218,8 @@ namespace AutoBattler.Run
         }
         public bool TryUnequipItem(int itemInstanceId)
         {
-            if(!Ready() || !Items.TryUnequip(itemInstanceId)) return Fail("준비 단계에서 장착한 아이템만 해제할 수 있습니다.");
+            if((!Ready() && !HasPendingRoundReward) || !Items.TryUnequip(itemInstanceId))
+                return Fail("준비 단계 또는 결과 대기 중에 해제할 수 있습니다.");
             Notify(); return true;
         }
         public int Stock(int definitionId)=>stock[definitionId];
@@ -235,18 +240,25 @@ namespace AutoBattler.Run
             if(Gold<cost) return Fail("골드가 부족합니다.");
             Gold-=cost; Reroll(); Notify(); return true;
         }
+        public bool TryToggleShopLock()
+        {
+            if(!CanUseEconomy) return false;
+            ShopLocked=!ShopLocked;
+            Notify(); return true;
+        }
         public string BuyFailureReason(int slot)
         {
             if(!CanTradeUnits) return Augments.HasPending ? "증강을 먼저 선택해 주세요." : "현재 기물을 구매할 수 없습니다.";
             if(slot<0 || slot>=shop.Length || shop[slot]==0) return "빈 상점입니다.";
             int id=shop[slot];
-            if(!IsUnitAvailable(id)) return "아직 해금되지 않은 유닛입니다.";
+            if(!CanOfferUnit(id)) return "현재 구매할 수 없는 유닛입니다.";
             if(Gold<Data.Units[id].Cost) return "골드가 부족합니다.";
             if(Placement.FindFreeBenchSlot()<0 && PurchaseMergeCandidates(id).Length<2) return "대기석이 가득 찼습니다.";
             return null;
         }
-        private OwnedUnit[] PurchaseMergeCandidates(int id)=>owned.Where(unit=>unit.DefinitionId==id && unit.Star==1
-                && (CanPrepare || IsSettled || unit.Placement.Location.Kind==UnitLocationKind.Bench))
+        private OwnedUnit[] PurchaseMergeCandidates(int id)=>IsSettled?Array.Empty<OwnedUnit>():
+            owned.Where(unit=>unit.DefinitionId==id && unit.Star==1
+                && (CanPrepare || unit.Placement.Location.Kind==UnitLocationKind.Bench))
             .OrderBy(unit=>unit.Placement.Location.Kind==UnitLocationKind.Board ? 0:1)
             .ThenBy(unit=>PositionOrder(unit.Placement.Location)).ThenBy(unit=>unit.Placement.InstanceId).Take(2).ToArray();
         public bool TryBuy(int slot)
@@ -269,7 +281,10 @@ namespace AutoBattler.Run
                 if(!Placement.TryRegisterUnit(unit.Placement,UnitLocation.OnBench(free))) return Fail("구매한 기물을 배치할 수 없습니다.");
                 nextId++; owned.Add(unit);
             }
-            shop[slot]=0; Gold-=cost; MergeUnitsOfType(id); Notify(); return true;
+            shop[slot]=0; Gold-=cost;
+            if(!IsSettled) MergeUnitsOfType(id);
+            RemoveMaxStarOffers();
+            Notify(); return true;
         }
         private static int PositionOrder(UnitLocation location)
         {
@@ -320,8 +335,9 @@ namespace AutoBattler.Run
             AddXp(Data.IntRule(EconomyRule.RoundXp));
             if(!won) Lives--;
             Items.ClearResult();
-            IsOver=Lives<=0 || Round==Data.Rounds.Count;
-            WonRun=IsOver && won && Round==Data.Rounds.Count;
+            bool finalRound=Round==Data.Rounds.Count;
+            IsOver=Lives<=0 || finalRound;
+            WonRun=finalRound && won;
             HasPendingRoundReward=true; pendingRoundWon=won;
             LastResult=$"{(won?"승리":"패배")}\n보상은 전투 종료 타이머가 끝나면 지급";
             Notify(); return true;
@@ -336,7 +352,8 @@ namespace AutoBattler.Run
             int streakGold = streak >= 5 ? 3 : streak == 4 ? 2 : streak == 3 ? 1 : 0;
             int interest = Math.Min(Data.IntRule(EconomyRule.InterestCap), Gold / Data.IntRule(EconomyRule.InterestDivisor));
             int augment = outcome ? Augments.Selected.Where(definition => definition.Effect == AugmentEffect.VictoryGold).Sum(definition => (int)definition.Value) : 0;
-            return new RoundIncome(Data.Rounds[round].Reward, interest, streakGold, augment);
+            RoundDefinition definition=Data.Rounds[round];
+            return new RoundIncome(definition.Reward+(outcome?definition.BossVictoryGold:0), interest, streakGold, augment);
         }
         public bool TryGrantRoundRewards()
         {
@@ -353,7 +370,9 @@ namespace AutoBattler.Run
         public bool TryNextRound()
         {
             if(IsOver || settledRound!=Round || CanPrepare || HasPendingRoundReward) return false;
-            Round++; CanPrepare=true; MergePendingUnits(); Reroll(); Augments.EnterRound(Round,Data.Rounds[Round].OffersAugment); Notify(); return true;
+            Round++; CanPrepare=true; MergePendingUnits(); RemoveMaxStarOffers();
+            if(!ShopLocked) Reroll();
+            Augments.EnterRound(Round,Data.Rounds[Round].OffersAugment); Notify(); return true;
         }
         private void MergePendingUnits()
         {
@@ -366,7 +385,7 @@ namespace AutoBattler.Run
                 while(true)
                 {
                     OwnedUnit[] matches=owned.Where(unit=>unit.DefinitionId==definition && unit.Star==star
-                            && (CanPrepare || IsSettled || unit.Placement.Location.Kind==UnitLocationKind.Bench))
+                            && (CanPrepare || unit.Placement.Location.Kind==UnitLocationKind.Bench))
                         .OrderBy(unit=>unit.Placement.Location.Kind==UnitLocationKind.Board?0:1)
                         .ThenBy(unit=>PositionOrder(unit.Placement.Location)).ThenBy(unit=>unit.Placement.InstanceId).Take(3).ToArray();
                     if(matches.Length<3) break;
@@ -386,19 +405,31 @@ namespace AutoBattler.Run
             IReadOnlyList<int> rates=Data.ShopWeights(Level);
             for(int i=0;i<shop.Length;i++) shop[i]=Draw(rates);
         }
+        private bool HasMaxStarUnit(int id)=>owned.Any(unit=>unit.DefinitionId==id && unit.Star==UnitStarRules.Maximum);
+        private bool CanOfferUnit(int id)=>IsUnitAvailable(id) && !HasMaxStarUnit(id);
+        private void RemoveMaxStarOffers()
+        {
+            for(int slot=0;slot<shop.Length;slot++)
+            {
+                int id=shop[slot];
+                if(id==0 || !HasMaxStarUnit(id)) continue;
+                stock[id]++; shop[slot]=0;
+            }
+        }
         private int Draw(IReadOnlyList<int> rates)
         {
+            UnitDefinition[] eligible=Data.Units.Values.Where(unit=>CanOfferUnit(unit.Id) && stock[unit.Id]>0).ToArray();
             int total=0;
             for(int cost=1;cost<=5;cost++)
-                if(Data.Units.Values.Any(x=>IsUnitAvailable(x.Id) && x.Cost==cost && stock[x.Id]>0)) total+=rates[cost-1];
+                if(eligible.Any(unit=>unit.Cost==cost)) total+=rates[cost-1];
             if(total==0) return 0;
             int tierPick=random.Next(total), tier=0;
             for(int cost=1;cost<=5;cost++)
             {
-                if(!Data.Units.Values.Any(x=>IsUnitAvailable(x.Id) && x.Cost==cost && stock[x.Id]>0)) continue;
+                if(!eligible.Any(unit=>unit.Cost==cost)) continue;
                 tierPick-=rates[cost-1]; if(tierPick<0) { tier=cost; break; }
             }
-            UnitDefinition[] candidates=Data.Units.Values.Where(x=>IsUnitAvailable(x.Id) && x.Cost==tier && stock[x.Id]>0).OrderBy(x=>x.Id).ToArray();
+            UnitDefinition[] candidates=eligible.Where(unit=>unit.Cost==tier).OrderBy(unit=>unit.Id).ToArray();
             int copyPick=random.Next(candidates.Sum(x=>stock[x.Id]));
             foreach(UnitDefinition unit in candidates)
             {

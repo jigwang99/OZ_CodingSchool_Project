@@ -104,7 +104,8 @@ namespace AutoBattler.Presentation.Battle
                 for(int i=0;i<stage.PlannedUnlockUnitIds.Count;i++)
                 {
                     UnitDefinition unit=data.Units[stage.PlannedUnlockUnitIds[i]];
-                    unitViews[i].Show(unit,data);unitViews[i].SetUnlocked(saves!=null && saves.IsUnitUnlocked(unit.Id));
+                    Sprite icon=catalog.BattleVisuals.Skill(unit.SkillId)?.icon;
+                    unitViews[i].Show(unit,data,icon);unitViews[i].SetUnlocked(saves!=null && saves.IsUnitUnlocked(unit.Id));
                 }
                 LayoutRebuilder.ForceRebuildLayoutImmediate(unitScroll.content);unitScroll.verticalNormalizedPosition=1f;
                 for(int i=0;i<stage.PlannedUnlockUnitIds.Count;i++)

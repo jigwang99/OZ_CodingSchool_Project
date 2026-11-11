@@ -28,6 +28,7 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private TextMeshProUGUI countText,pageText,selectionText;
         [SerializeField] private RectTransform dragPreview;
         [SerializeField] private Image dragIcon;
+        [SerializeField] private Material lockedPortraitMaterial;
         private readonly List<Action> filterActions=new List<Action>();
         private RunController run;
         private CanvasGroup underlying;
@@ -147,12 +148,12 @@ namespace AutoBattler.Presentation.Battle
                 int offset=page*catalogSlots.Length+index;
                 UnitDefinition unit=offset<candidates.Length?candidates[offset]:null;
                 catalogSlots[index].gameObject.SetActive(unit!=null);
-                catalogSlots[index].Show(unit,unit!=null?Portrait(unit):null,unit!=null && unit.Id==selectedUnit);
+                ShowSlot(catalogSlots[index],unit,unit!=null && unit.Id==selectedUnit);
             }
             foreach(DeckPlannerSlot cell in boardSlots)
             {
                 int id=Plan.UnitAt(cell.Cell); UnitDefinition unit=id!=0?data.Units[id]:null;
-                cell.Show(unit,unit!=null?Portrait(unit):null,hoveredCell==cell.Cell);
+                ShowSlot(cell,unit,hoveredCell==cell.Cell);
             }
             for(int index=0;index<costFilters.Length;index++) costFilters[index].interactable=index!=costFilter;
             countText.text=$"편성 {Plan.Count}/{DeckPlanState.Capacity}";
@@ -162,6 +163,11 @@ namespace AutoBattler.Presentation.Battle
             synergies.Show(Plan.Synergies,true,BattlePhase.Preparation);
             synergies.EmptyText.text=string.Empty;
             synergies.EmptyText.gameObject.SetActive(false);
+        }
+        private void ShowSlot(DeckPlannerSlot slot,UnitDefinition unit,bool selected)
+        {
+            bool locked=unit!=null && !run.IsUnitUnlocked(unit.Id);
+            slot.Show(unit,unit!=null?Portrait(unit):null,selected,locked,lockedPortraitMaterial);
         }
         public void Press(DeckPlannerSlot slot,PointerEventData eventData)
         {
@@ -177,7 +183,9 @@ namespace AutoBattler.Presentation.Battle
         {
             if(!IsOpen || !CanRemain || IsDragging || source.UnitId==0 || eventData.button!=PointerEventData.InputButton.Left) return;
             dragSource=source; draggedUnit=source.UnitId; pointerId=eventData.pointerId; selectedUnit=draggedUnit;
-            dragIcon.sprite=Portrait(data.Units[draggedUnit]); dragPreview.gameObject.SetActive(true); dragPreview.SetAsLastSibling();
+            dragIcon.sprite=Portrait(data.Units[draggedUnit]);
+            dragIcon.material=run.IsUnitUnlocked(draggedUnit)?null:lockedPortraitMaterial;
+            dragPreview.gameObject.SetActive(true); dragPreview.SetAsLastSibling();
             MoveDrag(source,eventData);
         }
         private Camera UICamera=>canvas!=null && canvas.renderMode!=RenderMode.ScreenSpaceOverlay?canvas.worldCamera:null;
@@ -205,7 +213,7 @@ namespace AutoBattler.Presentation.Battle
         {
             dragSource=null; draggedUnit=0; hoveredCell=null;
             if(dragPreview!=null) dragPreview.gameObject.SetActive(false);
-            if(dragIcon!=null) dragIcon.sprite=null;
+            if(dragIcon!=null) {dragIcon.sprite=null; dragIcon.material=null;}
             Refresh();
         }
         private void OnApplicationFocus(bool focused) {if(!focused) CancelDrag();}
