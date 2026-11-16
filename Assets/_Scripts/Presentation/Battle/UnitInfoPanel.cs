@@ -1,6 +1,6 @@
-using System.Linq;
 using AutoBattler.Run;
 using AutoBattler.Battle.Units;
+using AutoBattler.Data.Items;
 using AutoBattler.Data.Skills;
 using AutoBattler.Data.Snapshot;
 using AutoBattler.Data.Traits;
@@ -50,18 +50,18 @@ namespace AutoBattler.Presentation.Battle
         private void Unequip(int itemId)
         {
             Unit unit = boundUnit;
-            if (unit != null && run != null && run.UnequipItem(itemId))
+            if (unit != null && unit.Team == UnitTeam.Ally && run != null && run.UnequipItem(itemId))
             { run.Drag.Inspect(unit); RefreshEquipment(); }
         }
         private void RefreshEquipment()
         {
+            UnitEquipment equipment=IsCurrent()?boundUnit.Equipment:null;
+            bool canUnequip=equipment!=null && boundUnit.Team==UnitTeam.Ally && run!=null && run.Equipment.CanUnequip;
             for (int i = 0; i < equipmentSlots.Length; i++)
             {
-                OwnedItem item = IsCurrent() && run != null && run.IsReady && boundUnit.Team == UnitTeam.Ally
-                    ? run.State.Items.Equipped(boundUnit.InstanceId).FirstOrDefault(owned => owned.Slot == i) : null;
-                AutoBattler.Data.Items.ItemDefinition definition = item != null ? run.State.Data.Items[item.DefinitionId] : null;
-                equipmentSlots[i].Show(item?.InstanceId ?? 0, boundUnit != null ? boundUnit.Equipment.Icon(i) : null,
-                    definition?.Name ?? "빈 슬롯", false, run != null && run.Equipment.CanUnequip);
+                ItemDefinition definition=equipment?.DefinitionAt(i);
+                equipmentSlots[i].Show(equipment?.ItemIdAt(i) ?? 0,equipment?.Icon(i),
+                    definition?.Name ?? "빈 슬롯",false,canUnequip,definition);
                 RefreshEquipmentStacks(i);
             }
         }

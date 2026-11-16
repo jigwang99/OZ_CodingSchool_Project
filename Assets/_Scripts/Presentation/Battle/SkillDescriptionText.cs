@@ -11,6 +11,7 @@ namespace AutoBattler.Presentation.Battle
     /// <summary>전투 정보와 해금 미리보기에 공통으로 사용하는 문장형 스킬 설명.</summary>
     public static class SkillDescriptionText
     {
+        private const string SelfTarget="자신";
         private static string Number(float value)=>value.ToString("0.##",CultureInfo.InvariantCulture);
         private static string Percent(float value)=>Number(value*100f)+"%";
         private static string ObjectParticle(string word)
@@ -65,7 +66,7 @@ namespace AutoBattler.Presentation.Battle
                     return skill.CenterOnCaster?$"자신 주변 {skill.Radius}칸 이내의 적":$"현재 공격 대상과 주변 {skill.Radius}칸 이내의 적";
                 return skill.TargetRule==SkillTargetRule.Self?$"자신과 주변 {skill.Radius}칸 이내의 아군":$"대상과 주변 {skill.Radius}칸 이내의 아군";
             }
-            return skill.TargetRule==SkillTargetRule.Self?"자신":skill.TargetRule==SkillTargetRule.LowestHealthAlly?"체력이 가장 낮은 아군":"현재 공격 대상";
+            return skill.TargetRule==SkillTargetRule.Self?SelfTarget:skill.TargetRule==SkillTargetRule.LowestHealthAlly?"체력이 가장 낮은 아군":"현재 공격 대상";
         }
         private static void AppendEffect(StringBuilder text,string target,EffectDefinition effect,float value)
         {
@@ -76,6 +77,10 @@ namespace AutoBattler.Presentation.Battle
                 case EffectKind.Heal:text.Append($"{target}의 체력을 {Number(value)} 회복합니다.");break;
                 case EffectKind.Stun:text.Append($"{target}{ObjectParticle(target)} {duration}기절시킵니다.");break;
                 case EffectKind.Slow:text.Append($"{target}의 이동 속도를 {duration}{Percent(value)} 감소시킵니다.");break;
+                case EffectKind.StatModifier when target==SelfTarget && effect.Stat==StatType.DamageReduction
+                    && effect.Operation==ModifierOperation.Flat && value>0:
+                    string reductionDuration=effect.Duration>0?$"{Number(effect.Duration)}초간 ":string.Empty;
+                    text.Append($"자신이 받는 피해를 {reductionDuration}{Percent(value)} 감소시킵니다.");break;
                 case EffectKind.StatModifier:
                     string stat=effect.Stat==StatType.CritMultiplier?"치명타 피해량":BattleText.StatName(effect.Stat);
                     bool isPercent=effect.Operation!=ModifierOperation.Flat || effect.Stat==StatType.CritMultiplier || effect.Stat==StatType.DamageReduction;

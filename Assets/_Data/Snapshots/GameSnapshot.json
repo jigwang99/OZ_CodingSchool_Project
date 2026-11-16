@@ -7104,7 +7104,7 @@
         {
             "entryId": 42,
             "roundId": 16,
-            "unitId": 1025,
+            "unitId": 1001,
             "star": 1,
             "col": 4,
             "row": 3,
@@ -9093,9 +9093,9 @@
         {
             "entryId": 313,
             "roundId": 91,
-            "unitId": 1013,
+            "unitId": 1002,
             "star": 1,
-            "col": 4,
+            "col": 6,
             "row": 3,
             "bossProfileId": 0
         },
@@ -9524,15 +9524,6 @@
         },
         {
             "entryId": 358,
-            "roundId": 106,
-            "unitId": 1014,
-            "star": 1,
-            "col": 4,
-            "row": 3,
-            "bossProfileId": 0
-        },
-        {
-            "entryId": 359,
             "roundId": 106,
             "unitId": 1002,
             "star": 1,
@@ -10011,15 +10002,6 @@
         {
             "entryId": 412,
             "roundId": 121,
-            "unitId": 1013,
-            "star": 1,
-            "col": 4,
-            "row": 3,
-            "bossProfileId": 0
-        },
-        {
-            "entryId": 413,
-            "roundId": 121,
             "unitId": 1002,
             "star": 1,
             "col": 6,
@@ -10496,15 +10478,6 @@
         },
         {
             "entryId": 466,
-            "roundId": 136,
-            "unitId": 1013,
-            "star": 1,
-            "col": 4,
-            "row": 3,
-            "bossProfileId": 0
-        },
-        {
-            "entryId": 467,
             "roundId": 136,
             "unitId": 1002,
             "star": 1,
@@ -11037,7 +11010,7 @@
         {
             "entryId": 541,
             "roundId": 151,
-            "unitId": 1019,
+            "unitId": 1034,
             "star": 1,
             "col": 4,
             "row": 3,
@@ -11568,7 +11541,7 @@
         {
             "entryId": 598,
             "roundId": 172,
-            "unitId": 1019,
+            "unitId": 1034,
             "star": 1,
             "col": 4,
             "row": 3,
@@ -12099,19 +12072,10 @@
         {
             "entryId": 655,
             "roundId": 193,
-            "unitId": 1019,
+            "unitId": 1034,
             "star": 1,
             "col": 4,
             "row": 3,
-            "bossProfileId": 0
-        },
-        {
-            "entryId": 656,
-            "roundId": 193,
-            "unitId": 1021,
-            "star": 1,
-            "col": 4,
-            "row": 2,
             "bossProfileId": 0
         },
         {
@@ -12819,18 +12783,9 @@
         {
             "entryId": 733,
             "roundId": 214,
-            "unitId": 1019,
+            "unitId": 1034,
             "star": 1,
             "col": 4,
-            "row": 3,
-            "bossProfileId": 0
-        },
-        {
-            "entryId": 734,
-            "roundId": 214,
-            "unitId": 1020,
-            "star": 1,
-            "col": 7,
             "row": 3,
             "bossProfileId": 0
         },
@@ -13539,27 +13494,9 @@
         {
             "entryId": 811,
             "roundId": 235,
-            "unitId": 1019,
+            "unitId": 1034,
             "star": 1,
             "col": 4,
-            "row": 3,
-            "bossProfileId": 0
-        },
-        {
-            "entryId": 812,
-            "roundId": 235,
-            "unitId": 1021,
-            "star": 1,
-            "col": 4,
-            "row": 2,
-            "bossProfileId": 0
-        },
-        {
-            "entryId": 813,
-            "roundId": 235,
-            "unitId": 1020,
-            "star": 1,
-            "col": 7,
             "row": 3,
             "bossProfileId": 0
         },
@@ -14439,7 +14376,7 @@
         {
             "entryId": 910,
             "roundId": 256,
-            "unitId": 1017,
+            "unitId": 1018,
             "star": 1,
             "col": 4,
             "row": 3,
@@ -14970,7 +14907,7 @@
         {
             "entryId": 967,
             "roundId": 277,
-            "unitId": 1017,
+            "unitId": 1018,
             "star": 1,
             "col": 4,
             "row": 3,
@@ -15504,15 +15441,6 @@
             "unitId": 1018,
             "star": 1,
             "col": 7,
-            "row": 3,
-            "bossProfileId": 0
-        },
-        {
-            "entryId": 1025,
-            "roundId": 298,
-            "unitId": 1017,
-            "star": 1,
-            "col": 4,
             "row": 3,
             "bossProfileId": 0
         },
@@ -16221,18 +16149,9 @@
         {
             "entryId": 1102,
             "roundId": 319,
-            "unitId": 1017,
-            "star": 1,
-            "col": 4,
-            "row": 3,
-            "bossProfileId": 0
-        },
-        {
-            "entryId": 1103,
-            "roundId": 319,
             "unitId": 1018,
             "star": 1,
-            "col": 7,
+            "col": 4,
             "row": 3,
             "bossProfileId": 0
         },
@@ -16941,28 +16860,10 @@
         {
             "entryId": 1180,
             "roundId": 340,
-            "unitId": 1017,
+            "unitId": 1018,
             "star": 1,
             "col": 4,
             "row": 3,
-            "bossProfileId": 0
-        },
-        {
-            "entryId": 1181,
-            "roundId": 340,
-            "unitId": 1018,
-            "star": 1,
-            "col": 7,
-            "row": 3,
-            "bossProfileId": 0
-        },
-        {
-            "entryId": 1182,
-            "roundId": 340,
-            "unitId": 1004,
-            "star": 1,
-            "col": 7,
-            "row": 2,
             "bossProfileId": 0
         },
         {
@@ -17841,19 +17742,10 @@
         {
             "entryId": 1279,
             "roundId": 361,
-            "unitId": 1005,
+            "unitId": 1015,
             "star": 1,
             "col": 4,
             "row": 3,
-            "bossProfileId": 0
-        },
-        {
-            "entryId": 1280,
-            "roundId": 361,
-            "unitId": 1006,
-            "star": 1,
-            "col": 4,
-            "row": 2,
             "bossProfileId": 0
         },
         {
@@ -18813,19 +18705,10 @@
         {
             "entryId": 1384,
             "roundId": 391,
-            "unitId": 1005,
+            "unitId": 1015,
             "star": 1,
             "col": 4,
             "row": 3,
-            "bossProfileId": 0
-        },
-        {
-            "entryId": 1385,
-            "roundId": 391,
-            "unitId": 1006,
-            "star": 1,
-            "col": 4,
-            "row": 2,
             "bossProfileId": 0
         },
         {
@@ -19785,28 +19668,10 @@
         {
             "entryId": 1489,
             "roundId": 421,
-            "unitId": 1005,
-            "star": 1,
-            "col": 4,
-            "row": 3,
-            "bossProfileId": 0
-        },
-        {
-            "entryId": 1490,
-            "roundId": 421,
             "unitId": 1015,
             "star": 1,
-            "col": 7,
-            "row": 3,
-            "bossProfileId": 0
-        },
-        {
-            "entryId": 1491,
-            "roundId": 421,
-            "unitId": 1005,
-            "star": 1,
             "col": 4,
-            "row": 2,
+            "row": 3,
             "bossProfileId": 0
         },
         {
@@ -21027,28 +20892,10 @@
         {
             "entryId": 1624,
             "roundId": 451,
-            "unitId": 1005,
+            "unitId": 1015,
             "star": 1,
             "col": 4,
             "row": 3,
-            "bossProfileId": 0
-        },
-        {
-            "entryId": 1625,
-            "roundId": 451,
-            "unitId": 1016,
-            "star": 1,
-            "col": 7,
-            "row": 3,
-            "bossProfileId": 0
-        },
-        {
-            "entryId": 1626,
-            "roundId": 451,
-            "unitId": 1015,
-            "star": 1,
-            "col": 7,
-            "row": 2,
             "bossProfileId": 0
         },
         {
@@ -23745,18 +23592,9 @@
         {
             "entryId": 1924,
             "roundId": 511,
-            "unitId": 1022,
+            "unitId": 1033,
             "star": 1,
             "col": 4,
-            "row": 3,
-            "bossProfileId": 0
-        },
-        {
-            "entryId": 1925,
-            "roundId": 511,
-            "unitId": 1023,
-            "star": 1,
-            "col": 7,
             "row": 3,
             "bossProfileId": 0
         },
@@ -24726,18 +24564,9 @@
         {
             "entryId": 2029,
             "roundId": 541,
-            "unitId": 1022,
+            "unitId": 1033,
             "star": 1,
             "col": 4,
-            "row": 3,
-            "bossProfileId": 0
-        },
-        {
-            "entryId": 2030,
-            "roundId": 541,
-            "unitId": 1023,
-            "star": 1,
-            "col": 7,
             "row": 3,
             "bossProfileId": 0
         },
@@ -25707,27 +25536,9 @@
         {
             "entryId": 2134,
             "roundId": 571,
-            "unitId": 1024,
+            "unitId": 1033,
             "star": 1,
             "col": 4,
-            "row": 3,
-            "bossProfileId": 0
-        },
-        {
-            "entryId": 2135,
-            "roundId": 571,
-            "unitId": 1022,
-            "star": 1,
-            "col": 4,
-            "row": 2,
-            "bossProfileId": 0
-        },
-        {
-            "entryId": 2136,
-            "roundId": 571,
-            "unitId": 1023,
-            "star": 1,
-            "col": 7,
             "row": 3,
             "bossProfileId": 0
         },
@@ -26958,27 +26769,9 @@
         {
             "entryId": 2269,
             "roundId": 601,
-            "unitId": 1022,
+            "unitId": 1033,
             "star": 1,
             "col": 4,
-            "row": 3,
-            "bossProfileId": 0
-        },
-        {
-            "entryId": 2270,
-            "roundId": 601,
-            "unitId": 1024,
-            "star": 1,
-            "col": 4,
-            "row": 2,
-            "bossProfileId": 0
-        },
-        {
-            "entryId": 2271,
-            "roundId": 601,
-            "unitId": 1023,
-            "star": 1,
-            "col": 7,
             "row": 3,
             "bossProfileId": 0
         },

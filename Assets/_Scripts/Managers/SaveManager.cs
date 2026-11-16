@@ -1,8 +1,8 @@
 using System;
 using System.IO;
-using System.Text;
 using System.Linq;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using AutoBattler.Data.Snapshot;
 using AutoBattler.Run;
 using AutoBattler.Utility;
@@ -10,15 +10,17 @@ using UnityEngine;
 
 namespace AutoBattler.Managers
 {
-    /// <summary>JSON 진행도 파일의 저장·읽기·교체와 저장 상태 알림 담당.</summary>
+    /// <summary>진행도 저장·복원과 저장 상태 알림 담당.</summary>
     [DisallowMultipleComponent]
     [DefaultExecutionOrder(-120)]
     public sealed class SaveManager : Singleton<SaveManager>
     {
+        private const int RunSaveLimit=4*1024*1024;
+        private const int CampaignSaveLimit=256*1024;
         private string directory;
         [SerializeField] private GameNavigationSettings progressionSettings;
-        public string SavePath=>Path.Combine(directory,"Run.json");
-        public string CampaignPath=>Path.Combine(directory,"Campaign.json");
+        public string SavePath=>Path.Combine(directory,"Run.sav");
+        public string CampaignPath=>Path.Combine(directory,"Campaign.sav");
         private CampaignProgress campaign=new CampaignProgress();
         private bool campaignReady=true;
         private string rejectedRun;
@@ -67,11 +69,11 @@ namespace AutoBattler.Managers
             campaignReady=true;
             try
             {
-                if(File.Exists(CampaignPath))
+                if(EncryptedSaveFile.Exists(CampaignPath))
                 {
-                    FileInfo info=new FileInfo(CampaignPath);
-                    if(info.Length==0 || info.Length>256*1024) throw new IOException("클리어 기록 크기 오류.");
-                    campaign=new CampaignProgress(JsonUtility.FromJson<CampaignSaveData>(File.ReadAllText(CampaignPath,Encoding.UTF8)));
+                    string json=EncryptedSaveFile.ReadJson(CampaignPath,SaveFileKind.Campaign,CampaignSaveLimit,out bool legacy);
+                    campaign=new CampaignProgress(JsonUtility.FromJson<CampaignSaveData>(json));
+                    TryMigrateLegacy(CampaignPath,SaveFileKind.Campaign,CampaignSaveLimit,json,legacy);
                 }
                 else campaign=new CampaignProgress();
             }
@@ -84,12 +86,13 @@ namespace AutoBattler.Managers
                     ?stage.PlannedUnlockUnitIds:Array.Empty<int>());
                 PersistUnlocks(progressionSettings.InitialUnlockedUnitIds.Concat(prior),false);
             }
-            if(!File.Exists(SavePath)) return;
+            if(!EncryptedSaveFile.Exists(SavePath)) return;
             try
             {
-                RunSaveData saved=ReadFile(); ReadHeader(saved);
+                RunSaveData saved=ReadFile(out string json,out bool legacy); ReadHeader(saved);
                 if(rejectedRun!=null && rejectedRun==JsonUtility.ToJson(saved))
                 {HasSavedRun=false; LastError="이전 도전을 복원할 수 없습니다. 스테이지를 선택해 새 도전을 시작하세요."; return;}
+                if(!HasSavedRun) TryMigrateLegacy(SavePath,SaveFileKind.Run,RunSaveLimit,json,legacy);
                 if(saved.isOver && saved.wonRun && !saved.hasPendingRoundReward) RecordClear(saved.stageId);
             }
             catch(Exception exception) when(IsFileError(exception))
@@ -103,9 +106,7 @@ namespace AutoBattler.Managers
                 if(stageId<=0 || state==null || string.IsNullOrEmpty(state.Data.Version)) throw new ArgumentException("저장할 도전 정보 없음.");
                 RunSaveData saved=state.Capture(stageId,augmentWindowOpen,replayCombat);
                 string json=JsonUtility.ToJson(saved,true);
-                Directory.CreateDirectory(directory);
-                // 같은 폴더에 완성된 파일을 쓴 뒤 교체하여 기존 정상 파일 보호.
-                WriteAtomic(SavePath,json);
+                EncryptedSaveFile.WriteJson(SavePath,SaveFileKind.Run,RunSaveLimit,json);
                 ReadHeader(saved);
                 rejectedRun=null;
                 if(saved.isOver && saved.wonRun && !saved.hasPendingRoundReward && !RecordClear(stageId)) return false;
@@ -133,7 +134,7 @@ namespace AutoBattler.Managers
                     next=new CampaignProgress(next).WithUnlocked(units);
                 }
                 CampaignProgress updated=new CampaignProgress(next);
-                Directory.CreateDirectory(directory); WriteAtomic(CampaignPath,JsonUtility.ToJson(next,true));
+                EncryptedSaveFile.WriteJson(CampaignPath,SaveFileKind.Campaign,CampaignSaveLimit,JsonUtility.ToJson(next,true));
                 campaign=updated; return true;
             }
             catch(Exception exception) when(IsFileError(exception))
@@ -147,22 +148,19 @@ namespace AutoBattler.Managers
             try
             {
                 CampaignProgress updated=new CampaignProgress(next);
-                Directory.CreateDirectory(directory);WriteAtomic(CampaignPath,JsonUtility.ToJson(next,true));
+                EncryptedSaveFile.WriteJson(CampaignPath,SaveFileKind.Campaign,CampaignSaveLimit,JsonUtility.ToJson(next,true));
                 campaign=updated;LastError=null;if(notify) Changed?.Invoke();return true;
             }
             catch(Exception exception) when(IsFileError(exception))
             {LastError="유닛 해금 기록 저장에 실패했습니다. 다시 시도해 주세요.";return false;}
         }
-        private static void WriteAtomic(string path,string json)
+        private void TryMigrateLegacy(string path,SaveFileKind kind,int limit,string json,bool legacy)
         {
-            string temporary=path+".tmp";
-            using(FileStream stream=new FileStream(temporary,FileMode.Create,FileAccess.Write,FileShare.None))
+            try { EncryptedSaveFile.MigrateLegacy(path,kind,limit,json,legacy); }
+            catch(Exception exception) when(IsFileError(exception))
             {
-                byte[] bytes=new UTF8Encoding(false).GetBytes(json);
-                stream.Write(bytes,0,bytes.Length); stream.Flush(true);
+                Debug.LogWarning($"기존 저장 파일 이전 또는 정리 실패: {exception.Message}",this);
             }
-            if(File.Exists(path)) File.Replace(temporary,path,path+".bak");
-            else File.Move(temporary,path);
         }
 
         public bool TryLoad(DataRepository data,int stageId,out RunState state,out bool augmentWindowOpen)
@@ -171,29 +169,30 @@ namespace AutoBattler.Managers
             RunSaveData candidate=null;
             try
             {
-                RunSaveData saved=ReadFile(); ReadHeader(saved);
+                RunSaveData saved=ReadFile(out string json,out bool legacy); ReadHeader(saved);
                 if(!HasSavedRun || saved.stageId!=stageId) throw new ArgumentException("이어할 수 없는 스테이지.");
                 candidate=saved;
                 int[] available=progressionSettings!=null && progressionSettings.TryGetStage(stageId,out StageDefinition stage)
                     ?AvailableUnitsForStage(stage):null;
                 state=RunState.Restore(data,saved,available); augmentWindowOpen=saved.augmentWindowOpen;
+                TryMigrateLegacy(SavePath,SaveFileKind.Run,RunSaveLimit,json,legacy);
                 LastError=null; return true;
             }
             catch(Exception exception) when(IsFileError(exception))
             {
-                // 복원이 실패한 내용만 이번 실행에서 제외. 원본 JSON은 새 저장 전까지 보존.
+                // 복원에 실패한 저장 파일을 새 저장 전까지 보존.
                 if(candidate!=null) {rejectedRun=JsonUtility.ToJson(candidate); HasSavedRun=false;}
+                else if(exception is IOException || exception is CryptographicException) {HasSavedRun=false;}
                 LastError="이어하기에 실패했습니다. 저장 파일이나 데이터 버전을 확인하고 새 도전을 시작해 주세요.";
                 Debug.LogWarning($"이어하기 실패 원인: {exception.Message}\n저장 위치: {SavePath}",this);
                 return false;
             }
         }
 
-        private RunSaveData ReadFile()
+        private RunSaveData ReadFile(out string json,out bool legacy)
         {
-            FileInfo file=new FileInfo(SavePath);
-            if(!file.Exists || file.Length==0 || file.Length>4*1024*1024) throw new IOException("저장 파일 크기 오류.");
-            return JsonUtility.FromJson<RunSaveData>(File.ReadAllText(SavePath,Encoding.UTF8));
+            json=EncryptedSaveFile.ReadJson(SavePath,SaveFileKind.Run,RunSaveLimit,out legacy);
+            return JsonUtility.FromJson<RunSaveData>(json);
         }
         private void ReadHeader(RunSaveData saved)
         {
@@ -205,7 +204,8 @@ namespace AutoBattler.Managers
             SavedStageId=saved.stageId; SavedRound=saved.round; HasSavedRun=!saved.isOver || saved.hasPendingRoundReward;
         }
         private static bool IsFileError(Exception exception)=>exception is IOException || exception is UnauthorizedAccessException
-            || exception is ArgumentException || exception is InvalidOperationException || exception is NotSupportedException;
+            || exception is ArgumentException || exception is InvalidOperationException || exception is NotSupportedException
+            || exception is CryptographicException;
 #if UNITY_EDITOR
         // 검사 파일을 실제 사용자 저장과 분리하는 에디터 전용 진입점.
         public void ConfigureStorage(string folder) { directory=Path.GetFullPath(folder); rejectedRun=null; Refresh(); }

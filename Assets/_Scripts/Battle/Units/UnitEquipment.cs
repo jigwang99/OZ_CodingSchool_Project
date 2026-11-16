@@ -16,6 +16,7 @@ namespace AutoBattler.Battle.Units
     {
         private readonly int[] instances=new int[ItemInventoryState.EquipmentCapacity];
         private readonly Sprite[] icons=new Sprite[ItemInventoryState.EquipmentCapacity];
+        private readonly ItemDefinition[] definitions=new ItemDefinition[ItemInventoryState.EquipmentCapacity];
         private readonly Dictionary<int,int> effectStacks=new();
         private readonly List<(int InstanceId, ItemDefinition Definition)> equippedEffects=new();
         private ReadOnlyCollection<(int InstanceId, ItemDefinition Definition)> effectView;
@@ -27,6 +28,7 @@ namespace AutoBattler.Battle.Units
         internal bool AllowsSkillCritical=>equippedEffects.Exists(item=>item.Definition.CombatEffect.Kind==ItemEffectKind.SkillCritical);
         public Sprite Icon(int slot)=>icons[slot];
         internal int ItemIdAt(int slot)=>instances[slot];
+        internal ItemDefinition DefinitionAt(int slot)=>definitions[slot];
         public int EffectStacksAt(int slot)=>effectStacks.TryGetValue(instances[slot],out int count)?count:0;
         public event Action Changed;
         public event Action<int> EffectStacksChanged;
@@ -60,6 +62,7 @@ namespace AutoBattler.Battle.Units
             int previousMana=Mathf.RoundToInt(stats.ManaBonus);
             Dictionary<ModifierSource,StatModifierSpec[]> replacements=new Dictionary<ModifierSource,StatModifierSpec[]>();
             Array.Clear(instances,0,instances.Length); Array.Clear(icons,0,icons.Length);
+            Array.Clear(definitions,0,definitions.Length);
             equippedEffects.Clear();
             foreach(OwnedItem item in equipped)
             {
@@ -76,6 +79,7 @@ namespace AutoBattler.Battle.Units
                 replacements.Add(source,modifiers);
                 if(effect.Kind!=ItemEffectKind.None) equippedEffects.Add((item.InstanceId,definition));
                 instances[item.Slot]=item.InstanceId; icons[item.Slot]=iconProvider(definition.IconId);
+                definitions[item.Slot]=definition;
             }
             stats.ReplaceSources(ModifierSourceKind.Equipment,replacements);
             if(unit.IsInCombat)
@@ -97,7 +101,8 @@ namespace AutoBattler.Battle.Units
             ClearSources(); version=-1;
             equippedEffects.Clear();
             effectStacks.Clear();
-            Array.Clear(instances,0,instances.Length); Array.Clear(icons,0,icons.Length); Changed?.Invoke();
+            Array.Clear(instances,0,instances.Length); Array.Clear(icons,0,icons.Length);
+            Array.Clear(definitions,0,definitions.Length); Changed?.Invoke();
         }
         private void OnDisable()=>Clear();
     }

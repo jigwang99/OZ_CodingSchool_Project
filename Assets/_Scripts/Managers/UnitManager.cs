@@ -1,5 +1,6 @@
 using AutoBattler.Data.Snapshot;
 using AutoBattler.Data.Augments;
+using AutoBattler.Data.Stages;
 using System.Collections.Generic;
 using System.Linq;
 using AutoBattler.Assets;
@@ -19,6 +20,8 @@ namespace AutoBattler.Managers
     [DisallowMultipleComponent]
     public sealed class UnitManager : Singleton<UnitManager>
     {
+        private static readonly int[] FrontlineCompletedItems={6101,6105,6106}; // 수호자의 투구, 수호의 펜던트, 거인의 갑옷
+        private static readonly int[] BacklineCompletedItems={6110,6114,6113}; // 질풍의 장화, 전투마도 반지, 파괴자의 건틀릿
         private readonly Dictionary<int,Unit> allies=new Dictionary<int,Unit>();
         private readonly List<Unit> enemies=new List<Unit>();
         private readonly List<Unit> summons=new List<Unit>();
@@ -97,6 +100,47 @@ namespace AutoBattler.Managers
                 unit.transform.position=grid.CellToWorld(cell);
                 unit.gameObject.SetActive(true); enemies.Add(unit);
             }
+            ApplyEnemyEquipment();
+        }
+
+        private void ApplyEnemyEquipment()
+        {
+            int roundsPerSegment=state.Data.RoundsPerSegment;
+            if(enemies.Count==0 || roundsPerSegment<=0) return;
+            int segment=(state.Round-1)/roundsPerSegment+1;
+            if(segment!=2 && segment!=3) return;
+
+            Unit[] lineup=enemies.OrderBy(unit=>unit.CurrentCell.Value.Q).ToArray();
+            int itemCount=1;
+            if(segment==3)
+            {
+                bool lateStage=state.Data.IsEndless
+                    || (state.Data.Stages.TryGetValue(state.Data.StageId,out StageRule stage) && stage.Chapter>=4);
+                itemCount=lateStage?ItemInventoryState.EquipmentCapacity:2;
+            }
+            if(lineup.Length==1)
+            {
+                // 단독 편성은 한 기가 전방·후방 장비를 함께 사용.
+                int frontlineCount=System.Math.Min(itemCount,ItemInventoryState.EquipmentCapacity-1);
+                EquipEnemy(lineup[0],FrontlineCompletedItems.Take(frontlineCount).Append(BacklineCompletedItems[0]));
+                return;
+            }
+            EquipEnemy(lineup[0],FrontlineCompletedItems.Take(itemCount));
+            EquipEnemy(lineup[lineup.Length-1],BacklineCompletedItems.Take(itemCount));
+        }
+
+        private void EquipEnemy(Unit unit,IEnumerable<int> definitions)
+        {
+            // 적 장비에 음수 ID를 사용해 플레이어 보관함과 분리.
+            OwnedItem[] equipment=definitions.Where(state.Data.Items.ContainsKey).Select((definitionId,slot)=>
+                new OwnedItem(-(unit.InstanceId*ItemInventoryState.EquipmentCapacity+slot),definitionId,state.Data.StageId)
+                {
+                    OwnerUnitId=unit.InstanceId,
+                    Slot=slot
+                }).ToArray();
+            if(equipment.Length==0) return;
+            unit.Equipment.Apply(equipment,state.Data,itemIcon);
+            unit.Health.RestoreFullHealth();
         }
 
         private void ConfigureUnit(Unit unit,int definitionId,int star,int id,UnitTeam team,HexCoord? cell=null,int boss=0,
@@ -146,7 +190,10 @@ namespace AutoBattler.Managers
 
         public void RestorePreparation()
         {
+            // 배치 복원 전에 결과 화면의 판매 드래그를 취소.
+            drag?.CancelDrag();
             foreach(Unit unit in allies.Values) unit.RestorePreparation();
+            Physics2D.SyncTransforms();
         }
 
         public void StopCombat()

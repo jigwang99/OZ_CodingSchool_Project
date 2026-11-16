@@ -185,7 +185,7 @@ namespace AutoBattler.Data.Snapshot
                     .Select(round=>BuildRound(round,encounters));
                 IEnumerable<RoundDefinition> exclusive=data.rounds.Where(round=>round.stageId==stageId)
                     .Select(round=>BuildRound(round,encounters));
-                endless=new EndlessRoundSchedule(campaign,exclusive);
+                endless=new EndlessRoundSchedule(campaign,exclusive,Rounds[1].TemplateId);
                 RoundsPerSegment=EndlessRoundSchedule.RoundsPerSegment;
             }
             Dictionary<int,SkillRuleRow> skillRules=(data.skillRules ?? Array.Empty<SkillRuleRow>()).ToDictionary(rule=>rule.skillId);

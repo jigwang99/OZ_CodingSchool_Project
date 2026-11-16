@@ -18,7 +18,7 @@ namespace AutoBattler.Data.Snapshot
         private readonly RoundDefinition[] exclusiveBattles;
         private readonly RoundDefinition[] exclusiveBosses;
 
-        public EndlessRoundSchedule(IEnumerable<RoundDefinition> campaign, IEnumerable<RoundDefinition> exclusive)
+        public EndlessRoundSchedule(IEnumerable<RoundDefinition> campaign, IEnumerable<RoundDefinition> exclusive, int firstRoundTemplateId)
         {
             RoundDefinition[] campaignRounds = campaign.OrderBy(round => round.TemplateId).ToArray();
             RoundDefinition[] exclusiveRounds = exclusive.OrderBy(round => round.TemplateId).ToArray();
@@ -26,6 +26,9 @@ namespace AutoBattler.Data.Snapshot
                 .Select(id => campaignRounds.Where(round => round.Id == id && round.IsBoss == IsBossRound(id)
                     && (id != 1 || round.Enemies.Count == 1)).ToArray())
                 .ToArray();
+            // 첫 전투는 무한 모드를 해금한 스테이지의 단독 적 편성을 우선 사용.
+            RoundDefinition firstRound = opening[0].FirstOrDefault(round => round.TemplateId == firstRoundTemplateId);
+            if (firstRound != null) opening[0] = new[] { firstRound };
             battles = campaignRounds.Where(round => !round.IsBoss).ToArray();
             bosses = campaignRounds.Where(round => round.IsBoss).ToArray();
             exclusiveBattles = exclusiveRounds.Where(round => !round.IsBoss).ToArray();

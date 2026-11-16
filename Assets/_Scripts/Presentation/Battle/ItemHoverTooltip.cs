@@ -59,9 +59,13 @@ namespace AutoBattler.Presentation.Battle
         {
             if (!CanShow || hovered == null || !hovered.isActiveAndEnabled || hovered.ItemId == 0)
             { Clear(); return; }
-            OwnedItem item = run.State.Items.Find(hovered.ItemId);
-            if (item == null) { Clear(); return; }
-            ItemDefinition definition = run.State.Data.Items[item.DefinitionId];
+            ItemDefinition definition = hovered.Definition;
+            if (definition == null)
+            {
+                OwnedItem item = run.State.Items.Find(hovered.ItemId);
+                if (item == null) { Clear(); return; }
+                definition = run.State.Data.Items[item.DefinitionId];
+            }
             view.Show(definition, run.ItemIcon(definition.IconId), pointer, eventCamera);
         }
 

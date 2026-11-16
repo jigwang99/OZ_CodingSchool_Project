@@ -1,4 +1,5 @@
 using System;
+using AutoBattler.Data.Items;
 using AutoBattler.Presentation.Units;
 using TMPro;
 using UnityEngine;
@@ -30,6 +31,7 @@ namespace AutoBattler.Presentation.Battle
         public Button Button => button;
         public Image Icon => icon;
         public int ItemId => itemId;
+        internal ItemDefinition Definition { get; private set; }
         private void Awake() => button.onClick.AddListener(Request);
         private void Request() { if (itemId != 0) Pressed?.Invoke(itemId); }
         public void OnPointerEnter(PointerEventData eventData) => OnPointerMove(eventData);
@@ -65,9 +67,10 @@ namespace AutoBattler.Presentation.Battle
         }
         public void OnDrag(PointerEventData eventData) => DragMoved?.Invoke(this, eventData);
         public void OnEndDrag(PointerEventData eventData) => DragEnded?.Invoke(this, eventData);
-        public void Show(int id, Sprite sprite, string name, bool selected, bool interactable)
+        public void Show(int id, Sprite sprite, string name, bool selected, bool interactable, ItemDefinition definition=null)
         {
             if(itemId!=id && equipmentStackText!=null) ClearEquipmentFeedback();
+            Definition = definition;
             itemId = id; icon.sprite = sprite; icon.enabled = sprite != null;
             label.text = name; button.interactable = interactable && id != 0;
             isSelected=selected; RefreshColor();
