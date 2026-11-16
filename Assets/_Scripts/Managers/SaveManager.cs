@@ -41,6 +41,7 @@ namespace AutoBattler.Managers
         public bool IsStageUnlocked(GameNavigationSettings settings,StageDefinition stage)
         {
             if(settings==null || !settings.Contains(stage)) return false;
+            if(stage.IsEndless) return campaign.Contains(stage.EndlessPrerequisite.Id);
             StageDefinition previous=settings.PreviousStage(stage);
             return stage==settings.FirstStage || campaign.Contains(stage.Id)
                 || previous!=null && campaign.Contains(previous.Id) || HasSavedRun && SavedStageId==stage.Id;

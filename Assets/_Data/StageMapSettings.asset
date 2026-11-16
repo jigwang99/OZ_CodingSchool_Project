@@ -91,3 +91,12 @@ MonoBehaviour:
     - {x: 0.5, y: 0.34}
     - {x: 0.69, y: 0.7}
     - {x: 0.88, y: 0.43}
+  - chapter: 7
+    background:
+      m_AssetGUID: c244eae0d5814d7d9e29d4b6f965cc53
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+    nodePositions:
+    - {x: 0.594, y: 0.49}

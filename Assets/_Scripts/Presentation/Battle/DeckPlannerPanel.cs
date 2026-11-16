@@ -11,6 +11,7 @@ using AutoBattler.Run;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -21,7 +22,18 @@ namespace AutoBattler.Presentation.Battle
     public sealed class DeckPlannerPanel : MonoBehaviour
     {
         [SerializeField] private Button openButton,closeButton,clearButton,importButton,previousButton,nextButton;
-        [SerializeField] private Button[] costFilters;
+        [Serializable]
+        private sealed class TraitFilter
+        {
+            [SerializeField] private Button button;
+            [SerializeField] private TraitCategory category;
+            [SerializeField] private int groupId;
+
+            public Button Button=>button;
+            public bool Matches(UnitDefinition unit)=>(category==TraitCategory.Origin?unit.OriginId:unit.ClassId)==groupId;
+        }
+        [SerializeField] private Button allFilter;
+        [SerializeField] private TraitFilter[] traitFilters;
         [SerializeField] private CanvasGroup modal;
         [SerializeField] private DeckPlannerSlot[] catalogSlots,boardSlots;
         [SerializeField] private SynergyPanel synergies;
@@ -29,7 +41,7 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private RectTransform dragPreview;
         [SerializeField] private Image dragIcon;
         [SerializeField] private Material lockedPortraitMaterial;
-        private readonly List<Action> filterActions=new List<Action>();
+        private readonly List<UnityAction> filterActions=new List<UnityAction>();
         private RunController run;
         private CanvasGroup underlying;
         private ItemInventoryPanel inventory;
@@ -37,7 +49,8 @@ namespace AutoBattler.Presentation.Battle
         private DataRepository data;
         private DeckPlannerSlot dragSource;
         private HexCoord? hoveredCell;
-        private int selectedUnit,page,costFilter,draggedUnit,pointerId;
+        private int selectedUnit,page,draggedUnit,pointerId;
+        private TraitFilter selectedFilter;
         private bool previousInteraction,previousRaycasts;
         private GameObject previousSelection;
         public bool IsOpen { get; private set; }
@@ -50,7 +63,6 @@ namespace AutoBattler.Presentation.Battle
         public Button ImportButton=>importButton;
         public Button PreviousButton=>previousButton;
         public Button NextButton=>nextButton;
-        public IReadOnlyList<Button> CostFilters=>Array.AsReadOnly(costFilters);
         public IReadOnlyList<DeckPlannerSlot> CatalogSlots=>Array.AsReadOnly(catalogSlots);
         public IReadOnlyList<DeckPlannerSlot> BoardSlots=>Array.AsReadOnly(boardSlots);
         public CanvasGroup Modal=>modal;
@@ -67,7 +79,7 @@ namespace AutoBattler.Presentation.Battle
             if(run!=controller)
             {
                 if(Plan!=null) Plan.Changed-=Refresh;
-                Plan=null; data=null; selectedUnit=0; page=0; costFilter=0;
+                Plan=null; data=null; selectedUnit=0; page=0; selectedFilter=null;
             }
             run=controller; underlying=group; inventory=bag;
         }
@@ -78,10 +90,12 @@ namespace AutoBattler.Presentation.Battle
             openButton.onClick.AddListener(Open); closeButton.onClick.AddListener(Close);
             clearButton.onClick.AddListener(Clear); importButton.onClick.AddListener(ImportCurrent);
             previousButton.onClick.AddListener(Previous); nextButton.onClick.AddListener(Next);
-            for(int index=0;index<costFilters.Length;index++)
+            allFilter.onClick.AddListener(ShowAll);
+            foreach(TraitFilter filter in traitFilters)
             {
-                int cost=index; Action action=()=>Filter(cost); filterActions.Add(action);
-                costFilters[index].onClick.AddListener(action.Invoke);
+                UnityAction action=()=>Filter(filter);
+                filterActions.Add(action);
+                filter.Button.onClick.AddListener(action);
             }
         }
         private bool CanRemain=>run!=null && run.IsReady && !run.IsShuttingDown && !run.State.IsOver
@@ -133,12 +147,20 @@ namespace AutoBattler.Presentation.Battle
         }
         private void Previous() {CancelDrag(); page--; Refresh();}
         private void Next() {CancelDrag(); page++; Refresh();}
-        private void Filter(int cost) {CancelDrag(); costFilter=cost; page=0; Refresh();}
+        private void ShowAll()=>Filter(null);
+        private void Filter(TraitFilter filter)
+        {
+            if(!IsOpen || !CanRemain) return;
+            selectedFilter=filter;
+            page=0;
+            if(filter!=null && selectedUnit!=0 && !filter.Matches(data.Units[selectedUnit])) selectedUnit=0;
+            CancelDrag();
+        }
         private Sprite Portrait(UnitDefinition unit)=>run.Assets.UnitPortrait(unit.VisualId);
         private void Refresh()
         {
             if(!IsOpen || Plan==null) return;
-            UnitDefinition[] candidates=data.Units.Values.Where(unit=>costFilter==0 || unit.Cost==costFilter)
+            UnitDefinition[] candidates=data.Units.Values.Where(unit=>selectedFilter==null || selectedFilter.Matches(unit))
                 .OrderBy(unit=>unit.Cost).ThenBy(unit=>unit.Id).ToArray();
             int pages=Mathf.Max(1,Mathf.CeilToInt(candidates.Length/(float)catalogSlots.Length));
             page=Mathf.Clamp(page,0,pages-1); pageText.text=$"{page+1} / {pages}";
@@ -155,14 +177,13 @@ namespace AutoBattler.Presentation.Battle
                 int id=Plan.UnitAt(cell.Cell); UnitDefinition unit=id!=0?data.Units[id]:null;
                 ShowSlot(cell,unit,hoveredCell==cell.Cell);
             }
-            for(int index=0;index<costFilters.Length;index++) costFilters[index].interactable=index!=costFilter;
+            allFilter.interactable=selectedFilter!=null;
+            foreach(TraitFilter filter in traitFilters) filter.Button.interactable=filter!=selectedFilter;
             countText.text=$"편성 {Plan.Count}/{DeckPlanState.Capacity}";
             selectionText.text=selectedUnit!=0 && data.Units.TryGetValue(selectedUnit,out UnitDefinition selection)
                 ?$"{selection.Name} · {BattleText.TraitName(TraitCategory.Origin,selection.OriginId,"")} / {BattleText.TraitName(TraitCategory.Class,selection.ClassId,"")}":string.Empty;
             selectionText.gameObject.SetActive(selectionText.text.Length>0);
             synergies.Show(Plan.Synergies,true,BattlePhase.Preparation);
-            synergies.EmptyText.text=string.Empty;
-            synergies.EmptyText.gameObject.SetActive(false);
         }
         private void ShowSlot(DeckPlannerSlot slot,UnitDefinition unit,bool selected)
         {
@@ -225,7 +246,8 @@ namespace AutoBattler.Presentation.Battle
             openButton.onClick.RemoveListener(Open); closeButton.onClick.RemoveListener(Close);
             clearButton.onClick.RemoveListener(Clear); importButton.onClick.RemoveListener(ImportCurrent);
             previousButton.onClick.RemoveListener(Previous); nextButton.onClick.RemoveListener(Next);
-            for(int index=0;index<filterActions.Count;index++) costFilters[index].onClick.RemoveListener(filterActions[index].Invoke);
+            allFilter.onClick.RemoveListener(ShowAll);
+            for(int index=0;index<filterActions.Count;index++) traitFilters[index].Button.onClick.RemoveListener(filterActions[index]);
             filterActions.Clear();
         }
     }

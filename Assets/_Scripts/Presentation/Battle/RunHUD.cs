@@ -47,7 +47,9 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private Button buyExperienceButton;
         [SerializeField] private TextMeshProUGUI buyExperienceLabel;
         [SerializeField] private Button shopLockButton;
-        [SerializeField] private TextMeshProUGUI shopLockLabel;
+        [SerializeField] private Image shopLockIcon;
+        [SerializeField] private Sprite shopUnlockedSprite;
+        [SerializeField] private Sprite shopLockedSprite;
         [SerializeField] private ShopOddsHover shopOdds;
         [SerializeField] private GameObject shopContent;
         [SerializeField] private UnitSellZone sellZone;
@@ -75,6 +77,7 @@ namespace AutoBattler.Presentation.Battle
 
         [Header("실패 사유 안내")]
         [SerializeField] private ActionFeedbackView feedback;
+        [SerializeField] private FirstBattleGuide firstBattleGuide;
         [SerializeField] private FailureHint refreshHint,experienceHint;
         public ActionFeedbackView Feedback=>feedback;
         private bool isBound;
@@ -219,8 +222,6 @@ namespace AutoBattler.Presentation.Battle
             if (!isBound)
                 return;
             RefreshTime();
-            if (run.IsReady && run.Flow.CurrentPhase == BattlePhase.Combat)
-                messageText.text = "전투 중";
             if(run.IsReady && run.Flow.CurrentPhase==BattlePhase.Result && (!run.State.IsOver || run.State.HasPendingRoundReward))
                 resultPanel.ShowCountdown();
             RefreshSelection();
@@ -267,10 +268,15 @@ namespace AutoBattler.Presentation.Battle
             bool ready = run != null && run.IsReady;
             timerRoot.SetActive(ready);
             if (!ready) return;
-            timeText.text = run.Flow.CurrentPhase == BattlePhase.Combat
-                ? $"{Mathf.CeilToInt(run.RemainingSeconds)}"
-                : run.Flow.CurrentPhase == BattlePhase.Result && (!run.State.IsOver || run.State.HasPendingRoundReward)
-                    ? $"{Mathf.CeilToInt(run.Battle.NextPreparationSeconds)}" : "--";
+            bool overtime=run.Flow.IsOvertime;
+            timeText.color=overtime?new Color(1f,.64f,.31f):Color.white;
+            if(run.Flow.CurrentPhase==BattlePhase.Combat)
+            {
+                int seconds=Mathf.CeilToInt(run.RemainingSeconds);
+                timeText.text=overtime?$"연장 {seconds}":seconds.ToString();
+            }
+            else timeText.text=run.Flow.CurrentPhase==BattlePhase.Result && (!run.State.IsOver || run.State.HasPendingRoundReward)
+                ? Mathf.CeilToInt(run.Battle.NextPreparationSeconds).ToString() : "--";
         }
 
         private void RefreshSelection()
@@ -287,14 +293,15 @@ namespace AutoBattler.Presentation.Battle
             if (!isBound)
                 return;
             bool ready = run.IsReady;
+            firstBattleGuide?.Refresh(ready ? run.Stage.Id : 0, ready ? run.State : null, run.Flow.CurrentPhase);
             if(augmentPanel!=null) augmentPanel.Show(run);
             if(selectedAugments!=null) selectedAugments.Show(run);
             bool prepare = CanPrepare();
             bool canBuy = ready && run.Shop.CanBuy;
             bool shopLocked=ready && run.State.ShopLocked;
             shopLockButton.interactable=ready && run.Shop.CanTrade;
-            shopLockLabel.text=shopLocked?"잠김":"잠금";
-            shopLockButton.targetGraphic.color=shopLocked?new Color(.48f,.82f,.79f):Color.white;
+            shopLockIcon.sprite=shopLocked?shopLockedSprite:shopUnlockedSprite;
+            shopLockButton.targetGraphic.color=shopLocked?new Color(1f,.9f,.69f):Color.white;
             bool canManage = prepare || canBuy || ready && run.Shop.CanTrade;
             if(synergyPanel!=null) synergyPanel.Show(ready?run.AllySynergies:null,ready,run.Flow.CurrentPhase);
             messageText.text = run.Message;
@@ -315,7 +322,9 @@ namespace AutoBattler.Presentation.Battle
                 int id = ready ? run.State.Shop[i] : 0;
                 UnitDefinition unit = id == 0 ? null : run.State.Data.Units[id];
                 Sprite icon = unit == null ? null : run.UnitIcon(unit.IconId);
-                shopItems[i].Show(unit, icon, id == 0 ? 0 : run.State.Stock(id), ready ? run.State.Gold : 0, ready && run.Shop.CanBuySlot(i));
+                int purchaseStar = unit == null ? 0 : run.State.PreviewPurchaseStar(i);
+                shopItems[i].Show(unit, icon, id == 0 ? 0 : run.State.Stock(id), ready ? run.State.Gold : 0,
+                    ready && run.Shop.CanBuySlot(i), purchaseStar, ready ? run.State.Data.Traits : null);
             }
 
             // 비용 표시도 시트의 경제 규칙을 사용.
@@ -368,6 +377,7 @@ namespace AutoBattler.Presentation.Battle
 
         private void Unbind()
         {
+            firstBattleGuide?.Hide();
             if(battleStatistics!=null) battleStatistics.Bind(null,null);
             if(deckPlanner!=null) deckPlanner.Bind(null,null,null);
             if (goldIncome != null) goldIncome.Bind(null, null, null);

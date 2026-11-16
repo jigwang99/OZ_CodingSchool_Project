@@ -27,6 +27,7 @@ namespace AutoBattler.Battle.Units
         public void RemoveSource(ModifierSource source)=>state.RemoveSource(source);
         public ModifierHandle[] ReplaceSource(ModifierSource source,params StatModifierSpec[] specs)=>state.ReplaceSource(source,specs);
         public void ClearModifiers()=>state.ClearModifiers();
+        internal void SetOvertime(bool active)=>state.SetOvertime(active);
         public void ReplaceSources(ModifierSourceKind kind,IReadOnlyDictionary<ModifierSource,StatModifierSpec[]> replacements)=>state.ReplaceSources(kind,replacements);
     }
 }

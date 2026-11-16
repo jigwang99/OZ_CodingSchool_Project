@@ -144,3 +144,18 @@ MonoBehaviour:
   - visualId: 33
     sourcePrefab: {fileID: 6206680208632020782, guid: 995433b015d15c44ba052869149be41e, type: 3}
     unitPrefab: {fileID: 2017271265786770800, guid: 4a59cbf93a18d8f42b749cb8566b76c7, type: 3}
+  - visualId: 34
+    sourcePrefab: {fileID: 3191500319499316506, guid: fcc15a85b366f2e4784a888c4b054c32, type: 3}
+    unitPrefab: {fileID: 318455953003957220, guid: 5ef3bb5e46efbf046b9ab39872d109c4, type: 3}
+  - visualId: 35
+    sourcePrefab: {fileID: 4295031739005544872, guid: d6262a08e7e1e174eb7b0422b6616a3a, type: 3}
+    unitPrefab: {fileID: 8705696299173493585, guid: 431424e423fbcb54e8b1e0d696db342e, type: 3}
+  - visualId: 36
+    sourcePrefab: {fileID: 500239754073463020, guid: 2c137918d9c5dc147a40414e4762ec96, type: 3}
+    unitPrefab: {fileID: 3108493020443808207, guid: 56d92d36d00c1f04db9243a5b3d78474, type: 3}
+  - visualId: 37
+    sourcePrefab: {fileID: 9071166808000609915, guid: f01bfeb90737cfc4c82c275a8996a548, type: 3}
+    unitPrefab: {fileID: 4213918480245674383, guid: bc34bbc59dac50741bc543e84c3e715d, type: 3}
+  - visualId: 38
+    sourcePrefab: {fileID: 8641917327976883831, guid: 09cfcf3b93bd1e3488eac40b4b244089, type: 3}
+    unitPrefab: {fileID: 2300845154507998712, guid: 84289a11627e7754e8e2b8b27bb61171, type: 3}

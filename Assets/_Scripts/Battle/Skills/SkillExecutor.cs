@@ -28,6 +28,8 @@ namespace AutoBattler.Battle.Skills
             data.Effects.TryGetValue(skill.SecondaryEffectId,out EffectDefinition secondary);
             ModifierSource source=context.EffectSourceOverride ?? new ModifierSource(ModifierSourceKind.Skill,skill.Id,caster.InstanceId);
             DamageContext damageContext=DamageContext.Skill(caster,skill.Id);
+            float critChance=caster.Equipment.AllowsSkillCritical?caster.StatModifiers.CritChance:0f;
+            float critMultiplier=caster.StatModifiers.CritMultiplier;
             UnitTeam team=caster.Team;
             for(int hit=0;hit<skill.HitCount;hit++)
             {
@@ -72,7 +74,12 @@ namespace AutoBattler.Battle.Skills
                     if(skill.ExecuteThreshold>0 && (double)target.Unit.Health.CurrentHp/target.Unit.Health.MaxHp<=skill.ExecuteThreshold)
                         multiplier*=skill.ExecuteMultiplier;
                     if(skill.DistanceBonus>0) multiplier*=1f+skill.DistanceBonus*Math.Max(0,origin.DistanceTo(target.Unit.CurrentCell.Value)-1);
-                    if(damage>0) stolenHealth+=target.Unit.Health.TakeDamage(damageContext,damage,multiplier,skill.ArmorIgnore);
+                    if(damage>0)
+                    {
+                        bool critical=critChance>0f && UnityEngine.Random.value<critChance;
+                        DamageContext impact=critical?DamageContext.Skill(caster,skill.Id,true):damageContext;
+                        stolenHealth+=target.Unit.Health.TakeDamage(impact,damage,critical?multiplier*critMultiplier:multiplier,skill.ArmorIgnore);
+                    }
                     if(effect!=null && target.IsValid) Apply(caster,target.Unit,effect,source,power,(float)starScale,maxHp,skill.ShieldMaxHpRatio,effectMultiplier);
                     if(secondary!=null && skill.SecondaryTarget==SecondarySkillTarget.SameTargets && target.IsValid)
                         Apply(caster,target.Unit,secondary,source,power,(float)starScale,maxHp,0f,1f);

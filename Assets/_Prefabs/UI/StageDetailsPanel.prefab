@@ -259,6 +259,7 @@ MonoBehaviour:
   catalog: {fileID: 11400000, guid: b97c5fc1f1e22944d91361f6888439f2, type: 2}
   stageNameText: {fileID: 866613485007998665}
   unlockUnitsText: {fileID: 9070404639821596816}
+  unlockHeading: {fileID: 738153888968480319}
   unitScroll: {fileID: 2728704697235662291}
   unitViews:
   - {fileID: 2091927995559364517}

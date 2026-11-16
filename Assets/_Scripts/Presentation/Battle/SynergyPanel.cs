@@ -15,7 +15,6 @@ namespace AutoBattler.Presentation.Battle
     {
         [SerializeField] private GameObject content;
         [SerializeField] private TextMeshProUGUI statusText;
-        [SerializeField] private TextMeshProUGUI emptyText;
         [SerializeField] private TraitRowView[] rows;
         [SerializeField] private RectTransform originsTitle;
         [SerializeField] private RectTransform classesTitle;
@@ -33,7 +32,6 @@ namespace AutoBattler.Presentation.Battle
         private bool hasShown,wasReady;
         public IReadOnlyList<TraitRowView> Rows=>System.Array.AsReadOnly(rows);
         public TextMeshProUGUI StatusText=>statusText;
-        public TextMeshProUGUI EmptyText=>emptyText;
         public TraitSnapshot DisplayedSnapshot=>displayed;
         public bool IsDataAvailable=>content.activeSelf;
         public CanvasGroup Tooltip=>tooltip;
@@ -47,7 +45,6 @@ namespace AutoBattler.Presentation.Battle
             bool available=ready && snapshot.Statuses.Count>0;
             if(!available) ClearTooltip();
             content.SetActive(available);
-            emptyText.text=ready?"시너지 정보가 없음.":"시너지 불러오는 중...";
             statusText.text=string.Empty;
             statusText.gameObject.SetActive(false);
             rules.gameObject.SetActive(false);
@@ -58,12 +55,10 @@ namespace AutoBattler.Presentation.Battle
                 row.Show(snapshot);
                 anyVisible|=row.gameObject.activeSelf;
             }
-            emptyText.gameObject.SetActive(!anyVisible);
-            if(available && !anyVisible) emptyText.text="기물을 배치하면 시너지 표시.";
             float top=scroll!=null?0f:52f;
             LayoutGroup(TraitCategory.Origin,originsTitle,available,ref top);
             LayoutGroup(TraitCategory.Class,classesTitle,available,ref top);
-            float height=anyVisible?top+8f+(scroll!=null?52f:0f):148f;
+            float height=anyVisible?top+8f+(scroll!=null?52f:0f):60f;
             ((RectTransform)transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,scroll!=null?Mathf.Min(height,maximumHeight):height);
             if(scroll!=null)
             {

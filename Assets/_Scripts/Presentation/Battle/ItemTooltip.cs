@@ -15,6 +15,7 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private TextMeshProUGUI statsText;
         [SerializeField] private Vector2 pointerOffset = new Vector2(28f, -28f);
         [SerializeField, Min(0f)] private float edgePadding = 12f;
+        private float initialPanelHeight, initialTextHeight;
 
         public bool IsVisible => panel.gameObject.activeSelf;
         public int DefinitionId { get; private set; }
@@ -30,7 +31,8 @@ namespace AutoBattler.Presentation.Battle
                 DefinitionId = result.Id;
                 icon.sprite = sprite;
                 nameText.text = result.Name;
-                statsText.text = ItemText.Stats(result);
+                statsText.text = ItemText.Details(result);
+                FitText();
             }
             if (!IsVisible)
             {
@@ -38,6 +40,20 @@ namespace AutoBattler.Presentation.Battle
                 panel.SetAsLastSibling();
             }
             MoveToPointer(pointer, eventCamera);
+        }
+
+        private void FitText()
+        {
+            RectTransform textRect = statsText.rectTransform;
+            if (initialPanelHeight <= 0f)
+            {
+                initialPanelHeight = panel.rect.height;
+                initialTextHeight = textRect.rect.height;
+            }
+            float preferred = statsText.GetPreferredValues(statsText.text, textRect.rect.width, Mathf.Infinity).y;
+            float extra = Mathf.Max(0f, Mathf.Ceil(preferred) - initialTextHeight);
+            textRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, initialTextHeight + extra);
+            panel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, initialPanelHeight + extra);
         }
 
         private void MoveToPointer(Vector2 pointer, Camera eventCamera)

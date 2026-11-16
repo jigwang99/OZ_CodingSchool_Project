@@ -21,6 +21,7 @@ namespace AutoBattler.Run
         public string lastResult;
         public AutoBattler.Battle.Combat.BattleReport lastBattleReport;
         public int randomSeed, randomDrawCount;
+        public int endlessTemplateId;
         public int[] shop;
         public int[] unitDefinitionIds;
         public int[] availableUnitIds;

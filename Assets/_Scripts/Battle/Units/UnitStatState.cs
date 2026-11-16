@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using AutoBattler.Battle.Combat;
 using AutoBattler.Data.Units;
 using UnityEngine;
 
@@ -13,6 +14,7 @@ namespace AutoBattler.Battle.Units
         private static long nextHandle;
         private readonly Dictionary<ModifierHandle,StatModifier> modifiers=new Dictionary<ModifierHandle,StatModifier>();
         private float baseCritChance,baseCritMultiplier;
+        private bool overtime;
         public UnitStat Base { get; private set; }
         public UnitStat Current { get; private set; }
         public float CritChance { get; private set; }
@@ -30,7 +32,13 @@ namespace AutoBattler.Battle.Units
         public void Initialize(UnitStat stats,float critChance=.1f,float critMultiplier=1.5f)
         {
             Base=stats.Clone(); baseCritChance=critChance; baseCritMultiplier=critMultiplier;
-            modifiers.Clear(); Recalculate();
+            modifiers.Clear(); overtime=false; Recalculate();
+        }
+        internal void SetOvertime(bool active)
+        {
+            if(overtime==active) return;
+            overtime=active;
+            Recalculate();
         }
         public ModifierHandle AddModifier(ModifierSource source,StatModifierSpec spec)
         {
@@ -84,19 +92,21 @@ namespace AutoBattler.Battle.Units
         }
         private float Calculate(StatType type,float value)
         {
-            double flat=0,percent=0;
+            double flat=0,percent=0,scale=1;
             foreach(StatModifier modifier in modifiers.Values)
             {
                 if(modifier.Spec.Stat!=type) continue;
                 if(modifier.Spec.Operation==ModifierOperation.Flat) flat+=modifier.Spec.Value;
+                else if(modifier.Spec.Operation==ModifierOperation.Scale) scale*=1+modifier.Spec.Value;
                 else percent+=modifier.Spec.Value;
             }
-            return (float)((value+flat)*(1+percent));
+            return (float)((value+flat)*(1+percent)*scale);
         }
         private void Recalculate()
         {
             if(!IsInitialized) return;
             float attackSpeed=Mathf.Max(.01f,Calculate(StatType.AttackSpeed,1f));
+            if(overtime) attackSpeed*=OvertimeRules.AttackSpeedMultiplier;
             Current=new UnitStat(Mathf.Max(1,Mathf.FloorToInt(Calculate(StatType.MaxHp,Base.MaxHp))),
                 Mathf.Max(0,Mathf.FloorToInt(Calculate(StatType.AttackDamage,Base.AttackDamage))),
                 Mathf.Max(0,Mathf.FloorToInt(Calculate(StatType.Defense,Base.Defense))),

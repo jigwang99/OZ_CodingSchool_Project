@@ -21,6 +21,7 @@ namespace AutoBattler.Run
         [SerializeField] private int sceneBuildIndex=1;
         [SerializeField] private AssetReferenceSprite battleBackground;
         [SerializeField] private AssetReferenceSprite benchFloor;
+        [SerializeField] private StageDefinition endlessPrerequisite;
         public int Id=>id;
         public string DisplayName=>displayName;
         public int Chapter=>chapter;
@@ -34,5 +35,7 @@ namespace AutoBattler.Run
         public int SceneBuildIndex=>sceneBuildIndex;
         public AssetReferenceSprite BattleBackground=>battleBackground;
         public AssetReferenceSprite BenchFloor=>benchFloor;
+        public StageDefinition EndlessPrerequisite=>endlessPrerequisite;
+        public bool IsEndless=>endlessPrerequisite!=null;
     }
 }

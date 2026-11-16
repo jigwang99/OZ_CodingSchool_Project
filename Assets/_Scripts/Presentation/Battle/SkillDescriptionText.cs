@@ -78,7 +78,8 @@ namespace AutoBattler.Presentation.Battle
                 case EffectKind.Slow:text.Append($"{target}의 이동 속도를 {duration}{Percent(value)} 감소시킵니다.");break;
                 case EffectKind.StatModifier:
                     string stat=effect.Stat==StatType.CritMultiplier?"치명타 피해량":BattleText.StatName(effect.Stat);
-                    string amount=effect.Operation==ModifierOperation.Flat && effect.Stat!=StatType.CritMultiplier?Number(Math.Abs(value)):Percent(Math.Abs(value));
+                    bool isPercent=effect.Operation!=ModifierOperation.Flat || effect.Stat==StatType.CritMultiplier || effect.Stat==StatType.DamageReduction;
+                    string amount=isPercent?Percent(Math.Abs(value)):Number(Math.Abs(value));
                     text.Append($"{target}의 {stat}{ObjectParticle(stat)} {duration}{amount} {(value<0?"감소":"증가")}시킵니다.");break;
             }
         }

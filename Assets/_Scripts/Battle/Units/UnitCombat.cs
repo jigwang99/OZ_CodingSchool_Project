@@ -65,7 +65,8 @@ namespace AutoBattler.Battle.Units
             try
             {
                 AttackStarted?.Invoke(target);
-                await UniTask.Delay(TimeSpan.FromSeconds(unit.WindupSeconds),cancellationToken:windup.Token);
+                float windupSeconds=unit.IsInOvertime?unit.WindupSeconds/OvertimeRules.AttackSpeedMultiplier:unit.WindupSeconds;
+                await UniTask.Delay(TimeSpan.FromSeconds(windupSeconds),cancellationToken:windup.Token);
                 if(ReferenceEquals(windupCancellation,windup)) windupCancellation=null;
                 if(generation!=roundGeneration || !CanFight || unit.Effects.IsStunned || !targetReference.IsAlive || target==null || !target.CanFight || !IsInAttackRange(target)) return;
                 int attack=unit.Stats.AttackDamage;

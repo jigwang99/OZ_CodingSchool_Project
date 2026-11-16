@@ -79,6 +79,12 @@ namespace AutoBattler.Presentation.Battle
         {
             if (!interactable || !allowNavigationTransition && GameNavigation.IsTransitioning || !isActiveAndEnabled
                 || !mapSettings.TryGetRegion(chapter, out StageMapRegion region)) return;
+            StageDefinition endless = settings.EndlessStage;
+            StageDefinition[] stages = endless != null && endless.Chapter == chapter
+                ? new[] { endless }
+                : settings.Stages.Where(stage => stage != null && stage.Chapter == chapter)
+                    .OrderBy(stage => stage.Number).ToArray();
+            if (stages.Length == 0) return;
             int direction = chapter.CompareTo(Chapter);
             CancelMapRequest();
             Chapter = chapter;
@@ -87,8 +93,8 @@ namespace AutoBattler.Presentation.Battle
             markerTween?.Kill();
             travelMarker.gameObject.SetActive(false);
             foreach (StageSelectionCard card in cards) card.gameObject.SetActive(false);
-            StageDefinition first = settings.Stages.First(stage => stage != null && stage.Chapter == chapter);
-            regionTitle.text = $"{chapter} · {first.RegionName}";
+            StageDefinition first = stages[0];
+            regionTitle.text = first.IsEndless ? first.RegionName : $"{chapter} · {first.RegionName}";
             regionCounter.text = $"{chapter} / {mapSettings.Regions.Count}";
             mapStatus.text = "지도 불러오는 중…";
             retryMapButton.gameObject.SetActive(false);
@@ -96,9 +102,9 @@ namespace AutoBattler.Presentation.Battle
             IsLoadingMap = true;
             UpdateButtons();
             mapCancellation = new CancellationTokenSource();
-            LoadMapAsync(region, direction, mapVersion, mapCancellation.Token).Forget();
+            LoadMapAsync(region, stages, direction, mapVersion, mapCancellation.Token).Forget();
         }
-        private async UniTask LoadMapAsync(StageMapRegion region, int direction, int version, CancellationToken token)
+        private async UniTask LoadMapAsync(StageMapRegion region, StageDefinition[] stages, int direction, int version, CancellationToken token)
         {
             AssetService.Lease<Sprite> pendingLease = null;
             try
@@ -117,8 +123,6 @@ namespace AutoBattler.Presentation.Battle
                 mapLease = pendingLease;
                 pendingLease = null;
                 currentRegion = region;
-                StageDefinition[] stages = settings.Stages.Where(stage => stage != null && stage.Chapter == Chapter)
-                    .OrderBy(stage => stage.Number).ToArray();
                 for (int i = 0; i < cards.Length; i++)
                 {
                     StageDefinition stage=i<stages.Length?stages[i]:null;
@@ -131,6 +135,11 @@ namespace AutoBattler.Presentation.Battle
                 _ = mapContent.DOAnchorPosX(0f, .28f).SetEase(Ease.OutCubic).SetUpdate(true);
                 _ = mapCanvasGroup.DOFade(1f, .28f).SetUpdate(true);
                 await UniTask.Delay(TimeSpan.FromSeconds(.28), ignoreTimeScale: true, cancellationToken: token);
+                if (stages[0].IsEndless)
+                {
+                    await UniTask.WaitUntil(() => !GameNavigation.IsTransitioning, cancellationToken: token);
+                    if (version == mapVersion) SetSelection(stages[0]);
+                }
             }
             catch (OperationCanceledException) { }
             catch (Exception exception)
@@ -155,6 +164,10 @@ namespace AutoBattler.Presentation.Battle
         {
             if (!interactable || IsLoadingMap || GameNavigation.IsTransitioning
                 || stage == null || stage.Chapter != Chapter || !settings.Contains(stage) || currentRegion==null) return;
+            SetSelection(stage);
+        }
+        private void SetSelection(StageDefinition stage)
+        {
             int previous = Selection == null ? 0 : Selection.Number - 1;
             Selection = stage;
             foreach (StageSelectionCard card in cards) card.SetSelected(card.Stage == stage);

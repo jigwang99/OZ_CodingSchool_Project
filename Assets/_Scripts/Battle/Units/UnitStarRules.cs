@@ -6,9 +6,10 @@ namespace AutoBattler.Battle.Units
     public static class UnitStarRules
     {
         public const int Maximum=3;
+        public const int CopiesPerUpgrade=3;
         public static int Copies(int star)=>star switch
         {
-            1=>1,2=>3,3=>9,_=>throw new ArgumentOutOfRangeException(nameof(star))
+            1=>1,2=>CopiesPerUpgrade,3=>CopiesPerUpgrade*CopiesPerUpgrade,_=>throw new ArgumentOutOfRangeException(nameof(star))
         };
         public static float StatMultiplier(int star,float stepMultiplier)
         {

@@ -12,18 +12,21 @@ namespace AutoBattler.Run
         [SerializeField] private int titleSceneBuildIndex;
         [SerializeField] private StageDefinition defaultStage;
         [SerializeField] private StageDefinition[] stages=Array.Empty<StageDefinition>();
+        [SerializeField] private StageDefinition endlessStage;
         [SerializeField] private int[] initialUnlockedUnitIds=Array.Empty<int>();
         public IReadOnlyList<int> InitialUnlockedUnitIds=>Array.AsReadOnly(initialUnlockedUnitIds);
         public int TitleSceneBuildIndex=>titleSceneBuildIndex;
         public StageDefinition DefaultStage=>defaultStage;
         public IReadOnlyList<StageDefinition> Stages=>Array.AsReadOnly(stages);
+        public StageDefinition EndlessStage=>endlessStage;
         public StageDefinition FirstStage=>stages.Where(stage=>stage!=null).OrderBy(stage=>stage.Chapter).ThenBy(stage=>stage.Number).FirstOrDefault() ?? defaultStage;
         public StageDefinition PreviousStage(StageDefinition stage)=>stage==null?null:stages.Where(candidate=>candidate!=null
             && (candidate.Chapter<stage.Chapter || candidate.Chapter==stage.Chapter && candidate.Number<stage.Number))
             .OrderByDescending(candidate=>candidate.Chapter).ThenByDescending(candidate=>candidate.Number).FirstOrDefault();
-        public bool Contains(StageDefinition stage)=>stage!=null && (stage==defaultStage || Array.IndexOf(stages,stage)>=0);
+        public bool Contains(StageDefinition stage)=>stage!=null && (stage==defaultStage || stage==endlessStage || Array.IndexOf(stages,stage)>=0);
         public bool TryGetStage(int id,out StageDefinition stage)
         {
+            if(endlessStage!=null && endlessStage.Id==id) { stage=endlessStage; return true; }
             foreach(StageDefinition candidate in stages)
                 if(candidate!=null && candidate.Id==id) { stage=candidate; return true; }
             stage=defaultStage!=null && defaultStage.Id==id?defaultStage:null;

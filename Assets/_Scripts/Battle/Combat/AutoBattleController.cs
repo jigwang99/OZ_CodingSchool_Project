@@ -28,22 +28,34 @@ namespace AutoBattler.Battle.Combat
             trees=participants.Select(unit=>new UnitBehaviourTree(new UnitBlackboard(unit,board,view))).ToArray();
             Trees=Array.AsReadOnly(trees);
         }
-        public async UniTask<bool> RunAsync(float duration,CancellationToken token)
+        public UniTask<bool> RunAsync(float duration,CancellationToken token) =>
+            RunAsync(Time.time+duration,0f,null,token);
+
+        internal async UniTask<bool> RunAsync(float deadline,float overtimeSeconds,Action<float> onOvertime,CancellationToken token,
+            EquipmentBattleSession equipment=null)
         {
             if(started) throw new InvalidOperationException("같은 전투 실행은 한 번만 가능.");
             started=true;
+            bool overtime=false;
             try
             {
                 token.ThrowIfCancellationRequested();
                 foreach(UnitBehaviourTree tree in trees) tree.Blackboard.Token=token;
-                float deadline=Time.time+duration;
                 await RunEntriesAsync(token);
                 while(true)
                 {
                     token.ThrowIfCancellationRequested();
                     bool allies=trees.Any(tree=>tree.Blackboard.Unit.Team==UnitTeam.Ally && !tree.Blackboard.Unit.IsSummon && tree.Blackboard.Unit.Health.IsAlive);
                     bool enemies=trees.Any(tree=>tree.Blackboard.Unit.Team==UnitTeam.Enemy && tree.Blackboard.Unit.Health.IsAlive);
-                    if(!allies || !enemies || Time.time>=deadline) return allies && !enemies;
+                    if(!allies || !enemies) return allies && !enemies;
+                    if(Time.time>=deadline)
+                    {
+                        if(overtime || overtimeSeconds<=0f || Time.time>=deadline+overtimeSeconds) return false;
+                        overtime=true;
+                        deadline+=overtimeSeconds;
+                        onOvertime?.Invoke(deadline);
+                    }
+                    equipment?.Tick();
                     foreach(UnitBehaviourTree tree in trees) tree.Tick(token);
                     await UniTask.Delay(50,cancellationToken:token);
                 }

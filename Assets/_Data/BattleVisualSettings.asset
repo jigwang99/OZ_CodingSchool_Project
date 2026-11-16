@@ -671,6 +671,51 @@ MonoBehaviour:
     projectile: 29
     casterCentered: 0
     impactScale: 1
+  - skillId: 2034
+    icon: {fileID: 1203747171, guid: f0c46de87ba15ef4b98d1a46a2fa7c86, type: 3}
+    impact: 4
+    areaImpact: 0
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    projectile: 6
+    casterCentered: 1
+    impactScale: 1
+  - skillId: 2035
+    icon: {fileID: -1393746435, guid: f0c46de87ba15ef4b98d1a46a2fa7c86, type: 3}
+    impact: 9
+    areaImpact: 0
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    projectile: 6
+    casterCentered: 0
+    impactScale: 1
+  - skillId: 2036
+    icon: {fileID: 18618684, guid: f0c46de87ba15ef4b98d1a46a2fa7c86, type: 3}
+    impact: 20
+    areaImpact: 0
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    projectile: 6
+    casterCentered: 1
+    impactScale: 1
+  - skillId: 2037
+    icon: {fileID: -693941844, guid: f0c46de87ba15ef4b98d1a46a2fa7c86, type: 3}
+    impact: 18
+    areaImpact: 1
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    projectile: 6
+    casterCentered: 0
+    impactScale: 1
+  - skillId: 2038
+    icon: {fileID: -82871619, guid: f0c46de87ba15ef4b98d1a46a2fa7c86, type: 3}
+    impact: 10
+    areaImpact: 1
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    projectile: 6
+    casterCentered: 1
+    impactScale: 1
   units:
   - unitId: 1001
     basicImpact: 8
@@ -903,6 +948,41 @@ MonoBehaviour:
     magicProjectile: 1
     projectileColor: {r: 1, g: 1, b: 1, a: 1}
     basicImpactScale: 0.55
+  - unitId: 1034
+    basicImpact: 10
+    projectile: 6
+    healing: 3
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 1
+  - unitId: 1035
+    basicImpact: 9
+    projectile: 6
+    healing: 3
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 1
+  - unitId: 1036
+    basicImpact: 12
+    projectile: 6
+    healing: 3
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 1
+  - unitId: 1037
+    basicImpact: 10
+    projectile: 6
+    healing: 3
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 1
+  - unitId: 1038
+    basicImpact: 10
+    projectile: 6
+    healing: 3
+    magicProjectile: 0
+    projectileColor: {r: 1, g: 1, b: 1, a: 1}
+    basicImpactScale: 1
   skillEffects:
     m_AssetGUID: e392087fbfc5adc41a62ed9372171158
     m_SubObjectName: 

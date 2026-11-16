@@ -9,7 +9,7 @@ namespace AutoBattler.Audio
     {
         Click, Denied, Trade, Refresh, Place, Augment, BattleStart, Victory, Defeat,
         Hit, MagicHit, Death, Heal, Shield, Slash, Shoot, Fire, HeavyImpact,
-        StageClear, StageFailed
+        StageClear, StageFailed, Overtime
     }
 
     [Serializable]

@@ -26,7 +26,11 @@ namespace AutoBattler.Data.Items
         public string Name { get; }
         public string Description { get; }
         public StatModifierSpec[] Modifiers { get; }
+        public ItemCombatEffect CombatEffect { get; }
         public ItemDefinition(ItemRow row,StatModifierSpec[] modifiers)
-        { Id=row.itemId; IconId=row.iconId; DropWeight=row.dropWeight; Name=row.name; Description=row.description; Modifiers=modifiers; }
+        {
+            Id=row.itemId; IconId=row.iconId; DropWeight=row.dropWeight; Name=row.name; Description=row.description;
+            Modifiers=modifiers; CombatEffect=ItemCombatEffect.ForItem(Id);
+        }
     }
 }

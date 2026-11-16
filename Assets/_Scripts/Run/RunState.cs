@@ -20,6 +20,8 @@ namespace AutoBattler.Run
     /// <summary>상점 예약, 구매·판매·합성 및 라운드 정산을 한 도전의 상태로 관리.</summary>
     public sealed class RunState
     {
+        private static readonly int[] StarterRates={100,0,0,0,0};
+
         public DataRepository Data { get; }
         public AugmentState Augments { get; }
         public ItemInventoryState Items { get; private set; }
@@ -49,6 +51,8 @@ namespace AutoBattler.Run
         private readonly Dictionary<int,int> stock=new Dictionary<int,int>();
         private readonly int[] shop=new int[5];
         private readonly RunRandom random;
+        private RoundDefinition currentRound;
+        public RoundDefinition CurrentRound => currentRound ??= Data.GetRound(Round, random.Seed);
         private readonly HashSet<int> availableUnitIds;
         public IReadOnlyList<int> AvailableUnitIds=>Array.AsReadOnly(availableUnitIds.OrderBy(id=>id).ToArray());
         public bool IsUnitAvailable(int unitId)=>availableUnitIds.Contains(unitId);
@@ -56,18 +60,20 @@ namespace AutoBattler.Run
         private bool pendingRoundWon;
         private readonly Dictionary<int,bool> roundOutcomes=new Dictionary<int,bool>();
         public bool TryGetRoundOutcome(int roundId,out bool won)=>roundOutcomes.TryGetValue(roundId,out won);
-        public RunState(DataRepository data,int seed,int stageId=1,IEnumerable<int> availableUnitIds=null)
+        public RunState(DataRepository data,int seed,int stageId=1,IEnumerable<int> availableUnitIds=null,int previousStarterId=0)
             :this(data.ForStage(stageId),new RunRandom(seed),new AugmentState(data.Augments,seed),availableUnitIds ?? InitialUnits(data))
         {
             Items=new ItemInventoryState(data.Items,stageId,seed^0x59B17,data.ItemRecipes);
-            Gold=data.IntRule(EconomyRule.StartGold); Lives=data.IntRule(EconomyRule.StartLives);
+            Gold=Data.IntRule(EconomyRule.StartGold); Lives=Data.StartingLives;
             foreach(UnitDefinition unit in data.Units.Values) stock.Add(unit.Id,data.PoolCopies(unit.Cost));
-            int starter=Draw(new int[]{100,0,0,0,0});
+            int starter=Draw(StarterRates,previousStarterId);
+            // 같은 유형밖에 없으면 해당 유닛도 시작 추첨에 포함.
+            if(starter==0 && previousStarterId!=0) starter=Draw(StarterRates);
             if(starter==0) throw new InvalidOperationException("시작용 1코스트 기물 필요.");
             OwnedUnit initial=new OwnedUnit(starter,nextId++);
             Placement.TryRegisterUnit(initial.Placement,UnitLocation.OnBench(0)); owned.Add(initial);
             Reroll();
-            Augments.EnterRound(Round,Data.Rounds[Round].OffersAugment);
+            Augments.EnterRound(Round,CurrentRound.OffersAugment);
         }
         private static IEnumerable<int> InitialUnits(DataRepository data)=>data.InitialUnlockedUnitIds;
         private RunState(DataRepository data,RunRandom random,AugmentState augments,IEnumerable<int> availableUnits)
@@ -91,6 +97,7 @@ namespace AutoBattler.Run
                 isOver=IsOver,wonRun=WonRun,lastResult=LastResult,augmentWindowOpen=augmentWindowOpen,lastBattleReport=LastBattleReport,
                 shopLocked=ShopLocked,
                 randomSeed=random.Seed,randomDrawCount=random.DrawCount,shop=(int[])shop.Clone(),
+                endlessTemplateId=Data.IsEndless?CurrentRound.TemplateId:0,
                 unitDefinitionIds=Data.Units.Keys.OrderBy(id=>id).ToArray(),availableUnitIds=availableUnitIds.OrderBy(id=>id).ToArray(),
                 stock=stock.OrderBy(pair=>pair.Key).Select(pair=>new SavedStock {definitionId=pair.Key,available=pair.Value}).ToArray(),
                 units=owned.Select(unit=>
@@ -110,16 +117,16 @@ namespace AutoBattler.Run
             if(saved!=null && saved.stageId>0) data=data.ForStage(saved.stageId);
             saved=RunSaveMigration.Adapt(data,saved);
             if(saved==null || saved.saveVersion!=1 || saved.gridLayoutVersion!=1 || !data.IsSaveCompatible(saved.dataVersion)
-                || !data.Rounds.ContainsKey(saved.round) || saved.level<1 || saved.level>10
-                || saved.gold<0 || saved.lives<0 || saved.lives>data.IntRule(EconomyRule.StartLives)
+                || !data.HasRound(saved.round) || saved.level<1 || saved.level>10
+                || saved.gold<0 || saved.lives<0 || saved.lives>data.StartingLives
                 || saved.xp<0 || saved.level==10 && saved.xp!=0
                 || saved.level<10 && saved.xp>=data.RequiredXp(saved.level)
                 || saved.winStreak<0 || saved.winStreak>saved.round
                 || saved.phase!=RunSavePhase.Preparation && saved.phase!=RunSavePhase.Result
                 || saved.phase==RunSavePhase.Preparation && saved.isOver
                 || saved.hasPendingRoundReward && saved.phase!=RunSavePhase.Result
-                || saved.phase==RunSavePhase.Result && saved.isOver!=(saved.lives==0 || saved.round==data.Rounds.Count)
-                || saved.wonRun && (!saved.isOver || saved.round!=data.Rounds.Count)
+                || saved.phase==RunSavePhase.Result && saved.isOver!=(saved.lives==0 || data.IsFinalRound(saved.round))
+                || saved.wonRun && (!saved.isOver || !data.IsFinalRound(saved.round))
                 || !saved.isOver && saved.lives==0
                 || saved.shop==null || saved.shop.Length!=5 || saved.stock==null || saved.units==null || saved.augments==null
                 || saved.units.Length>saved.level+PlacementService.BenchCapacity || saved.nextInstanceId<=0)
@@ -137,13 +144,15 @@ namespace AutoBattler.Run
                 // 이전 저장은 대기 보상이 없으므로 이미 지급된 결과로 복원.
                 HasPendingRoundReward=saved.hasPendingRoundReward,pendingRoundWon=saved.pendingRoundWon
             };
+            if(data.IsEndless && saved.endlessTemplateId>0)
+                state.currentRound=data.GetRound(state.Round,saved.randomSeed,saved.endlessTemplateId);
             state.Placement.SetPlayerLevel(state.Level);
             int lastCompleted=saved.phase==RunSavePhase.Result?saved.round:saved.round-1;
             if(saved.roundOutcomes!=null)
             {
                 foreach(SavedRoundOutcome outcome in saved.roundOutcomes)
                 {
-                    if(outcome==null || !data.Rounds.ContainsKey(outcome.roundId) || outcome.roundId>lastCompleted
+                    if(outcome==null || !data.HasRound(outcome.roundId) || outcome.roundId>lastCompleted
                         || state.roundOutcomes.ContainsKey(outcome.roundId)) throw new ArgumentException("저장된 전투 승패 이력이 올바르지 않습니다.");
                     state.roundOutcomes.Add(outcome.roundId,outcome.won);
                 }
@@ -186,11 +195,12 @@ namespace AutoBattler.Run
                     +state.owned.Where(unit=>unit.DefinitionId==definition.Id).Sum(unit=>UnitStarRules.Copies(unit.Star))!=data.PoolCopies(definition.Cost))
                     throw new ArgumentException("기물 재고와 상점 예약·보유 수가 일치하지 않습니다.");
             int[] completed=saved.augments.completedRounds;
-            if(completed.Any(round=>!data.Rounds.ContainsKey(round) || !data.Rounds[round].OffersAugment || round>state.Round)
-                || data.Rounds.Values.Any(round=>round.Id<state.Round && round.OffersAugment && !completed.Contains(round.Id))
+            bool offersAugment=state.CurrentRound.OffersAugment;
+            if(completed.Any(round=>!data.AugmentRoundIds.Contains(round) || round>state.Round)
+                || data.AugmentRoundIds.Any(round=>round<state.Round && !completed.Contains(round))
                 || state.Augments.OfferedRound<0 || state.Augments.OfferedRound>state.Round
-                || state.Augments.HasPending && (!state.CanPrepare || state.Augments.OfferedRound!=state.Round || !data.Rounds[state.Round].OffersAugment || completed.Contains(state.Round))
-                || data.Rounds[state.Round].OffersAugment && !completed.Contains(state.Round) && !state.Augments.HasPending
+                || state.Augments.HasPending && (!state.CanPrepare || state.Augments.OfferedRound!=state.Round || !offersAugment || completed.Contains(state.Round))
+                || offersAugment && !completed.Contains(state.Round) && !state.Augments.HasPending
                 || saved.augments.randomSeed!=(saved.randomSeed^0x41A96B))
                 throw new ArgumentException("저장된 증강 진행 이력이 일치하지 않습니다.");
             state.Items=ItemInventoryState.Restore(data.Items,saved.items,saved.stageId,saved.randomSeed^0x59B17,
@@ -253,14 +263,29 @@ namespace AutoBattler.Run
             int id=shop[slot];
             if(!CanOfferUnit(id)) return "현재 구매할 수 없는 유닛입니다.";
             if(Gold<Data.Units[id].Cost) return "골드가 부족합니다.";
-            if(Placement.FindFreeBenchSlot()<0 && PurchaseMergeCandidates(id).Length<2) return "대기석이 가득 찼습니다.";
+            if(Placement.FindFreeBenchSlot()<0 && PurchaseMergeCandidates(id).Length<UnitStarRules.CopiesPerUpgrade-1)
+                return "대기석이 가득 찼습니다.";
             return null;
         }
+        public int PreviewPurchaseStar(int slot)
+        {
+            if(IsSettled || !CanTradeUnits || slot<0 || slot>=shop.Length) return 0;
+            int id=shop[slot];
+            if(id==0 || !CanOfferUnit(id)) return 0;
+
+            // 구매 기물 1기를 더한 뒤 생성되는 2성을 다음 등급 합성에도 반영.
+            int promoted=(MergeCandidates(id,1).Count()+1)/UnitStarRules.CopiesPerUpgrade;
+            if(promoted==0) return 0;
+            return MergeCandidates(id,2).Count()+promoted>=UnitStarRules.CopiesPerUpgrade ? 3 : 2;
+        }
+        private IEnumerable<OwnedUnit> MergeCandidates(int id,int star)
+            =>owned.Where(unit=>unit.DefinitionId==id && unit.Star==star
+                && (CanPrepare || unit.Placement.Location.Kind==UnitLocationKind.Bench));
         private OwnedUnit[] PurchaseMergeCandidates(int id)=>IsSettled?Array.Empty<OwnedUnit>():
-            owned.Where(unit=>unit.DefinitionId==id && unit.Star==1
-                && (CanPrepare || unit.Placement.Location.Kind==UnitLocationKind.Bench))
+            MergeCandidates(id,1)
             .OrderBy(unit=>unit.Placement.Location.Kind==UnitLocationKind.Board ? 0:1)
-            .ThenBy(unit=>PositionOrder(unit.Placement.Location)).ThenBy(unit=>unit.Placement.InstanceId).Take(2).ToArray();
+            .ThenBy(unit=>PositionOrder(unit.Placement.Location)).ThenBy(unit=>unit.Placement.InstanceId)
+            .Take(UnitStarRules.CopiesPerUpgrade-1).ToArray();
         public bool TryBuy(int slot)
         {
             string reason=BuyFailureReason(slot);
@@ -268,9 +293,9 @@ namespace AutoBattler.Run
             int id=shop[slot], cost=Data.Units[id].Cost;
             OwnedUnit[] matches=PurchaseMergeCandidates(id);
             int free=Placement.FindFreeBenchSlot();
-            if(free<0 && matches.Length<2) return Fail("대기석이 가득 찼습니다.");
+            if(free<0 && matches.Length<UnitStarRules.CopiesPerUpgrade-1) return Fail("대기석이 가득 찼습니다.");
             // 변경 조건을 모두 확인한 뒤 예약 1개와 보유 2개를 한 번에 합성.
-            if(matches.Length==2)
+            if(matches.Length==UnitStarRules.CopiesPerUpgrade-1)
             {
                 Items.MergeUnits(matches[0].Placement.InstanceId,matches[1].Placement.InstanceId);
                 Board.TryUnregister(matches[1].Placement); owned.Remove(matches[1]); matches[0].Star=2;
@@ -335,7 +360,7 @@ namespace AutoBattler.Run
             AddXp(Data.IntRule(EconomyRule.RoundXp));
             if(!won) Lives--;
             Items.ClearResult();
-            bool finalRound=Round==Data.Rounds.Count;
+            bool finalRound=Data.IsFinalRound(Round);
             IsOver=Lives<=0 || finalRound;
             WonRun=finalRound && won;
             HasPendingRoundReward=true; pendingRoundWon=won;
@@ -352,7 +377,7 @@ namespace AutoBattler.Run
             int streakGold = streak >= 5 ? 3 : streak == 4 ? 2 : streak == 3 ? 1 : 0;
             int interest = Math.Min(Data.IntRule(EconomyRule.InterestCap), Gold / Data.IntRule(EconomyRule.InterestDivisor));
             int augment = outcome ? Augments.Selected.Where(definition => definition.Effect == AugmentEffect.VictoryGold).Sum(definition => (int)definition.Value) : 0;
-            RoundDefinition definition=Data.Rounds[round];
+            RoundDefinition definition=round==Round?CurrentRound:Data.GetRound(round,random.Seed);
             return new RoundIncome(definition.Reward+(outcome?definition.BossVictoryGold:0), interest, streakGold, augment);
         }
         public bool TryGrantRoundRewards()
@@ -370,9 +395,9 @@ namespace AutoBattler.Run
         public bool TryNextRound()
         {
             if(IsOver || settledRound!=Round || CanPrepare || HasPendingRoundReward) return false;
-            Round++; CanPrepare=true; MergePendingUnits(); RemoveMaxStarOffers();
+            Round++; currentRound=null; CanPrepare=true; MergePendingUnits(); RemoveMaxStarOffers();
             if(!ShopLocked) Reroll();
-            Augments.EnterRound(Round,Data.Rounds[Round].OffersAugment); Notify(); return true;
+            Augments.EnterRound(Round,CurrentRound.OffersAugment); Notify(); return true;
         }
         private void MergePendingUnits()
         {
@@ -384,11 +409,11 @@ namespace AutoBattler.Run
             {
                 while(true)
                 {
-                    OwnedUnit[] matches=owned.Where(unit=>unit.DefinitionId==definition && unit.Star==star
-                            && (CanPrepare || unit.Placement.Location.Kind==UnitLocationKind.Bench))
+                    OwnedUnit[] matches=MergeCandidates(definition,star)
                         .OrderBy(unit=>unit.Placement.Location.Kind==UnitLocationKind.Board?0:1)
-                        .ThenBy(unit=>PositionOrder(unit.Placement.Location)).ThenBy(unit=>unit.Placement.InstanceId).Take(3).ToArray();
-                    if(matches.Length<3) break;
+                        .ThenBy(unit=>PositionOrder(unit.Placement.Location)).ThenBy(unit=>unit.Placement.InstanceId)
+                        .Take(UnitStarRules.CopiesPerUpgrade).ToArray();
+                    if(matches.Length<UnitStarRules.CopiesPerUpgrade) break;
                     OwnedUnit survivor=matches[0];
                     foreach(OwnedUnit consumed in matches.Skip(1))
                     {
@@ -416,9 +441,10 @@ namespace AutoBattler.Run
                 stock[id]++; shop[slot]=0;
             }
         }
-        private int Draw(IReadOnlyList<int> rates)
+        private int Draw(IReadOnlyList<int> rates,int excludedUnitId=0)
         {
-            UnitDefinition[] eligible=Data.Units.Values.Where(unit=>CanOfferUnit(unit.Id) && stock[unit.Id]>0).ToArray();
+            UnitDefinition[] eligible=Data.Units.Values
+                .Where(unit=>unit.Id!=excludedUnitId && CanOfferUnit(unit.Id) && stock[unit.Id]>0).ToArray();
             int total=0;
             for(int cost=1;cost<=5;cost++)
                 if(eligible.Any(unit=>unit.Cost==cost)) total+=rates[cost-1];

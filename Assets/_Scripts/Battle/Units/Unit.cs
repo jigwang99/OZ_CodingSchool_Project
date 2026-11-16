@@ -53,6 +53,7 @@ namespace AutoBattler.Battle.Units
         public bool IsOnBoard=>IsSummon || Team==UnitTeam.Enemy || (View!=null && View.State!=null && View.State.Location.Kind==UnitLocationKind.Board);
         public bool IsInCombat=>isActiveAndEnabled && Stats!=null && IsOnBoard && battleFlow!=null
             && battleFlow.isActiveAndEnabled && battleFlow.CurrentPhase==BattlePhase.Combat;
+        public bool IsInOvertime=>IsInCombat && battleFlow.IsOvertime;
         private UnitFacingView facing;
         private UnitAnimationView animationView;
         private HexCoord? combatCell, enemyCell;
@@ -69,7 +70,7 @@ namespace AutoBattler.Battle.Units
         }
         public void Configure(UnitDefinition definition,int star,int instanceId,UnitTeam team,
             DataRepository data,BattleFlowController flow,HexGridLayout grid,BenchLayout bench,HexCoord? enemyPosition=null,int bossProfile=0,
-            bool isSummon=false,bool canAct=true)
+            bool isSummon=false,bool canAct=true,float healthMultiplier=1f,float attackMultiplier=1f)
         {
             ClearActions();
             Skill.ResetForRound(); SpawnVersion++;
@@ -81,8 +82,8 @@ namespace AutoBattler.Battle.Units
             ProjectileSpeed=data.Rule(EconomyRule.ProjectileSpeed);
             float multiplier=UnitStarRules.StatMultiplier(star,data.Rule(EconomyRule.StarMultiplier));
             float bossHp=bossProfile==3?2.5f:bossProfile>0?2f:1f;
-            UnitStat baseStats=new UnitStat(Mathf.FloorToInt(definition.Hp*multiplier*bossHp),
-                Mathf.FloorToInt(definition.Attack*multiplier*(bossProfile>0?1.2f:1f)),definition.Armor,
+            UnitStat baseStats=new UnitStat(Mathf.FloorToInt(definition.Hp*multiplier*bossHp*healthMultiplier),
+                Mathf.FloorToInt(definition.Attack*multiplier*(bossProfile>0?1.2f:1f)*attackMultiplier),definition.Armor,
                 1f,definition.Range,definition.Interval);
             StatModifiers.Initialize(baseStats,definition.CritChance,definition.CritMultiplier);
             Effects.BindBattleFlow(flow);
@@ -122,7 +123,7 @@ namespace AutoBattler.Battle.Units
             if(Move!=null) Move.Stop();
             if(Effects!=null) Effects.Clear();
             if(Equipment!=null) Equipment.Clear();
-            if(StatModifiers!=null) StatModifiers.ClearModifiers();
+            if(StatModifiers!=null) { StatModifiers.SetOvertime(false); StatModifiers.ClearModifiers(); }
         }
     }
 }

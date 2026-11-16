@@ -49,7 +49,7 @@ namespace AutoBattler.Battle.Combat
         { Attacker=new CombatUnitReference(attacker); Kind=kind; SourceId=sourceId; IsCritical=critical; }
         public static DamageContext Environment => default;
         public static DamageContext BasicAttack(Unit attacker,bool critical=false) => new DamageContext(attacker,DamageKind.BasicAttack,0,critical);
-        public static DamageContext Skill(Unit attacker,int skillId) => new DamageContext(attacker,DamageKind.Skill,skillId);
+        public static DamageContext Skill(Unit attacker,int skillId,bool critical=false) => new DamageContext(attacker,DamageKind.Skill,skillId,critical);
         public static DamageContext Effect(Unit attacker,int effectId) => new DamageContext(attacker,DamageKind.Effect,effectId);
     }
 

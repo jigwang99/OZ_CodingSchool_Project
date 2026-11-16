@@ -131,6 +131,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: TitleMenu
       objectReference: {fileID: 0}
+    - target: {fileID: 897373331388519624, guid: 17027556a860eb44a8fdad197a33ec35, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
     - target: {fileID: 1139999448480713419, guid: 17027556a860eb44a8fdad197a33ec35, type: 3}
       propertyPath: m_TextStyleHashCode
       value: -1183493901
@@ -150,6 +154,18 @@ PrefabInstance:
     - target: {fileID: 7590324207562171855, guid: 17027556a860eb44a8fdad197a33ec35, type: 3}
       propertyPath: m_TextStyleHashCode
       value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 8541534757380537460, guid: 17027556a860eb44a8fdad197a33ec35, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8541534757380537460, guid: 17027556a860eb44a8fdad197a33ec35, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8541534757380537460, guid: 17027556a860eb44a8fdad197a33ec35, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9127360701693683499, guid: 17027556a860eb44a8fdad197a33ec35, type: 3}
       propertyPath: m_TextStyleHashCode
@@ -505,7 +521,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a79441f348de89743a2939f4d699eac1, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalCameraData
   m_RenderShadows: 1
   m_RequiresDepthTextureOption: 2

@@ -1,4 +1,5 @@
 using System;
+using AutoBattler.Presentation.Units;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -14,6 +15,7 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private Image icon;
         [SerializeField] private TextMeshProUGUI label;
         [SerializeField] private Image background;
+        [SerializeField] private TextMeshProUGUI equipmentStackText;
         [SerializeField] private Color selectedColor = new Color(.15f, .42f, .45f);
         [SerializeField] private Color normalColor = new Color(.1f, .16f, .23f);
         [SerializeField] private Color fusionColor = new Color(.2f, .55f, .35f);
@@ -65,13 +67,25 @@ namespace AutoBattler.Presentation.Battle
         public void OnEndDrag(PointerEventData eventData) => DragEnded?.Invoke(this, eventData);
         public void Show(int id, Sprite sprite, string name, bool selected, bool interactable)
         {
+            if(itemId!=id && equipmentStackText!=null) ClearEquipmentFeedback();
             itemId = id; icon.sprite = sprite; icon.enabled = sprite != null;
             label.text = name; button.interactable = interactable && id != 0;
             isSelected=selected; RefreshColor();
         }
         public void SetDropHighlighted(bool highlighted) { dropHighlighted=highlighted; RefreshColor(); }
+        internal void SetEquipmentStacks(int count)=>EquipmentIconFeedback.SetStacks(equipmentStackText,itemId!=0 && icon.enabled?count:0);
+        internal void FlashEquipment()=>EquipmentIconFeedback.Flash(icon);
+        internal void ClearEquipmentFeedback()
+        {
+            EquipmentIconFeedback.Stop(icon);
+            EquipmentIconFeedback.SetStacks(equipmentStackText,0);
+        }
         private void RefreshColor()=>background.color=dropHighlighted?fusionColor:isSelected?selectedColor:normalColor;
-        private void OnDisable() { dropHighlighted=false; HoverEnded?.Invoke(this); DragCancelled?.Invoke(this); }
+        private void OnDisable()
+        {
+            if(equipmentStackText!=null) ClearEquipmentFeedback();
+            dropHighlighted=false; HoverEnded?.Invoke(this); DragCancelled?.Invoke(this);
+        }
         private void OnDestroy() => button.onClick.RemoveListener(Request);
     }
 }

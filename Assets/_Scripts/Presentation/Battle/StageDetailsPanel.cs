@@ -19,6 +19,7 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private AssetCatalog catalog;
         [SerializeField] private TextMeshProUGUI stageNameText;
         [SerializeField] private TextMeshProUGUI unlockUnitsText;
+        [SerializeField] private GameObject unlockHeading;
         [SerializeField] private ScrollRect unitScroll;
         [SerializeField] private StageUnlockUnitView[] unitViews=Array.Empty<StageUnlockUnitView>();
         [SerializeField] private Button continueButton;
@@ -53,19 +54,21 @@ namespace AutoBattler.Presentation.Battle
         {
             if(stage==null) {Hide(); return;}
             Stage=stage; gameObject.SetActive(true);
-            stageNameText.text=$"{stage.DisplayName}\n{stage.LocationName}";
+            stageNameText.text=stage.IsEndless?stage.DisplayName:$"{stage.DisplayName}\n{stage.LocationName}";
             RefreshUnits(); RefreshButtons();
         }
         public void Hide() {Stage=null; gameObject.SetActive(false);}
         public void SetInteractable(bool value) {interactable=value; RefreshButtons();}
         private bool CanStart=>interactable && Stage!=null && navigation!=null && saves!=null
             && saves.IsStageUnlocked(navigation,Stage) && !GameNavigation.IsTransitioning;
-        private bool CanContinue=>CanStart && saves.HasSavedRun && saves.SavedStageId==Stage.Id;
+        private bool HasSavedStage=>Stage!=null && saves!=null && saves.HasSavedRun && saves.SavedStageId==Stage.Id;
+        private bool CanContinue=>CanStart && HasSavedStage;
         private void RefreshButtons()
         {newRunButton.interactable=CanStart; continueButton.interactable=CanContinue;}
         private void RefreshProgress()
         {
             RefreshButtons();
+            if(Stage!=null && Stage.IsEndless) ShowEndlessProgress();
             foreach(StageUnlockUnitView view in unitViews)
                 if(view.Unit!=null) view.SetUnlocked(saves!=null && saves.IsUnitUnlocked(view.Unit.Id));
         }
@@ -81,12 +84,19 @@ namespace AutoBattler.Presentation.Battle
         {
             CancelPreview();
             if(Stage==null) return;
+            if(unlockHeading!=null) unlockHeading.SetActive(!Stage.IsEndless);
+            if(Stage.IsEndless) {ShowEndlessProgress(); return;}
             unlockUnitsText.gameObject.SetActive(true);
             if(Stage.PlannedUnlockUnitIds.Count==0) {unlockUnitsText.text="없음"; return;}
             unlockUnitsText.text="불러오는 중…";
             if(assets==null) assets=new AssetService();
             lifetime=new CancellationTokenSource();
             LoadPreviewAsync(Stage,assets,lifetime).Forget();
+        }
+        private void ShowEndlessProgress()
+        {
+            unlockUnitsText.text=HasSavedStage?RoundProgressView.EndlessRoundLabel(saves.SavedRound):string.Empty;
+            unlockUnitsText.gameObject.SetActive(HasSavedStage);
         }
         private async UniTask LoadPreviewAsync(StageDefinition stage,AssetService source,CancellationTokenSource operation)
         {

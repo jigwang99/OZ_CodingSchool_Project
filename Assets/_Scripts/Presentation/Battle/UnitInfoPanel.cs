@@ -62,7 +62,14 @@ namespace AutoBattler.Presentation.Battle
                 AutoBattler.Data.Items.ItemDefinition definition = item != null ? run.State.Data.Items[item.DefinitionId] : null;
                 equipmentSlots[i].Show(item?.InstanceId ?? 0, boundUnit != null ? boundUnit.Equipment.Icon(i) : null,
                     definition?.Name ?? "빈 슬롯", false, run != null && run.Equipment.CanUnequip);
+                RefreshEquipmentStacks(i);
             }
+        }
+        private void RefreshEquipmentStacks(int slot)
+            =>equipmentSlots[slot].SetEquipmentStacks(IsCurrent()?boundUnit.Equipment.EffectStacksAt(slot):0);
+        private void FlashEquipment(int slot)
+        {
+            if (IsCurrent()) equipmentSlots[slot].FlashEquipment();
         }
         private Unit boundUnit;
         private DataRepository data;
@@ -92,6 +99,8 @@ namespace AutoBattler.Presentation.Battle
             unit.StatModifiers.Changed+=RefreshDetails;
             unit.Effects.Changed+=RefreshDetails;
             unit.Equipment.Changed += RefreshEquipment;
+            unit.Equipment.EffectStacksChanged += RefreshEquipmentStacks;
+            unit.Equipment.EffectActivated += FlashEquipment;
             gameObject.SetActive(true);
             nameText.text=$"{BattleText.UnitName(unit.Definition)} <color=#FFD159>{new string('★', unit.Star)}</color>";
             identityText.text=CurrencyText.Amount(UnitStarRules.SalePrice(unit.Definition.Cost,unit.Star));
@@ -175,6 +184,9 @@ namespace AutoBattler.Presentation.Battle
                 boundUnit.StatModifiers.Changed-=RefreshDetails;
                 boundUnit.Effects.Changed-=RefreshDetails;
                 boundUnit.Equipment.Changed -= RefreshEquipment;
+                boundUnit.Equipment.EffectStacksChanged -= RefreshEquipmentStacks;
+                boundUnit.Equipment.EffectActivated -= FlashEquipment;
+                foreach (ItemIconButton slot in equipmentSlots) slot.ClearEquipmentFeedback();
             }
             boundUnit=null; data=null;
             if(healthSegments!=null) healthSegments.Clear();

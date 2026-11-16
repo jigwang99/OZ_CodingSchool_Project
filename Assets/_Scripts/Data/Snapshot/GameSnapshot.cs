@@ -14,6 +14,7 @@ namespace AutoBattler.Data.Snapshot
 {
     [Serializable] public sealed class GameSnapshot
     {
+        public const int EndlessStageId=31;
         public int schemaVersion;
         public string dataVersion;
         public string previousDataVersion;
@@ -48,7 +49,7 @@ namespace AutoBattler.Data.Snapshot
     [Serializable] public sealed class PoolRow { public int cost, copiesPerUnit; }
     [Serializable] public sealed class EconomyRow { public int ruleId; public float value; }
 
-    public enum EconomyRule { StartGold=1, StartLives, RefreshCost, XpCost, PurchasedXp, RoundXp, InterestDivisor, InterestCap, CombatSeconds, MoveSeconds, WindupSeconds, ProjectileSpeed, StarMultiplier }
+    public enum EconomyRule { StartGold=1, StartLives, RefreshCost, XpCost, PurchasedXp, RoundXp, InterestDivisor, InterestCap, CombatSeconds, MoveSeconds, WindupSeconds, ProjectileSpeed, StarMultiplier, OvertimeSeconds }
     public sealed class UnitDefinition
     {
         public int Id { get; } public string Name { get; } public int Cost { get; }
@@ -72,14 +73,26 @@ namespace AutoBattler.Data.Snapshot
     }
     public sealed class RoundDefinition
     {
+        internal int TemplateId { get; }
         public int Id { get; } public int Reward { get; } public bool IsBoss { get; }
         public int BossVictoryGold { get; }
         public bool OffersAugment { get; } public IReadOnlyList<EnemyDefinition> Enemies { get; }
         public RoundDefinition(RoundRow row, IEnumerable<RoundUnitRow> enemies)
         {
+            TemplateId=row.roundId;
             Id=row.sequence>0?row.sequence:row.roundId; Reward=row.rewardGold; IsBoss=row.isBoss; OffersAugment=row.offersAugment;
             BossVictoryGold=row.bossVictoryGold;
             Enemies=Array.AsReadOnly(enemies.OrderBy(x=>x.entryId).Select(x=>new EnemyDefinition(x)).ToArray());
+        }
+        internal RoundDefinition(int id, RoundDefinition template, bool offersAugment)
+        {
+            Id=id;
+            TemplateId=template.TemplateId;
+            Reward=template.Reward;
+            IsBoss=template.IsBoss;
+            BossVictoryGold=template.BossVictoryGold;
+            OffersAugment=offersAugment;
+            Enemies=template.Enemies;
         }
     }
     /// <summary>도전 시작 시 확정한 스냅샷을 정수 ID로 조회.</summary>
@@ -88,8 +101,11 @@ namespace AutoBattler.Data.Snapshot
         public string Version { get; }
         private readonly HashSet<string> previousVersions;
         private readonly GameSnapshot source;
+        private readonly EndlessRoundSchedule endless;
         public int StageId { get; }
         public int RoundsPerSegment { get; }
+        public bool IsEndless=>endless!=null;
+        public int StartingLives=>IsEndless?EndlessRoundSchedule.StartingLives:IntRule(EconomyRule.StartLives);
         public IReadOnlyDictionary<int,StageRule> Stages { get; }
         public bool IsSaveCompatible(string version)=>version==Version || version!=null && previousVersions.Contains(version);
         public IReadOnlyDictionary<int, UnitDefinition> Units { get; }
@@ -103,7 +119,7 @@ namespace AutoBattler.Data.Snapshot
         private readonly Dictionary<int,int> levelXp, pool;
         private readonly Dictionary<int,int[]> rates;
         private readonly Dictionary<int,float> rules;
-        public DataRepository(GameSnapshot data,int stageId=1)
+        public DataRepository(GameSnapshot data,int stageId=1,int endlessTemplateStageId=0)
         {
             if(data==null || data.schemaVersion<1 || data.schemaVersion>8) throw new ArgumentException("지원하지 않는 데이터 스키마.");
             source=data; StageId=stageId;
@@ -147,22 +163,31 @@ namespace AutoBattler.Data.Snapshot
             Stages=new ReadOnlyDictionary<int,StageRule>(stageRows.ToDictionary(stage=>stage.stageId,
                 stage=>new StageRule(stage,plans.Where(plan=>plan.stageId==stage.stageId).Select(plan=>plan.unitId).ToArray())));
             IEnumerable<RoundRow> selected=data.rounds;
+            int templateStageId=endlessTemplateStageId==0?stageId:endlessTemplateStageId;
             if(data.schemaVersion>=8)
             {
-                if(!Stages.TryGetValue(stageId,out StageRule stage) || stage.RoundsPerSegment<2
+                if(!Stages.TryGetValue(templateStageId,out StageRule stage) || stage.RoundsPerSegment<2
                     || string.IsNullOrWhiteSpace(stage.LocationName)) throw new ArgumentException("선택 스테이지 정의 오류.");
                 RoundsPerSegment=stage.RoundsPerSegment;
-                selected=selected.Where(round=>round.stageId==stageId);
+                selected=selected.Where(round=>round.stageId==templateStageId);
             }
             else RoundsPerSegment=data.rounds.Length/3;
             Dictionary<int,RoundUnitRow[]> encounters=data.roundUnits.GroupBy(enemy=>enemy.roundId).ToDictionary(group=>group.Key,group=>group.ToArray());
-            Rounds=new ReadOnlyDictionary<int,RoundDefinition>(selected.ToDictionary(row=>row.sequence>0?row.sequence:row.roundId,
-                row=>new RoundDefinition(row,encounters.TryGetValue(row.roundId,out RoundUnitRow[] enemies)?enemies:Array.Empty<RoundUnitRow>())));
+            Rounds=new ReadOnlyDictionary<int,RoundDefinition>(selected.Select(row=>BuildRound(row,encounters)).ToDictionary(round=>round.Id));
             if(data.schemaVersion>=8 && (Rounds.Count!=RoundsPerSegment*3
                 || Rounds.Keys.OrderBy(id=>id).Select((id,index)=>id!=index+1).Any(value=>value)
                 || Rounds.Values.Any(round=>round.Enemies.Count==0 || round.IsBoss!=(round.Id%RoundsPerSegment==0)
                     || round.OffersAugment!=(round.Id==2 || round.Id==RoundsPerSegment+1 || round.Id==RoundsPerSegment*2+1))))
                 throw new ArgumentException("스테이지 전투 순서·보스·증강 일정 오류.");
+            if(endlessTemplateStageId!=0)
+            {
+                IEnumerable<RoundDefinition> campaign=data.rounds.Where(round=>round.stageId!=stageId && Stages.ContainsKey(round.stageId))
+                    .Select(round=>BuildRound(round,encounters));
+                IEnumerable<RoundDefinition> exclusive=data.rounds.Where(round=>round.stageId==stageId)
+                    .Select(round=>BuildRound(round,encounters));
+                endless=new EndlessRoundSchedule(campaign,exclusive);
+                RoundsPerSegment=EndlessRoundSchedule.RoundsPerSegment;
+            }
             Dictionary<int,SkillRuleRow> skillRules=(data.skillRules ?? Array.Empty<SkillRuleRow>()).ToDictionary(rule=>rule.skillId);
             Skills=new ReadOnlyDictionary<int,SkillDefinition>((data.skills ?? Array.Empty<SkillRow>()).ToDictionary(x=>x.skillId,
                 x=>new SkillDefinition(x,skillRules.TryGetValue(x.skillId,out SkillRuleRow rule)?rule:null)));
@@ -188,6 +213,17 @@ namespace AutoBattler.Data.Snapshot
         public IReadOnlyList<int> ShopWeights(int level)=>Array.AsReadOnly(rates[level]);
         public float Rule(EconomyRule rule)=>rules[(int)rule];
         public int IntRule(EconomyRule rule)=>(int)Rule(rule);
+        public float OvertimeSeconds=>rules.TryGetValue((int)EconomyRule.OvertimeSeconds,out float seconds)?seconds:15f;
         public DataRepository ForStage(int stageId)=>source.schemaVersion<8 || stageId==StageId?this:new DataRepository(source,stageId);
+        private static RoundDefinition BuildRound(RoundRow row,Dictionary<int,RoundUnitRow[]> encounters)
+            =>new RoundDefinition(row,encounters.TryGetValue(row.roundId,out RoundUnitRow[] enemies)?enemies:Array.Empty<RoundUnitRow>());
+        public RoundDefinition GetRound(int round,int seed=0,int savedTemplateId=0)
+            =>IsEndless?endless.GetRound(round,seed,savedTemplateId):Rounds[round];
+        public bool HasRound(int round)=>IsEndless?round>0:Rounds.ContainsKey(round);
+        public bool IsFinalRound(int round)=>!IsEndless && round==Rounds.Count;
+        public bool IsBossRound(int round)=>IsEndless?EndlessRoundSchedule.IsBossRound(round):Rounds[round].IsBoss;
+        public IEnumerable<int> AugmentRoundIds=>IsEndless?endless.AugmentRoundIds:Rounds.Values.Where(round=>round.OffersAugment).Select(round=>round.Id);
+        public float EnemyHealthMultiplier(int round)=>IsEndless?endless.HealthMultiplier(round):1f;
+        public float EnemyAttackMultiplier(int round)=>IsEndless?endless.AttackMultiplier(round):1f;
     }
 }

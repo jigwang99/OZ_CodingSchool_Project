@@ -85,7 +85,7 @@ MonoBehaviour:
     priority: 25
   - id: 7
     clip:
-      m_AssetGUID: d654174ef194bd7479bf4b8d8f753318
+      m_AssetGUID: 4dbfbd1a56081db4ca174255a4d56b1f
       m_SubObjectName: 
       m_SubObjectType: 
       m_SubObjectGUID: 
@@ -213,3 +213,13 @@ MonoBehaviour:
     volume: 0.85
     interval: 0.12
     priority: 40
+  - id: 20
+    clip:
+      m_AssetGUID: f63a847e218906241b3dd94f9add89bd
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    volume: 0.9
+    interval: 0.1
+    priority: 30

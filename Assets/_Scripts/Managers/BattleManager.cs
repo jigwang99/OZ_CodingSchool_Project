@@ -27,6 +27,7 @@ namespace AutoBattler.Managers
         private Action<string> publish;
         private CancellationToken lifetime;
         private CancellationTokenSource operation;
+        private EquipmentBattleSession equipment;
         private UniTaskCompletionSource battleCompletion;
         [Header("전투 종료 후 준비 전환")]
         [SerializeField, Min(0f)] private float resultDelaySeconds=5f;
@@ -61,6 +62,7 @@ namespace AutoBattler.Managers
             if(SoundManager.TryGetExisting(out SoundManager sound)) sound.BeginBattle(participants);
             SoundManager.PlayEffect(SoundId.BattleStart);
             assets.Visuals.BeginBattle(participants); synergies.BeginBattle(participants); augments.ApplyBattleStart(participants,synergies.Allies);
+            equipment=new EquipmentBattleSession(participants); equipment.Start();
             Statistics.Begin(state.Round,participants);
             operation=CancellationTokenSource.CreateLinkedTokenSource(lifetime);
             battleCompletion=new UniTaskCompletionSource(); deadline=Time.time+state.Data.Rule(EconomyRule.CombatSeconds);
@@ -70,7 +72,7 @@ namespace AutoBattler.Managers
         {
             try
             {
-                bool won=await battle.RunAsync(state.Data.Rule(EconomyRule.CombatSeconds),current.Token);
+                bool won=await battle.RunAsync(deadline,state.Data.OvertimeSeconds,BeginOvertime,current.Token,equipment);
                 if(stopping) return;
                 state.SetBattleReport(Statistics.Complete(won));
                 if(!flow.TryFinishCombat()) return;
@@ -93,6 +95,19 @@ namespace AutoBattler.Managers
                 if(ReferenceEquals(operation,current)) operation=null;
                 current.Dispose(); completion.TrySetResult();
             }
+        }
+        private void BeginOvertime(float overtimeDeadline)
+        {
+            if(!flow.TryStartOvertime()) return;
+            deadline=overtimeDeadline;
+            foreach(Unit unit in units.Combatants)
+            {
+                if(!unit.Health.IsAlive) continue;
+                unit.StatModifiers.SetOvertime(true);
+                unit.Effects.ShortenCrowdControl();
+            }
+            SoundManager.PlayEffect(SoundId.Overtime);
+            publish("연장전");
         }
         public void ScheduleNextPreparation()
         {
@@ -144,6 +159,10 @@ namespace AutoBattler.Managers
         private void ClearBattleState(bool restoreUnits)
         {
             resultCleanupPending=false;
+            flow?.EndOvertime();
+            if(units!=null)
+                foreach(Unit unit in units.Combatants) unit.StatModifiers.SetOvertime(false);
+            equipment?.Dispose(); equipment=null;
             assets?.Visuals?.EndBattle(); augments?.EndBattle(); synergies?.EndBattle();
             units?.StopCombat(); units?.ReturnBattleSummons(); units?.ReturnBattleEnemies();
             if(restoreUnits) units?.RestorePreparation();

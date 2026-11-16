@@ -7,6 +7,7 @@ namespace AutoBattler.Battle.Flow
     public sealed class BattleFlowController : MonoBehaviour
     {
         public BattlePhase CurrentPhase { get; private set; } = BattlePhase.Preparation;
+        public bool IsOvertime { get; private set; }
         public bool IsAugmentWindowOpen { get; private set; }
         public bool CanInspectUnits => isActiveAndEnabled && (CanPlaceUnits || CurrentPhase == BattlePhase.Combat);
         public bool CanPlaceUnits => isActiveAndEnabled && (CurrentPhase==BattlePhase.Preparation
@@ -17,6 +18,15 @@ namespace AutoBattler.Battle.Flow
 
         /// <summary>준비 단계의 배치를 확정하고 전투 시작.</summary>
         public bool TryStartCombat() => TryChangePhase(BattlePhase.Preparation, BattlePhase.Combat);
+
+        internal bool TryStartOvertime()
+        {
+            if (!isActiveAndEnabled || CurrentPhase != BattlePhase.Combat || IsOvertime) return false;
+            IsOvertime = true;
+            return true;
+        }
+
+        internal void EndOvertime() => IsOvertime = false;
 
         /// <summary>전투 판정이 끝난 뒤 결과 단계로 전환.</summary>
         public bool TryFinishCombat() => TryChangePhase(BattlePhase.Combat, BattlePhase.Result);
@@ -44,6 +54,7 @@ namespace AutoBattler.Battle.Flow
             try
             {
                 CurrentPhase = next;
+                IsOvertime = false;
                 IsAugmentWindowOpen=next==BattlePhase.AugmentSelection;
                 PhaseChanged?.Invoke(next);
                 return true;

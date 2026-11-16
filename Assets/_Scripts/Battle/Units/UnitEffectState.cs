@@ -43,7 +43,7 @@ namespace AutoBattler.Battle.Units
         public UnitEffectState(UnitStatState stats,Func<int,int> heal)
         { this.stats=stats; this.heal=heal; view=active.AsReadOnly(); }
 
-        public EffectHandle Apply(EffectDefinition definition,ModifierSource source,float potency=1f)
+        public EffectHandle Apply(EffectDefinition definition,ModifierSource source,float potency=1f,float durationScale=1f)
         {
             float value=definition.Value*potency;
             if(definition.Kind==EffectKind.Heal)
@@ -53,7 +53,7 @@ namespace AutoBattler.Battle.Units
                 ? active.FirstOrDefault(entry=>entry.Definition.Id==definition.Id && entry.Source.Equals(source)) : null;
             if(existing!=null)
             {
-                existing.RemainingSeconds=Math.Max(existing.RemainingSeconds,Duration(definition));
+                existing.RemainingSeconds=Math.Max(existing.RemainingSeconds,Duration(definition)*durationScale);
                 existing.Magnitude=definition.Kind==EffectKind.Slow ? Math.Max(existing.Magnitude,value) : value;
                 existing.RemainingShield=Math.Max(existing.RemainingShield,Amount(value));
                 existing.Definition=definition;
@@ -67,7 +67,7 @@ namespace AutoBattler.Battle.Units
             EffectInstance instance=new EffectInstance
             {
                 Handle=new EffectHandle(Interlocked.Increment(ref nextHandle)),Definition=definition,Source=source,
-                RemainingSeconds=Duration(definition),Magnitude=value,RemainingShield=Amount(value)
+                RemainingSeconds=Duration(definition)*durationScale,Magnitude=value,RemainingShield=Amount(value)
             };
             active.Add(instance);
             if(definition.Kind==EffectKind.StatModifier)
@@ -75,6 +75,12 @@ namespace AutoBattler.Battle.Units
             Refresh(); return instance.Handle;
         }
         private static float Duration(EffectDefinition definition)=>definition.Duration<0f?float.PositiveInfinity:definition.Duration;
+        internal static bool IsCrowdControl(EffectKind kind)=>kind==EffectKind.Stun || kind==EffectKind.Slow;
+        internal void ShortenCrowdControl(float durationScale)
+        {
+            foreach(EffectInstance entry in active)
+                if(IsCrowdControl(entry.Definition.Kind)) entry.RemainingSeconds*=durationScale;
+        }
         private static int Amount(float value)=>(int)Math.Max(0,Math.Min(int.MaxValue,Math.Floor(value)));
         public void Tick(float seconds)
         {

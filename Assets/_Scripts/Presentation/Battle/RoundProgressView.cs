@@ -24,11 +24,14 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField, Min(1f)] private float combatMarkerSize=28f;
         [SerializeField, Min(1f)] private float bossMarkerSize=32f;
         private DataRepository displayedData;
+        private float defaultLabelWidth;
         private int[] roundIds=Array.Empty<int>();
         public IReadOnlyList<Image> Markers => Array.AsReadOnly(markers);
         public RectTransform CurrentIndicator => currentIndicator;
         public TextMeshProUGUI StageText => stageText;
         public RoundProgressSettings Settings => settings;
+
+        private void Awake() => defaultLabelWidth=stageText.rectTransform.rect.width;
 
         public void Show(RunState state,string stage)
         {
@@ -37,13 +40,17 @@ namespace AutoBattler.Presentation.Battle
             if(!ReferenceEquals(displayedData,state.Data))
             {
                 displayedData=state.Data;
-                roundIds=state.Data.Rounds.Keys.OrderBy(id=>id).ToArray();
+                roundIds=state.Data.IsEndless?Array.Empty<int>():state.Data.Rounds.Keys.OrderBy(id=>id).ToArray();
             }
             int length=state.Data.RoundsPerSegment;
-            int currentIndex=Array.IndexOf(roundIds,state.Round);
+            int currentIndex=state.Data.IsEndless?state.Round-1:Array.IndexOf(roundIds,state.Round);
             int segmentStart=length>0 && currentIndex>=0 ? currentIndex/length*length : 0;
-            int segmentEnd=length>0 ? Math.Min(segmentStart+length,roundIds.Length) : roundIds.Length;
+            int segmentEnd=state.Data.IsEndless
+                ? (int)Math.Min((long)segmentStart+length,int.MaxValue)
+                : length>0?Math.Min(segmentStart+length,roundIds.Length):roundIds.Length;
             stageText.text=RoundLabel(state.Data,state.Round,stage);
+            float labelWidth=state.Data.IsEndless?Mathf.Max(defaultLabelWidth,stageText.GetPreferredValues().x+4f):defaultLabelWidth;
+            stageText.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal,labelWidth);
             int current=-1;
             int first=Mathf.Clamp(currentIndex-markers.Length/2,segmentStart,Math.Max(segmentStart,segmentEnd-markers.Length));
             int count=Math.Min(markers.Length,segmentEnd-first);
@@ -53,8 +60,8 @@ namespace AutoBattler.Presentation.Battle
                 bool available=i<count;
                 markers[i].gameObject.SetActive(available);
                 if(!available) continue;
-                int id=roundIds[first+i];
-                bool isBoss=state.Data.Rounds[id].IsBoss;
+                int id=state.Data.IsEndless?first+i+1:roundIds[first+i];
+                bool isBoss=state.Data.IsBossRound(id);
                 if(isBoss) boss=i;
                 RoundProgressSprites sprites=isBoss?settings.Boss:settings.Combat;
                 markers[i].sprite=state.TryGetRoundOutcome(id,out bool won)?won?sprites.Win:sprites.Loss
@@ -93,9 +100,20 @@ namespace AutoBattler.Presentation.Battle
         internal static string RoundLabel(DataRepository data,int id,string fallback="--")
         {
             int length=data.RoundsPerSegment;
-            if(length<=0 || !data.Rounds.TryGetValue(id,out RoundDefinition round)) return fallback;
-            int segment=(id-1)/length+1;
-            return round.IsBoss ? $"{segment}보스" : $"{segment}-{(id-1)%length+1}";
+            if(length<=0 || !data.HasRound(id)) return fallback;
+            return SegmentRoundLabel(id,length,data.IsBossRound(id));
+        }
+
+        internal static string EndlessRoundLabel(int round)
+        {
+            int length=EndlessRoundSchedule.RoundsPerSegment;
+            return SegmentRoundLabel(round,length,round%length==0);
+        }
+
+        private static string SegmentRoundLabel(int round,int length,bool isBoss)
+        {
+            int segment=(round-1)/length+1;
+            return isBoss?$"{segment}보스":$"{segment}-{(round-1)%length+1}";
         }
     }
 }

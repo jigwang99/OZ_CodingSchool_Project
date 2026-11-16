@@ -57,7 +57,7 @@ namespace AutoBattler.Presentation.Battle
                 double remaining=minimumVisibleSeconds-(Time.realtimeSinceStartupAsDouble-shownAt);
                 if(remaining>0) await UniTask.Delay(TimeSpan.FromSeconds(remaining),ignoreTimeScale:true,cancellationToken:token);
                 if(this==null || token.IsCancellationRequested) return;
-                screen.DOFade(0f,fadeDuration).SetUpdate(true);
+                _ = screen.DOFade(0f,fadeDuration).SetUpdate(true);
                 if(fadeDuration>0) await UniTask.Delay(TimeSpan.FromSeconds(fadeDuration),ignoreTimeScale:true,cancellationToken:token);
             }
             finally { if(this!=null) HideImmediately(); }

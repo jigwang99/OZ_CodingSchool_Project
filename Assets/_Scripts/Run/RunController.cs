@@ -17,6 +17,8 @@ namespace AutoBattler.Run
     [DisallowMultipleComponent]
     public sealed class RunController : MonoBehaviour
     {
+        internal const string LastStarterPreferenceKey = "PixelTactics.LastStarterUnit";
+
         [SerializeField] private AssetCatalog catalog;
         [SerializeField] private BattleFlowController flow;
         [SerializeField] private UnitDragController drag;
@@ -25,7 +27,6 @@ namespace AutoBattler.Run
         [SerializeField] private StageDefinition stage;
         [SerializeField] private BattleBackgroundView backgroundView;
         [SerializeField] private BenchFloorView benchView;
-        [SerializeField] private int seed=20261012;
         [SerializeField,Min(0)] private int unitPoolSize=1;
         [Header("기능별 매니저")]
         [SerializeField] private AssetManager assets;
@@ -98,7 +99,8 @@ namespace AutoBattler.Run
             {
                 GameNavigation.ReportBattleLoading(this,0f,"전장 준비 중...");
                 await assets.LoadAsync(lifetime.Token,Cysharp.Threading.Tasks.Progress.Create<float>(value=>
-                    GameNavigation.ReportBattleLoading(this,.8f*value,"부대 준비 중...")),StageId);
+                    GameNavigation.ReportBattleLoading(this,.8f*value,"부대 준비 중...")),StageId,
+                    Stage.IsEndless?Stage.EndlessPrerequisite.Id:0);
                 lifetime.Token.ThrowIfCancellationRequested();
                 GameNavigation.ReportBattleLoading(this,.82f,"전장 불러오는 중...");
                 await assets.LoadBackgroundAsync(GameNavigation.SelectedStage!=null?GameNavigation.SelectedStage:stage,lifetime.Token);
@@ -107,22 +109,33 @@ namespace AutoBattler.Run
                 if(benchView!=null) benchView.Show(assets.StageBenchFloor);
                 GameNavigation.ReportBattleLoading(this,.9f,"도전 정보 준비 중...");
                 bool augmentOpen=true;
-                if(GameNavigation.ResumeRequested)
+                bool resume=GameNavigation.ResumeRequested;
+                if(resume)
                 {
                     if(!saves.TryLoad(assets.Data,StageId,out RunState restored,out augmentOpen))
                     { Report(saves.LastError); return; }
                     State=restored;
                 }
-                else State=new RunState(assets.Data,seed,StageId,saves.AvailableUnitsForStage(Stage));
+                else
+                {
+                    int seed=UnityEngine.Random.Range(1,int.MaxValue);
+                    int previousStarterId=PlayerPrefs.GetInt(LastStarterPreferenceKey);
+                    State=new RunState(assets.Data,seed,StageId,saves.AvailableUnitsForStage(Stage),previousStarterId);
+                }
                 if(!saves.TryEnterStage(Stage)) {State=null;Report(saves.LastError);return;}
-                SoundManager.instance.PlayStageMusicAsync(Stage.Chapter).Forget();
+                SoundManager.instance.PlayStageMusicAsync(Stage.EndlessPrerequisite?.Chapter ?? Stage.Chapter).Forget();
                 equipment.Bind(State); units.Bind(State); shop.Bind(State); augments.Bind(State); synergies.Bind(State); battle.Bind(State);
                 drag.BindBoard(State.Board,State.Placement); State.Changed+=OnStateChanged; IsReady=true;
                 GameNavigation.ReportBattleLoading(this,.95f,"전장과 유닛 배치 중...");
                 units.SyncAllies(); units.CreateEnemies(); synergies.Refresh();
                 if(State.CanPrepare) augments.EnterPreparation(augmentOpen);
                 else { flow.TryRestoreResult(); drag.SetResultTrading(State.CanTradeUnits); battle.ScheduleNextPreparation(); }
-                if(!GameNavigation.ResumeRequested) TrySaveProgress();
+                if(!resume)
+                {
+                    PlayerPrefs.SetInt(LastStarterPreferenceKey,State.Units[0].DefinitionId);
+                    PlayerPrefs.Save();
+                    TrySaveProgress();
+                }
                 Report(!State.CanPrepare?State.LastResult:State.Augments.HasPending?"증강 선택":"준비");
             }
             catch(OperationCanceledException) { }

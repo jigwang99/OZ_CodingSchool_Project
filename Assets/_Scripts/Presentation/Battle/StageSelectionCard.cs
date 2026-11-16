@@ -29,7 +29,7 @@ namespace AutoBattler.Presentation.Battle
         private void Choose() { if(Stage!=null && button.IsInteractable()) Selected?.Invoke(Stage); }
         public void Bind(StageDefinition stage,bool unlocked=true,bool cleared=false)
         {
-            Stage=stage; numberText.text=stage!=null?stage.DisplayName:"";
+            Stage=stage; numberText.text=stage==null?"":stage.IsEndless?"∞":stage.DisplayName;
             locationText.text=stage!=null?stage.LocationName:"";
             IsSelected=false; SetProgress(unlocked,cleared); SetSelected(false,false); button.interactable=stage!=null;
             gameObject.SetActive(stage!=null);

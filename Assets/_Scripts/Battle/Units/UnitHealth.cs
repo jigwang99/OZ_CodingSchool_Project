@@ -45,9 +45,11 @@ namespace AutoBattler.Battle.Units
         public int TakeDamage(float attackDamage,float multiplier=1f,float armorIgnoreRatio=0f)
             =>TakeDamage(DamageContext.Environment,attackDamage,multiplier,armorIgnoreRatio);
         public int TakeDamage(DamageContext context,int attackDamage,float multiplier=1f,float armorIgnoreRatio=0f)
-            =>ApplyDamage(context,DamageResolver.Calculate(attackDamage,Defense,multiplier,armorIgnoreRatio));
+            =>ApplyDamage(context,DamageResolver.Calculate(attackDamage,Defense,OvertimeDamage(context,multiplier),armorIgnoreRatio));
         public int TakeDamage(DamageContext context,float attackDamage,float multiplier=1f,float armorIgnoreRatio=0f)
-            =>ApplyDamage(context,DamageResolver.Calculate(attackDamage,Defense,multiplier,armorIgnoreRatio));
+            =>ApplyDamage(context,DamageResolver.Calculate(attackDamage,Defense,OvertimeDamage(context,multiplier),armorIgnoreRatio));
+        private static float OvertimeDamage(DamageContext context,float multiplier)
+            =>context.Attacker.Unit?.IsInOvertime==true ? multiplier*OvertimeRules.DamageMultiplier : multiplier;
         private int ApplyDamage(DamageContext context,int damage)
         {
             if(!IsAlive || isApplyingDamage || damage<=0) return 0;
@@ -90,6 +92,7 @@ namespace AutoBattler.Battle.Units
         {
             UnitHealthState healedState=state; int version=LifeVersion;
             CombatUnitReference source=new CombatUnitReference(healer),target=new CombatUnitReference(owner);
+            if(owner?.IsInOvertime==true) amount=OvertimeRules.ScaleHealing(amount);
             int restored=healedState?.Heal(amount) ?? 0;
             if(restored>0 && IsSameLife(healedState,version))
             {

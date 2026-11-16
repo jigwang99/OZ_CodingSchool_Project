@@ -269,8 +269,37 @@ namespace AutoBattler.Presentation.Battle
     }
     public static class ItemText
     {
-        public static string Stats(ItemDefinition definition)=>string.Join("\n",definition.Modifiers.Select(modifier=>
-            $"{StatName(modifier.Stat)} +{(modifier.Operation==ModifierOperation.Percent || modifier.Stat==StatType.CritChance?modifier.Value*100f:modifier.Value):0.##}{(modifier.Operation==ModifierOperation.Percent || modifier.Stat==StatType.CritChance?"%":"")}"));
+        public static string Stats(ItemDefinition definition)
+            =>string.Join("\n",definition.Modifiers.Select(modifier=>
+            {
+                bool percent=modifier.Operation!=ModifierOperation.Flat || modifier.Stat==StatType.CritChance;
+                return $"{StatName(modifier.Stat)} +{(percent?modifier.Value*100f:modifier.Value):0.##}{(percent?"%":"")}";
+            }));
+        public static string Details(ItemDefinition definition)
+        {
+            string stats=Stats(definition);
+            string effect=DescribeEffect(definition.CombatEffect);
+            return string.IsNullOrEmpty(effect)?stats:$"{stats}\n<color=#F5CE86>{effect}</color>";
+        }
+        private static string Percent(float value)=>$"{value*100f:0.##}%";
+        private static string DescribeEffect(ItemCombatEffect effect)=>effect.Kind switch
+        {
+            ItemEffectKind.BonusArmor=>$"방어력 {Percent(effect.Value)} 추가",
+            ItemEffectKind.AdjacentStartShield=>$"전투 시작 시 인접 아군에게 장착자 최대 체력의 {Percent(effect.Value)} 보호막 부여 ({effect.Seconds:0.#}초, 중첩 가능)",
+            ItemEffectKind.AttackAndArmorStacks=>$"기본 공격 적중 또는 피격 시 공격력과 방어력 +{effect.Value:0.##} (최대 {effect.MaxStacks}중첩)",
+            ItemEffectKind.ArmorShred=>$"기본 공격 적중 시 대상 방어력 {Percent(effect.Value)} 감소 ({effect.Seconds:0.#}초)",
+            ItemEffectKind.LowHealthShield=>$"피격 후 생존하고 체력이 {Percent(effect.SecondaryValue)} 이하라면 최대 체력의 {Percent(effect.Value)} 보호막 획득 ({effect.Seconds:0.#}초, 전투당 1회)",
+            ItemEffectKind.BonusHealth=>$"최대 체력 {Percent(effect.Value)} 추가",
+            ItemEffectKind.RandomStartStat=>$"전투 시작 시 최대 체력 +{effect.Value:0.##} 또는 공격 속도 +{Percent(effect.SecondaryValue)} 중 하나 무작위 적용",
+            ItemEffectKind.Omnivamp=>$"모든 피해 흡혈 {Percent(effect.Value)}",
+            ItemEffectKind.AdjacentPeriodicHeal=>$"{effect.Seconds:0.#}초마다 자신과 인접 아군 중 부상 유닛 1기를 무작위로 골라 최대 체력의 {Percent(effect.Value)} 회복",
+            ItemEffectKind.AttackSpeedStacks=>$"기본 공격 적중 시 공격 속도 +{Percent(effect.Value)} (최대 {effect.MaxStacks}중첩)",
+            ItemEffectKind.AttackStacks=>$"기본 공격 적중 시 공격력 +{effect.Value:0.##} (최대 {effect.MaxStacks}중첩)",
+            ItemEffectKind.SkillCritical=>$"스킬 피해에 치명타 적용, 치명타 확률 +{Percent(effect.Value)}p",
+            ItemEffectKind.ManaOnHit=>$"기본 공격 적중 시 MP {effect.Value:0.##} 회복",
+            ItemEffectKind.FirstCastMana=>$"첫 스킬 사용 직후 MP {effect.Value:0.##} 회복 (전투당 1회)",
+            _=>string.Empty
+        };
         private static string StatName(StatType stat)=>stat switch
         {
             StatType.MaxHp=>"최대 체력",StatType.AttackDamage=>"공격력",StatType.Defense=>"방어력",StatType.AttackSpeed=>"공격 속도",

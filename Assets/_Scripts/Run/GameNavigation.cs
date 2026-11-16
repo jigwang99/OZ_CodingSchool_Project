@@ -33,7 +33,8 @@ namespace AutoBattler.Run
         {
             SaveManager saves=SaveManager.instance;
             if(settings!=null) saves.ConfigureProgression(settings);
-            if(settings==null || !saves.HasSavedRun || !settings.TryGetStage(saves.SavedStageId,out StageDefinition stage)) return UniTask.FromResult(false);
+            if(settings==null || !saves.HasSavedRun || !settings.TryGetStage(saves.SavedStageId,out StageDefinition stage)
+                || !saves.IsStageUnlocked(settings,stage)) return UniTask.FromResult(false);
             return LoadAsync(stage.SceneBuildIndex,stage,null,true);
         }
         public static UniTask<bool> RetryAsync(GameNavigationSettings settings,RunController run)

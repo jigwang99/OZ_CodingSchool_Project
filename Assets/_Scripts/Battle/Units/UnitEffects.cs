@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using AutoBattler.Battle.Flow;
+using AutoBattler.Battle.Combat;
 using AutoBattler.Data.Units;
 using UnityEngine;
 
@@ -36,7 +37,14 @@ namespace AutoBattler.Battle.Units
         private void Update()
         { if(unit!=null && unit.IsInCombat) State.Tick(Time.deltaTime); }
         public EffectHandle Apply(EffectDefinition definition,ModifierSource source,float potency=1f)
-            =>GetComponent<UnitHealth>().IsAlive ? State.Apply(definition,source,potency) : default;
+        {
+            if(!(health??GetComponent<UnitHealth>()).IsAlive) return default;
+            if(unit==null || !unit.IsInOvertime) return State.Apply(definition,source,potency);
+            if(definition.Kind==EffectKind.Shield) potency*=OvertimeRules.ShieldMultiplier;
+            float durationScale=UnitEffectState.IsCrowdControl(definition.Kind)?OvertimeRules.ControlDurationMultiplier:1f;
+            return State.Apply(definition,source,potency,durationScale);
+        }
+        internal void ShortenCrowdControl()=>State.ShortenCrowdControl(OvertimeRules.ControlDurationMultiplier);
         public bool Remove(EffectHandle handle)=>State.Remove(handle);
         public void RemoveSource(ModifierSource source)=>State.RemoveSource(source);
         public void Clear() { if(state!=null) state.Clear(); }

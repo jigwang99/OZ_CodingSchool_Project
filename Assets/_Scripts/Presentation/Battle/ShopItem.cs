@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using AutoBattler.Data.Snapshot;
+using AutoBattler.Data.Traits;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -21,6 +23,8 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private TextMeshProUGUI iconPlaceholderText;
         [SerializeField] private TextMeshProUGUI nameText;
         [SerializeField] private TextMeshProUGUI priceText;
+        [SerializeField] private TextMeshProUGUI traitsText;
+        [SerializeField] private TextMeshProUGUI upgradeStarsText;
         [SerializeField] private TextMeshProUGUI poolText;
         [SerializeField] private TextMeshProUGUI emptyText;
 
@@ -28,6 +32,8 @@ namespace AutoBattler.Presentation.Battle
         [SerializeField] private Color placeholderColor = new Color(0.25f, 0.4f, 0.55f);
         [SerializeField] private Color priceColor = Color.white;
         [SerializeField] private Color unaffordableColor = new Color(1f, 0.5f, 0.5f);
+        [SerializeField] private Color twoStarColor = new Color32(153, 228, 255, 255);
+        [SerializeField] private Color threeStarColor = new Color32(255, 209, 89, 255);
 
         public int SlotIndex { get; private set; } = -1;
         public int DisplayedUnitId { get; private set; }
@@ -40,12 +46,15 @@ namespace AutoBattler.Presentation.Battle
         public TextMeshProUGUI IconPlaceholderText => iconPlaceholderText;
         public TextMeshProUGUI NameText => nameText;
         public TextMeshProUGUI PriceText => priceText;
+        public TextMeshProUGUI TraitsText => traitsText;
+        public TextMeshProUGUI UpgradeStarsText => upgradeStarsText;
         public TextMeshProUGUI PoolText => poolText;
         public TextMeshProUGUI EmptyText => emptyText;
 
         public void BindSlot(int slotIndex) => SlotIndex = slotIndex;
 
-        public void Show(UnitDefinition unit, Sprite icon, int remainingCopies, int gold, bool canPrepare)
+        public void Show(UnitDefinition unit, Sprite icon, int remainingCopies, int gold, bool canPrepare,
+            int purchaseStar = 0, IReadOnlyList<TraitDefinition> traits = null)
         {
             bool hasUnit = unit != null;
             DisplayedUnitId = hasUnit ? unit.Id : 0;
@@ -57,11 +66,27 @@ namespace AutoBattler.Presentation.Battle
             iconPlaceholderText.gameObject.SetActive(icon == null);
             nameText.text = hasUnit ? BattleText.UnitName(unit) : "";
             priceText.text = hasUnit ? CurrencyText.Amount(unit.Cost) : "";
+            traitsText.text = hasUnit
+                ? $"{TraitLabel(TraitCategory.Origin, unit.OriginId, traits)}\n{TraitLabel(TraitCategory.Class, unit.ClassId, traits)}"
+                : string.Empty;
+            bool hasUpgrade = hasUnit && (purchaseStar == 2 || purchaseStar == 3);
+            upgradeStarsText.text = hasUpgrade ? new string('★', purchaseStar) : string.Empty;
+            upgradeStarsText.color = purchaseStar == 3 ? threeStarColor : twoStarColor;
+            upgradeStarsText.gameObject.SetActive(hasUpgrade);
             poolText.text = string.Empty;
             poolText.gameObject.SetActive(false);
             emptyText.text = "X";
             priceText.color = hasUnit && gold < unit.Cost ? unaffordableColor : priceColor;
             iconPlaceholderText.text = hasUnit && !string.IsNullOrEmpty(nameText.text) ? nameText.text.Substring(0, 1) : "?";
+        }
+
+        private static string TraitLabel(TraitCategory category, int id, IReadOnlyList<TraitDefinition> traits)
+        {
+            string name = BattleText.TraitName(category, id, string.Empty);
+            if (name.Length != 0 || traits == null) return name;
+            foreach (TraitDefinition trait in traits)
+                if (trait.Category == category && trait.GroupId == id) return trait.Name;
+            return string.Empty;
         }
 
         private void OnEnable()

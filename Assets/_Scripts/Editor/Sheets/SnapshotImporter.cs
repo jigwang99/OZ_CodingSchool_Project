@@ -97,12 +97,17 @@ namespace AutoBattler.EditorTools.Sheets
             {
                 CheckIds(data.stages,stage=>stage.stageId,tables["Stages"]);
                 CheckIds(data.stageUnlockPlans,plan=>plan.entryId,tables["StageUnlockPlans"]);
-                if(data.stages.Length==0 || data.stages.Any(stage=>stage.chapter<1 || stage.number<1 || stage.roundsPerSegment<2
+                if(data.stages.Length==0 || data.stages.Any(stage=>stage.stageId==GameSnapshot.EndlessStageId
+                    || stage.chapter<1 || stage.number<1 || stage.roundsPerSegment<2
                     || string.IsNullOrWhiteSpace(stage.regionName) || string.IsNullOrWhiteSpace(stage.locationName))
                     || data.stages.Select(stage=>(stage.chapter,stage.number)).Distinct().Count()!=data.stages.Length)
                     throw new FormatException("Stages: 지역·장소·전투 길이 또는 스테이지 중복 오류.");
-                if(data.rounds.Any(round=>!data.stages.Any(stage=>stage.stageId==round.stageId) || round.sequence<1))
+                if(data.rounds.Any(round=>round.sequence<1
+                    || round.stageId!=GameSnapshot.EndlessStageId && !data.stages.Any(stage=>stage.stageId==round.stageId)))
                     throw new FormatException("Rounds: stage_id 또는 sequence 참조 오류.");
+                RoundRow[] endlessRounds=data.rounds.Where(round=>round.stageId==GameSnapshot.EndlessStageId).ToArray();
+                if(endlessRounds.Any(round=>round.offersAugment) || endlessRounds.Select(round=>round.sequence).Distinct().Count()!=endlessRounds.Length)
+                    throw new FormatException("Rounds: 7-1 전용 편성은 고유 sequence와 offers_augment=FALSE 필요.");
             }
             if(schema>=5)
             {
@@ -223,8 +228,11 @@ namespace AutoBattler.EditorTools.Sheets
                 if(rate.weights.Any(x=>x<0) || rate.weights.Sum()!=100) throw tables["ShopRates"].Error(FindRow(tables["ShopRates"],"level",level),"cost_1~5","확률 합계 100 필요.");
             }
             if(data.poolCounts.Length!=5 || Enumerable.Range(1,5).Any(c=>!data.poolCounts.Any(x=>x.cost==c && x.copiesPerUnit>0))) throw new FormatException("PoolCounts: 코스트 1~5의 양수 재고 필요.");
-            if(data.economy.Length!=13 || Enumerable.Range(1,13).Any(id=>!data.economy.Any(x=>x.ruleId==id && x.value>0))) throw new FormatException("Economy: 규칙 ID 1~13의 양수 값 필요.");
-            if(data.economy.Any(x=>x.ruleId<=9 && x.value!=(int)x.value)) throw new FormatException("Economy: ID 1~9는 정수 필요.");
+            int overtimeId=(int)EconomyRule.OvertimeSeconds;
+            if(data.economy.Any(x=>x.ruleId>overtimeId || x.value<=0 || float.IsNaN(x.value) || float.IsInfinity(x.value))
+                || Enumerable.Range(1,overtimeId-1).Any(id=>!data.economy.Any(x=>x.ruleId==id)))
+                throw new FormatException("Economy: 규칙 ID 1~13과 선택 규칙 ID 14에 양수 값 필요.");
+            if(data.economy.Any(x=>(x.ruleId<=9 || x.ruleId==overtimeId) && x.value!=(int)x.value)) throw new FormatException("Economy: ID 1~9와 14는 정수 필요.");
             DataRepository repository=new DataRepository(data);
             if(schema>=8) foreach(StageRow stage in data.stages) repository.ForStage(stage.stageId);
             return data;

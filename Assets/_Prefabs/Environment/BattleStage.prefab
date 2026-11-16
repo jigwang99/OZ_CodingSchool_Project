@@ -460,7 +460,6 @@ MonoBehaviour:
   stage: {fileID: 11400000, guid: 654c4bc2f32190b41a4b2292cdc456de, type: 2}
   backgroundView: {fileID: 1616312568835322952}
   benchView: {fileID: 3730797370927507153}
-  seed: 20261012
   unitPoolSize: 5
   assets: {fileID: 8729715954513264476}
   units: {fileID: 4167616865920010507}

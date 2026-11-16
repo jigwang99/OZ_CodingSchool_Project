@@ -85,11 +85,13 @@ namespace AutoBattler.Managers
             if(state==null) return;
             ReturnBattleEnemies();
             int id=100000;
-            foreach(EnemyDefinition definition in state.Data.Rounds[state.Round].Enemies)
+            float healthMultiplier=state.Data.EnemyHealthMultiplier(state.Round);
+            float attackMultiplier=state.Data.EnemyAttackMultiplier(state.Round);
+            foreach(EnemyDefinition definition in state.CurrentRound.Enemies)
             {
                 HexCoord cell=HexCoord.FromOffset(definition.Col,definition.Row);
                 Unit unit=pool.Rent(catalog.VisualPrefab(state.Data.Units[definition.UnitId].VisualId));
-                ConfigureUnit(unit,definition.UnitId,definition.Star,id++,UnitTeam.Enemy,cell,definition.BossProfileId);
+                ConfigureUnit(unit,definition.UnitId,definition.Star,id++,UnitTeam.Enemy,cell,definition.BossProfileId,healthMultiplier,attackMultiplier);
                 UnitState displayState=new UnitState(unit.InstanceId) { Location=UnitLocation.OnBoard(cell) };
                 unit.View.Bind(displayState,null);
                 unit.transform.position=grid.CellToWorld(cell);
@@ -97,9 +99,11 @@ namespace AutoBattler.Managers
             }
         }
 
-        private void ConfigureUnit(Unit unit,int definitionId,int star,int id,UnitTeam team,HexCoord? cell=null,int boss=0)
+        private void ConfigureUnit(Unit unit,int definitionId,int star,int id,UnitTeam team,HexCoord? cell=null,int boss=0,
+            float healthMultiplier=1f,float attackMultiplier=1f)
         {
-            unit.Configure(state.Data.Units[definitionId],star,id,team,state.Data,flow,grid,bench,cell,boss);
+            unit.Configure(state.Data.Units[definitionId],star,id,team,state.Data,flow,grid,bench,cell,boss,
+                healthMultiplier:healthMultiplier,attackMultiplier:attackMultiplier);
             unit.Identity.Apply(unit);
         }
 
