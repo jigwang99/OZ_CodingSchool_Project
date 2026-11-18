@@ -1,0 +1,218 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: BattleVFX
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: BattleVFX
+  m_GUID: 4d361eb6034ee764faf36ecd05a14490
+  m_SerializeEntries:
+  - m_GUID: 012c9bc8a8cf9fc4795f113e08921fe3
+    m_Address: Assets/_Art/Units/UnitStarOutline.mat
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 03008ed667e786944b0114c14df0dc2c
+    m_Address: battle-fx/IceBurst
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 08e7fc7fdf51360489a4d296f22252b9
+    m_Address: battle-fx/Heal
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0e1f2200f42954547b62d1348fc0092b
+    m_Address: battle-fx/StarBurst
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0ea4d9caea445fa4a84ac5d35e1b935d
+    m_Address: battle-fx/FireSpin
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 157accd8633db7e4dadb2abda2ba40e6
+    m_Address: battle-fx/NatureBurst
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 163610711d318ea46814426866140463
+    m_Address: battle-fx/PowerStatus
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1e223e4a4ebbfcf479bd21b730c06093
+    m_Address: battle-fx/MagicHit
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1feefd6de7dd74244946c6c3693a9c36
+    m_Address: Assets/_Prefabs/VFX/Projectile.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 21cc9329ea7fc9a4996958f7e9b23557
+    m_Address: battle-fx/LifeSteal
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 337165b84c01b094993dfed4994656fa
+    m_Address: battle-fx/NatureBolt
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3499618a3866d444397078900469501f
+    m_Address: battle-fx/SpiritBurst
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3990a5ee0ddd2f747b291840f8b384e4
+    m_Address: battle-fx/skill-sprites
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 39fdc9b703688834f99ceda4bd451d4e
+    m_Address: battle-fx/BloodSlash
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3baaa2ddb3f120d4b8995b1ebb4b81e2
+    m_Address: battle-fx/WeakStatus
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 43193f187c9bc524c89f418e1ab76929
+    m_Address: battle-fx/WindSlash
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 46b135f74fe150542990650058cf86e1
+    m_Address: battle-fx/Stun
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4d3ca9747755b9b4a8dea34ccd9f4730
+    m_Address: battle-fx/Punch
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 508de6b2b6ab62e40b7f3935fe064e5d
+    m_Address: battle-fx/HolyBurst
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5346275c66ba7644786fb01c721c1a6d
+    m_Address: Assets/_Data/UnitStarVisualSettings.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5cb529f39b1b7954ab94c2cf672a7316
+    m_Address: battle-fx/Shield
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5d98bc61b3cf4cb44937518aa6b3fd0c
+    m_Address: battle-fx/IceBolt
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 614f5587dfb524f488daf1201837f745
+    m_Address: battle-fx/FlameWave
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6916cd32cf76b3d45987edc77f568f32
+    m_Address: battle-fx/Fire
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 79cbe1358f05c2a4eb8f12ba2bb913b4
+    m_Address: battle-fx/SpiritBolt
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 84bf954e8eec13f40bbfc1b9eac3be35
+    m_Address: battle-fx/ColdStatus
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 867672c72a89b6e46a46785c5995e7fb
+    m_Address: battle-fx/Spin
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 90b8868d9b61fb84392efdfc1130f905
+    m_Address: battle-fx/Hit
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a7db6a0c1024a6341b9f30162e6a2e73
+    m_Address: battle-fx/Pierce
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b0977452d6872c14b82d1ecfad08c1ce
+    m_Address: battle-fx/Slash
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b763197ff900a3f4ca6621f6575861ab
+    m_Address: battle-fx/Vine
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bc86697c7a0525646894bf39c3b30782
+    m_Address: battle-fx/HeavySlash
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ca0b7ec0a464fe540b25eead2973dcf5
+    m_Address: battle-fx/DarkSlash
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cf1c5a3c496ca8b4ea4b00b291fcefb2
+    m_Address: battle-fx/FireBolt
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e3350ea2618ff1346bd8dad2b64942f2
+    m_Address: battle-fx/Rally
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e34d5895a618e0e49be885529c39f38e
+    m_Address: battle-fx/ArcaneBolt
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e392087fbfc5adc41a62ed9372171158
+    m_Address: battle-fx/skill-library
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ece102b830876d54e9b5bb56711f293c
+    m_Address: battle-fx/Lightning
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fb77daa992dcb834a9d24be398e3145a
+    m_Address: battle-fx/ShieldStatus
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 6df106da10895bd40864c2afe15707c6, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: b60c4f32a5d904e43b337f31c8fbd418, type: 2}
+    - {fileID: 11400000, guid: 985a71a9e7131cb43a94ae00982a596f, type: 2}

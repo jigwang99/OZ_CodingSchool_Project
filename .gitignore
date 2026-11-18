@@ -105,3 +105,51 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+
+# PIXEM 원본 에셋과 폴더 메타 파일 제외
+/Assets/Pixem/
+/Assets/Pixem.meta
+
+# SPUM 및 타격 이펙트 원본 에셋과 폴더 메타 파일 제외
+/Assets/SPUM/
+/Assets/SPUM.meta
+/Assets/HitEffectPack/
+/Assets/HitEffectPack.meta
+
+# 시트 생성 작업 파일과 미리보기 제외
+/outputs/
+
+# 검증 결과와 스크린샷 제외
+/Diagnostics/
+
+# 스냅샷 가져오기 중 임시 파일 제외
+/Assets/_Data/Snapshots/*.pending*
+
+# 로컬 기능 검사 스크립트와 폴더 메타 제외
+/Assets/_Scripts/Editor/Checks/
+/Assets/_Scripts/Editor/Checks.meta
+
+# 기능별 로컬 Markdown 문서 제외
+/Docs/**/*.md
+
+# Leohpaz 원본 에셋과 폴더 메타 파일 제외
+/Assets/Leohpaz/
+/Assets/Leohpaz.meta
+
+# 추가된 BGM·FX 원본 에셋과 폴더 메타 파일 제외
+/Assets/25 Rpg Game Tracks/
+/Assets/25 Rpg Game Tracks.meta
+/Assets/2D_PFX/
+/Assets/2D_PFX.meta
+/Assets/PixelAttackFx/
+/Assets/PixelAttackFx.meta
+/Assets/PoisonEffect/
+/Assets/PoisonEffect.meta
+/Assets/StateEffect/
+/Assets/StateEffect.meta
+/Assets/_Art/
+/Assets/_Art.meta
+/Assets/_Prefabs/Units/
+/Assets/_Prefabs/Units.meta
+/Assets/_Prefabs/VFX/UnitFx/
+/Assets/_Prefabs/VFX/UnitFx.meta

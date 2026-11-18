@@ -1,0 +1,253 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: StageBackgrounds
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: StageBackgrounds
+  m_GUID: 90a9c8177d1dc5d4abded2276e9fdda2
+  m_SerializeEntries:
+  - m_GUID: 005a160e70a02f84192e6be836ff636d
+    m_Address: stage-background/4-2
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 01b81f411252a5d40baa5c394ba5457b
+    m_Address: stage-background/3-4
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0613f3780126d3d488a531b52afae97b
+    m_Address: stage-map/5
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0e0f108ffbea9234cb7c9d2c4324f2cd
+    m_Address: stage-background/4-3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 11086887a763fa54da1df7ca367319aa
+    m_Address: stage-map/1
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 17359bc7da19dd946b9106599055ab17
+    m_Address: stage-background/2-2
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 19f9c7ca9968fd049be7c5bcf770a6d3
+    m_Address: stage-background/5-4
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1efde3cc5e928614ba6c718984c69aad
+    m_Address: stage-background/5-2
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 27d642e2acdd3b544a4cc304cb615365
+    m_Address: stage-background/2-4
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 30b583abc4d840349aac9cf63a87629a
+    m_Address: stage-background/3-1
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 328f97b152279c346b95b7931e2bbc53
+    m_Address: stage-background/1-4
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3742c43e9d0a2534eb1eeb1d54a667d2
+    m_Address: stage-map/4
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3d310a47034ac4c469611e1f5ed5faa1
+    m_Address: stage-background/3-3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 465372f9f9ca17543b6bb00d62215617
+    m_Address: stage-background/5-3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 46e593536d781c04a996130bfae9ff61
+    m_Address: bench-floor/3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 494217b306a46374bb958405f52e476d
+    m_Address: stage-background/1-2
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6c7f4e7b4d52ccb468995595c95efbba
+    m_Address: stage-map/2
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6e9f17b4c63540b4c8852eeea1ddc27a
+    m_Address: stage-background/4-5
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 72dcee62dd321f14d8e18adc01d5755a
+    m_Address: stage-map/6
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 787af35f8fcc34d4c9aa56119cf88a2e
+    m_Address: stage-background/4-4
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7ce54e8566130e84ba34306105c34169
+    m_Address: stage-background/6-1
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7d7fa1f5358482d4eac4e6eef42158f1
+    m_Address: stage-background/2-1
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7e6fc6389f1d007489c9e9e36ee0403c
+    m_Address: stage-background/6-5
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7f5e84dc1cb91984899b9d356bf2f2de
+    m_Address: stage-map/3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8d6e0197151cf0e419133545cfd289c1
+    m_Address: bench-floor/2
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9aa4dd51999df8645bea3ed41fb7347a
+    m_Address: stage-background/1-5
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9b0f4f5585be9c143886a46f7b108608
+    m_Address: bench-floor/4
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a42660315977b2041ad2ddb38a790991
+    m_Address: stage-background/6-4
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a8bb7038b89c5b94ba10a0b6df0606fb
+    m_Address: stage-background/3-2
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: aa62bda0e2e8b5944b7593a39d1200a6
+    m_Address: stage-background/2-5
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b2824add064db8747bc3dfb843135baa
+    m_Address: stage-background/5-5
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b34e47717326c484cb60e04c0b23008c
+    m_Address: stage-background/6-3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b400060844deac94dba4a8f4b85ec046
+    m_Address: stage-background/1-3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b52c5ab70d214734887201baa599bf0e
+    m_Address: stage-background/4-1
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c58c2a391844ab14da6d1b4552637600
+    m_Address: bench-floor/1
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cb82e6586c35bde48ab8076f26c29eaf
+    m_Address: bench-floor/6
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cc1b4513ee8728f42828bdc49061d99a
+    m_Address: stage-background/1-1
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d48fbb22880548c44af7d18d07cad45b
+    m_Address: bench-floor/5
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: da15b1de6d99c714fb649f275b09602c
+    m_Address: Assets/_Art/Backgrounds/Stage_1_1_ForestEntrance.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: daeac4a4938817c48afa6646b1d5b02f
+    m_Address: stage-background/5-1
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ecac7b0a1d80d8a4fa7f7b6dc3ee3845
+    m_Address: stage-background/3-5
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f2f9004e4d3b6ec45a4ac52b9f836d53
+    m_Address: stage-background/6-2
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f8ce781b042becf4a80fd2aaac33b52d
+    m_Address: stage-background/2-3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c244eae0d5814d7d9e29d4b6f965cc53
+    m_Address: stage-map/7
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3be0a8ccf04a45e1991c9b02c5a2113a
+    m_Address: stage-background/endless
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3d4b8b0e08484befafc972ebe3dc7d27
+    m_Address: bench-floor/7
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 6df106da10895bd40864c2afe15707c6, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 678aec153a3c9a048a0c5819d9f11e2b, type: 2}
+    - {fileID: 11400000, guid: fbbb4bffea6d9e34198c77a5cddfc4f5, type: 2}

@@ -1,0 +1,279 @@
+#if UNITY_EDITOR
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using AutoBattler.Data.Snapshot;
+using AutoBattler.Data.Skills;
+using AutoBattler.Data.Units;
+using AutoBattler.Data.Traits;
+using AutoBattler.Data.Augments;
+using AutoBattler.Data.Items;
+using AutoBattler.Data.Stages;
+using AutoBattler.Battle.Units;
+using UnityEditor;
+using UnityEngine;
+
+namespace AutoBattler.EditorTools.Sheets
+{
+    /// <summary>전체 표가 정상일 때만 현재 스냅샷 교체. 런타임에는 실행하지 않음.</summary>
+    public static class SnapshotImporter
+    {
+        public const string OutputPath="Assets/_Data/Snapshots/GameSnapshot.json";
+        public static readonly string[] BaseTabs={"Manifest","Units","Rounds","RoundUnits","Levels","ShopRates","PoolCounts","Economy"};
+        public static readonly string[] SkillTabs=BaseTabs.Concat(new[]{"Skills","Effects"}).ToArray();
+        public static readonly string[] TraitTabs=SkillTabs.Concat(new[]{"Traits"}).ToArray();
+        public static readonly string[] AugmentTabs=TraitTabs.Concat(new[]{"Augments"}).ToArray();
+        public static readonly string[] ItemTabs=AugmentTabs.Concat(new[]{"Items","ItemStats"}).ToArray();
+        public static readonly string[] SkillRuleTabs=ItemTabs.Concat(new[]{"SkillRules"}).ToArray();
+        public static readonly string[] RecipeTabs=SkillRuleTabs.Concat(new[]{"ItemRecipes"}).ToArray();
+        public static readonly string[] Tabs=RecipeTabs.Concat(new[]{"Stages","StageUnlockPlans"}).ToArray();
+        public static string[] TabsForSchema(int schema)=>schema==1?BaseTabs:schema==2?SkillTabs:schema==3?TraitTabs:schema==4?AugmentTabs:schema==5?ItemTabs:schema==6?SkillRuleTabs:schema==7?RecipeTabs:schema==8?Tabs:throw new FormatException("지원하지 않는 스키마.");
+        public static GameSnapshot Build(Dictionary<string,CsvTable> tables)
+        {
+            foreach(string tab in BaseTabs) if(!tables.ContainsKey(tab)) throw new FormatException(tab+": 표 없음.");
+            CsvTable manifest=tables["Manifest"];
+            if(manifest.Rows.Count!=2) throw manifest.Error(1,"schema_version","단일 Manifest 행 필요.");
+            int schema=manifest.Int(1,"schema_version");
+            if(manifest.Rows.Count!=2 || schema<1 || schema>8) throw manifest.Error(1,"schema_version","스키마 1~8의 단일 Manifest 행 필요.");
+            foreach(string tab in TabsForSchema(schema)) if(!tables.ContainsKey(tab)) throw new FormatException(tab+": 표 없음.");
+            GameSnapshot data=new GameSnapshot {schemaVersion=schema,dataVersion=manifest.Get(1,"data_version")};
+            data.previousDataVersion=schema>=7?manifest.Get(1,"previous_data_version"):null;
+            if(string.IsNullOrWhiteSpace(data.dataVersion)) throw manifest.Error(1,"data_version","버전 필요.");
+            data.units=Read(tables["Units"],(t,r)=>new UnitRow {
+                unitId=t.Int(r,"unit_id"),name=t.Get(r,"name"),cost=t.Int(r,"cost"),originId=t.Int(r,"origin_id"),classId=t.Int(r,"class_id"),
+                hp=t.Int(r,"hp"),attack=t.Int(r,"attack"),armor=t.Int(r,"armor"),attackInterval=t.Float(r,"attack_interval"),attackType=t.Get(r,"attack_type"),
+                attackRange=t.Int(r,"attack_range"),combatRole=t.Int(r,"combat_role"),critChance=t.Float(r,"crit_chance"),critMultiplier=t.Float(r,"crit_multiplier"),
+                skillId=t.Int(r,"skill_id",true),visualId=t.Int(r,"visual_id"),iconId=t.Int(r,"icon_id") });
+            data.rounds=Read(tables["Rounds"],(t,r)=>new RoundRow {roundId=t.Int(r,"round_id"),rewardGold=t.Int(r,"reward_gold"),
+                bossVictoryGold=t.HasColumn("boss_victory_gold")?t.Int(r,"boss_victory_gold",true):0,isBoss=t.Bool(r,"is_boss"),
+                offersAugment=t.Bool(r,"offers_augment"),stageId=schema>=8?t.Int(r,"stage_id"):0,sequence=schema>=8?t.Int(r,"sequence"):0});
+            data.roundUnits=Read(tables["RoundUnits"],(t,r)=>new RoundUnitRow {entryId=t.Int(r,"entry_id"),roundId=t.Int(r,"round_id"),unitId=t.Int(r,"unit_id"),star=t.Int(r,"star"),col=t.Int(r,"col"),row=t.Int(r,"row"),bossProfileId=t.Int(r,"boss_profile_id",true)});
+            data.levels=Read(tables["Levels"],(t,r)=>new LevelRow {level=t.Int(r,"level"),requiredXp=t.Int(r,"required_xp"),deploymentLimit=t.Int(r,"deployment_limit")});
+            data.shopRates=Read(tables["ShopRates"],(t,r)=>new ShopRateRow {level=t.Int(r,"level"),weights=Enumerable.Range(1,5).Select(c=>t.Int(r,"cost_"+c)).ToArray()});
+            data.poolCounts=Read(tables["PoolCounts"],(t,r)=>new PoolRow {cost=t.Int(r,"cost"),copiesPerUnit=t.Int(r,"copies_per_unit")});
+            data.economy=Read(tables["Economy"],(t,r)=>new EconomyRow {ruleId=t.Int(r,"rule_id"),value=t.Float(r,"value")});
+            data.skills=schema==1?Array.Empty<SkillRow>():Read(tables["Skills"],(t,r)=>new SkillRow {
+                skillId=t.Int(r,"skill_id"),name=t.Get(r,"name"),targetRule=ReadEnum<SkillTargetRule>(t,r,"target_rule"),
+                delivery=ReadEnum<SkillDelivery>(t,r,"delivery"),animation=ReadEnum<SkillAnimation>(t,r,"animation"),
+                manaCost=t.Int(r,"mana_cost"),castRange=t.Int(r,"cast_range"),windup=t.Float(r,"windup"),cooldown=t.Float(r,"cooldown"),
+                radius=t.Int(r,"radius"),centerOnCaster=t.Bool(r,"center_on_caster"),baseDamage=t.Float(r,"base_damage"),
+                attackRatio=t.Float(r,"attack_ratio"),armorIgnore=t.Float(r,"armor_ignore"),effectId=t.Int(r,"effect_id",true),projectileSpeed=t.Float(r,"projectile_speed") });
+            data.effects=schema==1?Array.Empty<EffectRow>():Read(tables["Effects"],(t,r)=>new EffectRow {
+                effectId=t.Int(r,"effect_id"),kind=ReadEnum<EffectKind>(t,r,"kind"),value=t.Float(r,"value"),duration=t.Float(r,"duration"),
+                stacking=ReadEnum<EffectStacking>(t,r,"stacking"),stat=ReadEnum<StatType>(t,r,"stat"),operation=ReadEnum<ModifierOperation>(t,r,"operation") });
+            data.skillRules=schema<6?Array.Empty<SkillRuleRow>():Read(tables["SkillRules"],(t,r)=>new SkillRuleRow {
+                skillId=t.Int(r,"skill_id"),shape=ReadEnum<SkillShape>(t,r,"shape"),targetCount=t.Int(r,"target_count"),
+                hitCount=t.Int(r,"hit_count"),hitInterval=t.Float(r,"hit_interval"),retargetOnKill=t.Bool(r,"retarget_on_kill"),
+                executeThreshold=t.Float(r,"execute_threshold"),executeMultiplier=t.Float(r,"execute_multiplier"),
+                distanceBonus=t.Float(r,"distance_bonus"),lifeStealRatio=t.Float(r,"life_steal_ratio"),
+                secondaryEffectId=t.Int(r,"secondary_effect_id",true),secondaryTarget=ReadEnum<SecondarySkillTarget>(t,r,"secondary_target"),
+                secondaryRadius=t.Int(r,"secondary_radius"),effectLowHpThreshold=t.Float(r,"effect_low_hp_threshold"),
+                effectLowHpMultiplier=t.Float(r,"effect_low_hp_multiplier"),shieldMaxHpRatio=t.Float(r,"shield_max_hp_ratio") });
+            data.traits=schema<3?Array.Empty<TraitRow>():Read(tables["Traits"],(t,r)=>new TraitRow {
+                traitId=t.Int(r,"trait_id"),name=t.Get(r,"name"),category=ReadEnum<TraitCategory>(t,r,"category"),
+                groupId=t.Int(r,"group_id"),requiredCount=t.Int(r,"required_count"),effect=ReadEnum<TraitEffect>(t,r,"effect"),
+                value=t.Float(r,"value"),secondaryValue=t.Float(r,"secondary_value"),duration=t.Float(r,"duration"),threshold=t.Float(r,"threshold") });
+            data.augments=schema<4?Array.Empty<AugmentRow>():Read(tables["Augments"],(t,r)=>new AugmentRow {
+                augmentId=t.Int(r,"augment_id"),name=t.Get(r,"name"),description=t.Get(r,"description"),
+                effect=ReadEnum<AugmentEffect>(t,r,"effect"),stat=ReadEnum<StatType>(t,r,"stat"),
+                operation=ReadEnum<ModifierOperation>(t,r,"operation"),value=t.Float(r,"value"),duration=t.Float(r,"duration"),
+                secondaryValue=t.HasColumn("secondary_value")?t.Float(r,"secondary_value"):0f,
+                threshold=t.HasColumn("threshold")?t.Float(r,"threshold"):0f });
+            data.items=schema<5?Array.Empty<ItemRow>():Read(tables["Items"],(t,r)=>new ItemRow {
+                itemId=t.Int(r,"item_id"),name=t.Get(r,"name"),description=t.Get(r,"description"),
+                iconId=t.Int(r,"icon_id"),dropWeight=t.Int(r,"drop_weight") });
+            data.itemStats=schema<5?Array.Empty<ItemStatRow>():Read(tables["ItemStats"],(t,r)=>new ItemStatRow {
+                entryId=t.Int(r,"entry_id"),itemId=t.Int(r,"item_id"),stat=ReadEnum<StatType>(t,r,"stat"),
+                operation=ReadEnum<ModifierOperation>(t,r,"operation"),value=t.Float(r,"value") });
+            data.itemRecipes=schema<7?Array.Empty<ItemRecipeRow>():Read(tables["ItemRecipes"],(t,r)=>new ItemRecipeRow {
+                recipeId=t.Int(r,"recipe_id"),firstItemId=t.Int(r,"first_item_id"),secondItemId=t.Int(r,"second_item_id"),resultItemId=t.Int(r,"result_item_id") });
+            if(schema>=7) CheckIds(data.itemRecipes,recipe=>recipe.recipeId,tables["ItemRecipes"]);
+            data.stages=schema<8?Array.Empty<StageRow>():Read(tables["Stages"],(t,r)=>new StageRow {
+                stageId=t.Int(r,"stage_id"),chapter=t.Int(r,"chapter"),number=t.Int(r,"number"),roundsPerSegment=t.Int(r,"rounds_per_segment"),regionName=t.Get(r,"region_name"),locationName=t.Get(r,"location_name")});
+            data.stageUnlockPlans=schema<8?Array.Empty<StageUnlockPlanRow>():Read(tables["StageUnlockPlans"],(t,r)=>new StageUnlockPlanRow {
+                entryId=t.Int(r,"entry_id"),stageId=t.Int(r,"stage_id"),unitId=t.Int(r,"unit_id")});
+            if(schema>=8)
+            {
+                CheckIds(data.stages,stage=>stage.stageId,tables["Stages"]);
+                CheckIds(data.stageUnlockPlans,plan=>plan.entryId,tables["StageUnlockPlans"]);
+                if(data.stages.Length==0 || data.stages.Any(stage=>stage.stageId==GameSnapshot.EndlessStageId
+                    || stage.chapter<1 || stage.number<1 || stage.roundsPerSegment<2
+                    || string.IsNullOrWhiteSpace(stage.regionName) || string.IsNullOrWhiteSpace(stage.locationName))
+                    || data.stages.Select(stage=>(stage.chapter,stage.number)).Distinct().Count()!=data.stages.Length)
+                    throw new FormatException("Stages: 지역·장소·전투 길이 또는 스테이지 중복 오류.");
+                if(data.rounds.Any(round=>round.sequence<1
+                    || round.stageId!=GameSnapshot.EndlessStageId && !data.stages.Any(stage=>stage.stageId==round.stageId)))
+                    throw new FormatException("Rounds: stage_id 또는 sequence 참조 오류.");
+                RoundRow[] endlessRounds=data.rounds.Where(round=>round.stageId==GameSnapshot.EndlessStageId).ToArray();
+                if(endlessRounds.Any(round=>round.offersAugment) || endlessRounds.Select(round=>round.sequence).Distinct().Count()!=endlessRounds.Length)
+                    throw new FormatException("Rounds: 7-1 전용 편성은 고유 sequence와 offers_augment=FALSE 필요.");
+            }
+            if(schema>=5)
+            {
+                CheckIds(data.items,x=>x.itemId,tables["Items"]);
+                CheckIds(data.itemStats,x=>x.entryId,tables["ItemStats"]);
+                long dropWeight=data.items.Sum(item=>(long)item.dropWeight);
+                if(data.items.Length==0 || dropWeight<=0 || dropWeight>int.MaxValue)
+                    throw new FormatException("Items: 전투 승리 보상용 아이템과 양수 추첨 가중치 필요.");
+                foreach(ItemRow item in data.items)
+                    if(!data.itemStats.Any(modifier=>modifier.itemId==item.itemId))
+                        throw new FormatException($"ItemStats: item_id={item.itemId}의 능력치 필요.");
+            }
+            if(schema>=4)
+            {
+                CsvTable t=tables["Augments"]; CheckIds(data.augments,x=>x.augmentId,t);
+                if(data.augments.Length<5) throw new FormatException("Augments: 중복 없이 세 번 선택할 수 있는 후보 5종 이상 필요.");
+                foreach(AugmentRow augment in data.augments)
+                {
+                    int r=FindRow(t,"augment_id",augment.augmentId);
+                    if(string.IsNullOrWhiteSpace(augment.name) || string.IsNullOrWhiteSpace(augment.description) || augment.value<=0 || augment.duration<0
+                        || augment.secondaryValue<0 || augment.threshold<0 || augment.threshold>1
+                        || (augment.effect==AugmentEffect.StartingShield && augment.duration<=0)
+                        || (augment.effect==AugmentEffect.EmergencyShield && (augment.duration<=0 || augment.threshold<=0))
+                        || (augment.effect==AugmentEffect.EchoSpell && (augment.duration<=0 || augment.value>1))
+                        || (augment.effect==AugmentEffect.MaterialSupply && (augment.value!=(int)augment.value || augment.value>10))
+                        || (augment.effect==AugmentEffect.StartingMana && (augment.value>100 || augment.value!=(int)augment.value))
+                        || ((augment.effect==AugmentEffect.ImmediateGold || augment.effect==AugmentEffect.VictoryGold) && augment.value!=(int)augment.value))
+                        throw t.Error(r,"value/duration","강화 수치·설명 범위 오류.");
+                }
+            }
+            if(schema>=3)
+            {
+                CsvTable t=tables["Traits"]; CheckIds(data.traits,x=>x.traitId,t);
+                HashSet<(TraitCategory, int, int)> stages=new HashSet<(TraitCategory,int,int)>();
+                foreach(TraitRow trait in data.traits)
+                {
+                    int r=FindRow(t,"trait_id",trait.traitId);
+                    if(string.IsNullOrWhiteSpace(trait.name) || trait.groupId<1 || trait.requiredCount<1 || trait.requiredCount>10
+                        || (trait.value<0 && trait.effect!=TraitEffect.DemonPower) || trait.secondaryValue<0 || trait.duration<0 || trait.threshold<0 || trait.threshold>1
+                        || (trait.effect==TraitEffect.ShieldAtStart && trait.duration<=0)
+                        || (trait.effect==TraitEffect.LowHealthAttack && trait.threshold<=0)
+                        || (trait.effect==TraitEffect.DemonPower && (trait.value<=-1 || trait.value==0 || trait.value>1))
+                        || ((trait.effect==TraitEffect.DamageLifeSteal || trait.effect==TraitEffect.BasicArmorIgnore) && trait.value>1)
+                        || (trait.effect==TraitEffect.StartingMana && (trait.value>100 || trait.value!=(int)trait.value)))
+                        throw t.Error(r,"trait_id","시너지 수치·집계 범위 오류.");
+                    if(!stages.Add((trait.category,trait.groupId,trait.requiredCount))) throw t.Error(r,"required_count","같은 시너지 단계 중복.");
+                }
+                if(!data.traits.Any(trait=>trait.category==TraitCategory.Origin) || !data.traits.Any(trait=>trait.category==TraitCategory.Class))
+                    throw new FormatException("Traits: 종족과 직업 시너지 정의 필요.");
+            }
+            if(schema>=2)
+            {
+                CheckIds(data.skills,x=>x.skillId,tables["Skills"]); CheckIds(data.effects,x=>x.effectId,tables["Effects"]);
+                foreach(SkillRow skill in data.skills)
+                {
+                    CsvTable t=tables["Skills"]; int r=FindRow(t,"skill_id",skill.skillId);
+                    if(skill.manaCost<1 || skill.manaCost>100 || skill.castRange<0 || skill.castRange>14 || skill.windup<0 || skill.cooldown<0
+                        || skill.radius<0 || skill.radius>14 || skill.baseDamage<0 || skill.attackRatio<0 || skill.armorIgnore<0 || skill.armorIgnore>1
+                        || (skill.delivery==SkillDelivery.Projectile && skill.projectileSpeed<=0)) throw t.Error(r,"skill_id","시전 수치 범위 오류.");
+                    if(skill.effectId!=0 && !data.effects.Any(x=>x.effectId==skill.effectId)) throw t.Error(r,"effect_id","없는 효과 참조.");
+                }
+                foreach(EffectRow effect in data.effects)
+                {
+                    CsvTable t=tables["Effects"]; int r=FindRow(t,"effect_id",effect.effectId);
+                    if(effect.value<0 && effect.kind!=EffectKind.StatModifier || (effect.kind==EffectKind.Slow && effect.value>1)
+                        || (effect.kind!=EffectKind.Heal && effect.duration==0)) throw t.Error(r,"value/duration","효과 수치 범위 오류.");
+                }
+            }
+            if(schema>=6)
+            {
+                CsvTable table=tables["SkillRules"]; CheckIds(data.skillRules,rule=>rule.skillId,table);
+                foreach(SkillRuleRow rule in data.skillRules)
+                {
+                    int row=FindRow(table,"skill_id",rule.skillId);
+                    if(!data.skills.Any(skill=>skill.skillId==rule.skillId) || rule.targetCount<0 || rule.targetCount>56
+                        || rule.hitCount<1 || rule.hitCount>10 || rule.hitInterval<0 || rule.executeThreshold<0 || rule.executeThreshold>1
+                        || rule.executeMultiplier<1 || rule.distanceBonus<0 || rule.lifeStealRatio<0 || rule.lifeStealRatio>1
+                        || rule.secondaryRadius<0 || rule.secondaryRadius>14 || rule.effectLowHpThreshold<0 || rule.effectLowHpThreshold>1
+                        || rule.effectLowHpMultiplier<1 || rule.shieldMaxHpRatio<0 || rule.shieldMaxHpRatio>1
+                        || rule.secondaryEffectId!=0 && !data.effects.Any(effect=>effect.effectId==rule.secondaryEffectId))
+                        throw table.Error(row,"skill_id","확장 스킬 규칙 또는 효과 참조 오류.");
+                }
+            }
+            CheckIds(data.units,x=>x.unitId,tables["Units"]); CheckIds(data.rounds,x=>x.roundId,tables["Rounds"]);
+            CheckIds(data.roundUnits,x=>x.entryId,tables["RoundUnits"]); CheckIds(data.levels,x=>x.level,tables["Levels"]);
+            CheckIds(data.shopRates,x=>x.level,tables["ShopRates"]); CheckIds(data.poolCounts,x=>x.cost,tables["PoolCounts"]);
+            CheckIds(data.economy,x=>x.ruleId,tables["Economy"]);
+            foreach(UnitRow unit in data.units)
+            {
+                int r=FindRow(tables["Units"],"unit_id",unit.unitId); CsvTable t=tables["Units"];
+                if(unit.cost<1 || unit.cost>5) throw t.Error(r,"cost","1~5 범위.");
+                if(unit.hp<1 || unit.attack<1 || unit.armor<0 || unit.attackInterval<=0 || unit.attackRange<1 || unit.attackRange>14) throw t.Error(r,"hp/attack/armor/attack_interval/attack_range","전투 수치 범위 오류.");
+                if(unit.combatRole<0 || unit.combatRole>3 || unit.originId<1 || unit.classId<1) throw t.Error(r,"combat_role/origin_id/class_id","정의 범위 오류.");
+                if(unit.attackType!="Melee" && unit.attackType!="Ranged") throw t.Error(r,"attack_type","Melee 또는 Ranged.");
+                if(unit.critChance<0 || unit.critChance>1 || unit.critMultiplier<1) throw t.Error(r,"crit_chance/crit_multiplier","확률 0~1, 배율 1 이상.");
+                if(unit.skillId!=0 && !data.skills.Any(x=>x.skillId==unit.skillId)) throw t.Error(r,"skill_id","없는 스킬 참조.");
+                if(unit.visualId<1 || unit.iconId<1) throw t.Error(r,"visual_id/icon_id","AssetCatalog에 연결할 양수 ID 필요.");
+            }
+            if(!data.units.Any(x=>x.cost==1)) throw new FormatException("Units: 시작용 1코스트 필요.");
+            if(data.rounds.Length==0 || data.rounds.OrderBy(x=>x.roundId).Select((x,i)=>x.roundId!=i+1).Any(x=>x)) throw new FormatException("Rounds round_id: 1부터 연속된 라운드 필요.");
+            foreach(RoundRow round in data.rounds)
+                if(round.rewardGold<0 || round.bossVictoryGold<0 || !round.isBoss && round.bossVictoryGold!=0
+                    || !data.roundUnits.Any(x=>x.roundId==round.roundId))
+                    throw tables["Rounds"].Error(FindRow(tables["Rounds"],"round_id",round.roundId),"reward_gold/round_id","잘못된 보상 또는 적 구성 없음.");
+            HashSet<string> positions=new HashSet<string>();
+            foreach(RoundUnitRow enemy in data.roundUnits)
+            {
+                CsvTable t=tables["RoundUnits"]; int r=FindRow(t,"entry_id",enemy.entryId);
+                if(!data.rounds.Any(x=>x.roundId==enemy.roundId) || !data.units.Any(x=>x.unitId==enemy.unitId)) throw t.Error(r,"round_id/unit_id","없는 ID 참조.");
+                if(enemy.star<1 || enemy.star>UnitStarRules.Maximum || enemy.col<4 || enemy.col>=8 || enemy.row<0 || enemy.row>=7 || enemy.bossProfileId<0 || enemy.bossProfileId>3) throw t.Error(r,"star/col/row/boss_profile_id","성급·적 영역·보스 샘플 범위 오류.");
+                if(!positions.Add($"{enemy.roundId}:{enemy.col}:{enemy.row}")) throw t.Error(r,"col/row","같은 라운드의 좌표 중복.");
+            }
+            if(data.levels.Length!=10 || data.shopRates.Length!=10) throw new FormatException("Levels/ShopRates: 레벨 1~10 각각 필요.");
+            for(int level=1;level<=10;level++)
+            {
+                LevelRow l=data.levels.FirstOrDefault(x=>x.level==level); ShopRateRow rate=data.shopRates.FirstOrDefault(x=>x.level==level);
+                if(l==null || rate==null || l.deploymentLimit!=level || (level<10?l.requiredXp<=0:l.requiredXp!=0)) throw new FormatException($"Levels/ShopRates level={level}: 누락 또는 경험치·인원 범위 오류.");
+                if(rate.weights.Any(x=>x<0) || rate.weights.Sum()!=100) throw tables["ShopRates"].Error(FindRow(tables["ShopRates"],"level",level),"cost_1~5","확률 합계 100 필요.");
+            }
+            if(data.poolCounts.Length!=5 || Enumerable.Range(1,5).Any(c=>!data.poolCounts.Any(x=>x.cost==c && x.copiesPerUnit>0))) throw new FormatException("PoolCounts: 코스트 1~5의 양수 재고 필요.");
+            int overtimeId=(int)EconomyRule.OvertimeSeconds;
+            if(data.economy.Any(x=>x.ruleId>overtimeId || x.value<=0 || float.IsNaN(x.value) || float.IsInfinity(x.value))
+                || Enumerable.Range(1,overtimeId-1).Any(id=>!data.economy.Any(x=>x.ruleId==id)))
+                throw new FormatException("Economy: 규칙 ID 1~13과 선택 규칙 ID 14에 양수 값 필요.");
+            if(data.economy.Any(x=>(x.ruleId<=9 || x.ruleId==overtimeId) && x.value!=(int)x.value)) throw new FormatException("Economy: ID 1~9와 14는 정수 필요.");
+            DataRepository repository=new DataRepository(data);
+            if(schema>=8) foreach(StageRow stage in data.stages) repository.ForStage(stage.stageId);
+            return data;
+        }
+        private static T[] Read<T>(CsvTable table,Func<CsvTable,int,T> reader)
+        {
+            List<T> result=new List<T>(); for(int r=1;r<table.Rows.Count;r++) if(!table.IsEmpty(r)) result.Add(reader(table,r)); return result.ToArray();
+        }
+        private static T ReadEnum<T>(CsvTable table,int row,string column) where T:struct,Enum
+        {
+            if(!Enum.TryParse<T>(table.Get(row,column),true,out T result) || !Enum.IsDefined(typeof(T),result))
+                throw table.Error(row,column,"등록된 Enum 이름 필요.");
+            return result;
+        }
+        private static int FindRow(CsvTable table,string column,int id)
+        {
+            for(int r=1;r<table.Rows.Count;r++) if(!table.IsEmpty(r) && table.Int(r,column)==id) return r;
+            return 1;
+        }
+        private static void CheckIds<T>(T[] rows,Func<T,int> id,CsvTable table)
+        {
+            HashSet<int> ids=new HashSet<int>(); int row=1;
+            foreach(T item in rows) { while(table.IsEmpty(row)) row++; int value=id(item);
+                if(value<=0 || !ids.Add(value)) throw table.Error(row,table.Rows[0][0],"양수 고유 ID 필요."); row++; }
+        }
+        public static void Apply(GameSnapshot snapshot)
+        {
+            AutoBattler.Run.StageDefinition[] stageTargets=snapshot.schemaVersion>=8?StageRuleAssetImporter.Targets(snapshot):Array.Empty<AutoBattler.Run.StageDefinition>();
+            if(File.Exists(OutputPath) && JsonUtility.FromJson<GameSnapshot>(File.ReadAllText(OutputPath)).schemaVersion>snapshot.schemaVersion)
+                throw new FormatException("이전 스키마는 현재 스냅샷에 적용할 수 없습니다. 최신 Manifest와 필수 표를 확인하세요.");
+            string directory=Path.GetDirectoryName(OutputPath); Directory.CreateDirectory(directory);
+            string temporary=OutputPath+".pending";
+            try
+            {
+                File.WriteAllText(temporary,JsonUtility.ToJson(snapshot,true)+"\n",new System.Text.UTF8Encoding(false));
+                if(File.Exists(OutputPath)) File.Replace(temporary,OutputPath,null); else File.Move(temporary,OutputPath);
+                AssetDatabase.ImportAsset(OutputPath);
+                if(snapshot.schemaVersion>=8) StageRuleAssetImporter.Apply(snapshot,stageTargets);
+            }
+            finally { if(File.Exists(temporary)) File.Delete(temporary); }
+        }
+    }
+}
+#endif

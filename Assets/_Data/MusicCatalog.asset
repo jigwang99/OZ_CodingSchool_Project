@@ -1,0 +1,69 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 360d05c7ecceb11438ac3c58722847df, type: 3}
+  m_Name: MusicCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::AutoBattler.Audio.MusicCatalog
+  menu:
+    m_AssetGUID: d227190cd67e95b4c9250cdf23dae34d
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
+  regions:
+  - chapter: 1
+    regionName: "\uB9C8\uC744 \uAD11\uC7A5"
+    clip:
+      m_AssetGUID: 2fb2b5c48f49da74eb9d076b874fc160
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - chapter: 2
+    regionName: "\uC5D8\uD504\uC758 \uC232"
+    clip:
+      m_AssetGUID: 91f820c11898b6e4882bd836c8c4e753
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - chapter: 3
+    regionName: "\uC218\uC778\uC758 \uB9C8\uC744"
+    clip:
+      m_AssetGUID: 2d6db0da4edfed74092f72177440b215
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - chapter: 4
+    regionName: "\uC624\uD06C \uC131\uCC44"
+    clip:
+      m_AssetGUID: 75809951836972743baf521ade23dca0
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - chapter: 5
+    regionName: "\uC78A\uD78C \uC655\uAD6D\uC758 \uC720\uC801"
+    clip:
+      m_AssetGUID: f5014cb6bee765148896a2729ae8f91f
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - chapter: 6
+    regionName: "\uB9DD\uC790\uC758 \uAC15"
+    clip:
+      m_AssetGUID: ad1dff04ffad35d4392904012483407d
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0

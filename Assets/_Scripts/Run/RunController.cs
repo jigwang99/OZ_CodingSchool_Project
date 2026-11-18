@@ -1,0 +1,234 @@
+using System;
+using AutoBattler.Audio;
+using System.Threading;
+using AutoBattler.Assets;
+using AutoBattler.Battle.Flow;
+using AutoBattler.Battle.Grid;
+using AutoBattler.Battle.Traits;
+using AutoBattler.Managers;
+using AutoBattler.Presentation.Units;
+using AutoBattler.Presentation.Battle;
+using Cysharp.Threading.Tasks;
+using UnityEngine;
+
+namespace AutoBattler.Run
+{
+    /// <summary>씬 참조 주입과 도전 초기화·종료 순서 조정. 기능 처리는 각 매니저에 위임.</summary>
+    [DisallowMultipleComponent]
+    public sealed class RunController : MonoBehaviour
+    {
+        internal const string LastStarterPreferenceKey = "PixelTactics.LastStarterUnit";
+
+        [SerializeField] private AssetCatalog catalog;
+        [SerializeField] private BattleFlowController flow;
+        [SerializeField] private UnitDragController drag;
+        [SerializeField] private HexGridLayout grid;
+        [SerializeField] private BenchLayout bench;
+        [SerializeField] private StageDefinition stage;
+        [SerializeField] private BattleBackgroundView backgroundView;
+        [SerializeField] private BenchFloorView benchView;
+        [SerializeField,Min(0)] private int unitPoolSize=1;
+        [Header("기능별 매니저")]
+        [SerializeField] private AssetManager assets;
+        [SerializeField] private UnitManager units;
+        [SerializeField] private BattleManager battle;
+        [SerializeField] private ShopManager shop;
+        [SerializeField] private AugmentManager augments;
+        [SerializeField] private SynergyManager synergies;
+        [SerializeField] private EquipmentManager equipment;
+        public EquipmentManager Equipment=>equipment;
+        public AssetManager Assets=>assets;
+        public UnitManager Units=>units;
+        public BattleManager Battle=>battle;
+        public ShopManager Shop=>shop;
+        public AugmentManager Augments=>augments;
+        public SynergyManager Synergies=>synergies;
+        public RunState State { get; private set; }
+        public BattleFlowController Flow=>flow;
+        public UnitDragController Drag=>drag;
+        public AssetCatalog Catalog=>catalog;
+        public HexGridLayout Grid=>grid;
+        public BenchLayout Bench=>bench;
+        public TraitSnapshot AllySynergies=>synergies!=null ? synergies.Allies : TraitSnapshot.Empty;
+        public TraitSnapshot EnemySynergies=>synergies!=null ? synergies.Enemies : TraitSnapshot.Empty;
+        public bool IsReady { get; private set; }
+        public bool IsLoading { get; private set; }
+        public bool IsShuttingDown=>shutdownCompletion!=null;
+        public int ActiveAssetHandleCount=>assets!=null ? assets.ActiveHandleCount : 0;
+        public BattleVisualService Visuals=>assets!=null ? assets.Visuals : null;
+        public float RemainingSeconds=>battle!=null ? battle.RemainingSeconds : 0f;
+        public Sprite UnitIcon(int iconId)=>catalog.Icon(iconId);
+        public Sprite ItemIcon(int iconId)=>assets.ItemIcon(iconId);
+        public bool IsUnitUnlocked(int unitId)=>saves!=null && saves.IsUnitUnlocked(unitId);
+        public string Message { get; private set; }="불러오는 중...";
+        public event Action DisplayChanged;
+        public event Action<string> FailureReported;
+        public void NotifyFailure(string reason) { if(!string.IsNullOrEmpty(reason)) FailureReported?.Invoke(reason); }
+        private CancellationTokenSource lifetime;
+        private SaveManager saves;
+        private bool saveFailed;
+        public StageDefinition Stage=>GameNavigation.SelectedStage!=null?GameNavigation.SelectedStage:stage;
+        public BattleBackgroundView BackgroundView=>backgroundView;
+        public BenchFloorView BenchView=>benchView;
+        private int StageId=>Stage.Id;
+        private UniTaskCompletionSource shutdownCompletion;
+        private readonly UniTaskCompletionSource<bool> initialization=new UniTaskCompletionSource<bool>();
+        public UniTask<bool> WaitForInitializationAsync(CancellationToken token)=>initialization.Task.AttachExternalCancellation(token);
+        private void Awake()
+        {
+            GameNavigation.RegisterBattleController(this);
+            saves=SaveManager.instance;
+            lifetime=CancellationTokenSource.CreateLinkedTokenSource(this.GetCancellationTokenOnDestroy());
+            assets.Initialize(catalog,flow,grid,unitPoolSize);
+            units.Initialize(assets.Units,catalog,flow,drag,grid,bench);
+            units.ConfigureItemIcons(ItemIcon);
+            equipment.Initialize(flow,units,Report,NotifyFailure);
+            shop.Initialize(flow,drag,Report,NotifyFailure);
+            augments.Initialize(flow,drag,Report);
+            synergies.Initialize(units,flow);
+            battle.Initialize(flow,drag,units,assets,synergies,augments,Report,Continue,lifetime.Token);
+            drag.enabled=false; drag.PlacementChanged+=OnPlacementChanged; drag.PlacementRejected+=NotifyFailure;
+        }
+        private void Start()=>BootAsync().Forget();
+        public void RetryLoad() { if(!IsShuttingDown && !IsLoading && !IsReady) BootAsync().Forget(); }
+        private async UniTask BootAsync()
+        {
+            if(IsShuttingDown || IsLoading || IsReady) return;
+            IsLoading=true; Report("불러오는 중...");
+            try
+            {
+                GameNavigation.ReportBattleLoading(this,0f,"전장 준비 중...");
+                await assets.LoadAsync(lifetime.Token,Cysharp.Threading.Tasks.Progress.Create<float>(value=>
+                    GameNavigation.ReportBattleLoading(this,.8f*value,"부대 준비 중...")),StageId,
+                    Stage.IsEndless?Stage.EndlessPrerequisite.Id:0);
+                lifetime.Token.ThrowIfCancellationRequested();
+                GameNavigation.ReportBattleLoading(this,.82f,"전장 불러오는 중...");
+                await assets.LoadBackgroundAsync(GameNavigation.SelectedStage!=null?GameNavigation.SelectedStage:stage,lifetime.Token);
+                await assets.LoadBenchFloorAsync(Stage,lifetime.Token);
+                if(backgroundView!=null) backgroundView.Show(assets.StageBackground);
+                if(benchView!=null) benchView.Show(assets.StageBenchFloor);
+                GameNavigation.ReportBattleLoading(this,.9f,"도전 정보 준비 중...");
+                bool augmentOpen=true;
+                bool resume=GameNavigation.ResumeRequested;
+                if(resume)
+                {
+                    if(!saves.TryLoad(assets.Data,StageId,out RunState restored,out augmentOpen))
+                    { Report(saves.LastError); return; }
+                    State=restored;
+                }
+                else
+                {
+                    int seed=UnityEngine.Random.Range(1,int.MaxValue);
+                    int previousStarterId=PlayerPrefs.GetInt(LastStarterPreferenceKey);
+                    State=new RunState(assets.Data,seed,StageId,saves.AvailableUnitsForStage(Stage),previousStarterId);
+                }
+                if(!saves.TryEnterStage(Stage)) {State=null;Report(saves.LastError);return;}
+                SoundManager.instance.PlayStageMusicAsync(Stage.EndlessPrerequisite?.Chapter ?? Stage.Chapter).Forget();
+                equipment.Bind(State); units.Bind(State); shop.Bind(State); augments.Bind(State); synergies.Bind(State); battle.Bind(State);
+                drag.BindBoard(State.Board,State.Placement); State.Changed+=OnStateChanged; IsReady=true;
+                GameNavigation.ReportBattleLoading(this,.95f,"전장과 유닛 배치 중...");
+                units.SyncAllies(); units.CreateEnemies(); synergies.Refresh();
+                if(State.CanPrepare) augments.EnterPreparation(augmentOpen);
+                else { flow.TryRestoreResult(); drag.SetResultTrading(State.CanTradeUnits); battle.ScheduleNextPreparation(); }
+                if(!resume)
+                {
+                    PlayerPrefs.SetInt(LastStarterPreferenceKey,State.Units[0].DefinitionId);
+                    PlayerPrefs.Save();
+                    TrySaveProgress();
+                }
+                Report(!State.CanPrepare?State.LastResult:State.Augments.HasPending?"증강 선택":"준비");
+            }
+            catch(OperationCanceledException) { }
+            catch(Exception exception)
+            {
+                // 초기화가 끝나지 않은 상태로 기존 저장을 덮어쓰지 않도록 차단.
+                IsReady=false;
+                if(State!=null) State.Changed-=OnStateChanged;
+                State=null;
+                Report("불러오기에 실패했습니다. 다시 시도해 주세요."); Debug.LogException(exception,this);
+            }
+            finally
+            {
+                IsLoading=false;
+                if(IsReady) GameNavigation.ReportBattleLoading(this,1f,"전투 준비 완료");
+                initialization.TrySetResult(IsReady); DisplayChanged?.Invoke();
+            }
+        }
+        private void Report(string message) { Message=saveFailed?saves.LastError:message; DisplayChanged?.Invoke(); }
+        private void OnPlacementChanged()
+        { if(IsReady) { synergies.Refresh(); TrySaveProgress(); SoundManager.PlayEffect(SoundId.Place); } DisplayChanged?.Invoke(); }
+        private void OnStateChanged()
+        {
+            drag.SetPlayerLevel(State.Level);
+            drag.SetResultTrading(State.IsSettled && State.CanTradeUnits && flow.CurrentPhase==BattlePhase.Result);
+            units.SyncAllies(assets.Visuals);
+            if(!State.IsSettled) synergies.Refresh();
+            if(State.IsSettled) { battle.ScheduleNextPreparation(); TrySaveProgress(); }
+            DisplayChanged?.Invoke();
+        }
+        // 기존 HUD·씬의 공개 명령 유지. 실제 동작은 기능별 매니저에서 처리.
+        private bool SaveAfter(bool changed) { if(changed) SaveProgress(flow.CurrentPhase==BattlePhase.Combat); return changed; }
+        public bool Buy(int slot)=>IsReady && SaveAfter(shop.Buy(slot));
+        public bool RefreshShop()=>IsReady && SaveAfter(shop.RefreshShop());
+        public bool BuyXp()=>IsReady && SaveAfter(shop.BuyXp());
+        public bool ToggleShopLock()=>IsReady && SaveAfter(State.TryToggleShopLock());
+        public bool SellSelected()=>IsReady && SaveAfter(shop.SellSelected());
+        public bool SellUnit(int instanceId)=>IsReady && SaveAfter(shop.Sell(instanceId));
+        public bool ToggleAugmentWindow()=>IsReady && SaveAfter(augments.ToggleWindow());
+        public bool SelectAugment(int id)=>IsReady && SaveAfter(augments.Select(id));
+        public bool EquipItem(int itemId,int unitId)=>IsReady && SaveAfter(equipment.Equip(itemId,unitId));
+        public bool UnequipItem(int itemId)=>IsReady && SaveAfter(equipment.Unequip(itemId));
+        public bool FuseItems(int firstItemId,int secondItemId)=>IsReady && SaveAfter(equipment.FuseStored(firstItemId,secondItemId));
+        public bool StartBattle()
+        {
+            if(!IsReady) return false;
+            if(State.CanPrepare && !State.Augments.HasPending && State.Board.DeployedCount>0 && !TrySaveProgress()) return false;
+            return battle.StartBattle();
+        }
+        public bool Continue()=>IsReady && flow.CurrentPhase==BattlePhase.Result && !State.IsOver
+            && TrySaveProgress() && SaveAfter(battle.Continue());
+        public bool TrySaveProgress()=>SaveProgress(false);
+        public bool TrySaveForNavigation()=>SaveProgress(flow.CurrentPhase==BattlePhase.Combat);
+        private bool SaveProgress(bool replayCombat)
+        {
+            if(!IsReady || State==null || !State.CanPrepare && !State.IsSettled && !replayCombat) return false;
+            bool success=saves.TrySave(State,StageId,flow.IsAugmentWindowOpen,replayCombat);
+            bool recovered=saveFailed && success;
+            saveFailed=!success;
+            if(!success) Report(saves.LastError);
+            else if(recovered) Report(State.CanPrepare?State.Augments.HasPending?"증강 선택":"준비":State.LastResult);
+            return success;
+        }
+        private void OnApplicationPause(bool paused) { if(paused) TrySaveProgress(); }
+        private void OnApplicationQuit()=>TrySaveProgress();
+        public UniTask ShutdownAsync()=>ShutdownAsync(true);
+        private UniTask ShutdownAsync(bool saveProgress)
+        {
+            if(shutdownCompletion!=null) return shutdownCompletion.Task;
+            shutdownCompletion=new UniTaskCompletionSource(); ShutdownCoreAsync(shutdownCompletion,saveProgress).Forget(); return shutdownCompletion.Task;
+        }
+        private async UniTask ShutdownCoreAsync(UniTaskCompletionSource completion,bool saveProgress)
+        {
+            try
+            {
+                if(saveProgress) TrySaveProgress();
+                IsReady=false; DisplayChanged?.Invoke(); lifetime?.Cancel();
+                if(equipment!=null) equipment.Bind(null);
+                if(State!=null) State.Changed-=OnStateChanged;
+                if(drag!=null) { drag.PlacementChanged-=OnPlacementChanged; drag.PlacementRejected-=NotifyFailure; drag.ClearSelection(); drag.enabled=false; }
+                if(shop!=null) shop.Bind(null);
+                if(augments!=null) augments.Bind(null);
+                if(battle!=null) await battle.StopAsync();
+                if(synergies!=null) { synergies.EndBattle(); synergies.Bind(null); }
+                if(units!=null) units.Clear();
+                if(backgroundView!=null) backgroundView.Show(null);
+                if(benchView!=null) benchView.Show(null);
+                if(assets!=null) await assets.ShutdownAsync();
+                lifetime?.Dispose(); completion.TrySetResult();
+            }
+            catch(Exception exception) { completion.TrySetException(exception); }
+        }
+        // 파괴 콜백에서는 자식 기물의 배치가 이미 해제됐을 수 있으므로 저장 없이 정리만 진행.
+        private void OnDestroy() { initialization.TrySetResult(false); ShutdownAsync(false).Forget(); }
+    }
+}
